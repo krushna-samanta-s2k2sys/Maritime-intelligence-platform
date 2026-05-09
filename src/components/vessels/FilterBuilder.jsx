@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { FILTER_CONFIGS, FILTER_GROUPS, FILTER_MAP } from '../../data/filterConfig'
+import { FILTER_MAP } from '../../data/filterConfig'
+import { ATTRIBUTE_TREE, flattenFilterable, hasAnyFilterable } from '../../data/attributeTree'
 
-// ── Single filter value editor popover ──────────────────────────────────────
+// ── Filter value editor popover ──────────────────────────────────────────────
 function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, anchor }) {
   const [localVal, setLocalVal] = useState(() => {
     if (cfg.filterType === 'multiselect') return filter?.values || []
@@ -9,22 +10,21 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
     if (cfg.filterType === 'typeahead')   return filter?.query || ''
     return ''
   })
-  const [search, setSearch] = useState('')
+  const [search, setSearch]           = useState('')
+  const [showSuggest, setShowSuggest] = useState(false)
   const popRef = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
 
-  // Position popover near anchor
-  const [pos, setPos] = useState({ top:0, left:0 })
   useEffect(() => {
     if (!anchor) return
     const rect = anchor.getBoundingClientRect()
-    const vpW = window.innerWidth; const vpH = window.innerHeight
-    let top = rect.bottom + 6; let left = rect.left
-    if (left + 300 > vpW) left = vpW - 310
-    if (top + 340 > vpH) top = rect.top - 346
+    const vpW = window.innerWidth, vpH = window.innerHeight
+    let top = rect.bottom + 8, left = rect.left
+    if (left + 320 > vpW) left = vpW - 328
+    if (top + 400 > vpH) top = rect.top - 408
     setPos({ top, left })
   }, [anchor])
 
-  // Close on outside click
   useEffect(() => {
     function h(e) { if (popRef.current && !popRef.current.contains(e.target)) onClose() }
     document.addEventListener('mousedown', h)
@@ -56,178 +56,269 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
     : availableValues
 
   function toggleValue(val) {
-    setLocalVal(prev =>
-      prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]
-    )
+    setLocalVal(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
   }
+
+  const suggestions = useMemo(() => {
+    if (cfg.filterType !== 'typeahead' || !localVal || !cfg.getFieldValue) return []
+    const q = localVal.toLowerCase()
+    const seen = new Set()
+    const results = []
+    for (const v of vessels) {
+      const s = cfg.getFieldValue(v)
+      if (s && s.toLowerCase().includes(q) && !seen.has(s)) {
+        seen.add(s); results.push(s)
+        if (results.length >= 8) break
+      }
+    }
+    return results
+  }, [cfg, localVal, vessels])
 
   return (
     <div
       ref={popRef}
-      className="fbEditorPop"
+      className="fePop"
       style={{ top: pos.top, left: pos.left }}
       onMouseDown={e => e.stopPropagation()}
     >
-      <div className="fbEditorHead">
-        <span className="fbEditorTitle">{cfg.label}</span>
-        <button className="fbEditorClose" onClick={onClose}>✕</button>
+      <div className="feHead">
+        <span className="feTitle">{cfg.label}</span>
+        <span className="feType">{cfg.filterType}</span>
+        <button className="feClose" onClick={onClose}>✕</button>
       </div>
 
       {cfg.filterType === 'multiselect' && (
         <>
-          {availableValues.length > 6 && (
-            <div className="fbEditorSearch">
+          {availableValues.length > 5 && (
+            <div className="feSearch">
               <input
                 autoFocus
-                className="fbEditorSearchInp"
+                className="feSearchInp"
                 placeholder="Search options…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
           )}
-          <div className="fbCheckList">
-            {filteredValues.map(opt => (
-              <label key={opt.value} className="fbCheckRow">
-                <input
-                  type="checkbox"
-                  checked={localVal.includes(opt.value)}
-                  onChange={() => toggleValue(opt.value)}
-                />
-                <span className="fbCheckLabel">{opt.label}</span>
-                <span className="fbCheckCount">{opt.count}</span>
-              </label>
-            ))}
-            {filteredValues.length === 0 && <div className="empty" style={{padding:'8px 0'}}>No options found</div>}
+          <div className="feOptList">
+            {filteredValues.map(opt => {
+              const on = localVal.includes(opt.value)
+              return (
+                <label key={opt.value} className={`feOpt${on ? ' feOptOn' : ''}`}>
+                  <span className={`feChk${on ? ' on' : ''}`}>{on ? '✓' : ''}</span>
+                  <span className="feOptLabel">{opt.label}</span>
+                  <span className="feOptCount">{opt.count}</span>
+                </label>
+              )
+            })}
+            {filteredValues.length === 0 && (
+              <div className="feEmpty">No options found</div>
+            )}
           </div>
           {localVal.length > 0 && (
-            <div className="fbEditorSel">{localVal.length} selected · <button className="fbEditorClrBtn" onClick={() => setLocalVal([])}>Clear</button></div>
+            <div className="feSelBar">
+              <span>{localVal.length} selected</span>
+              <button className="feClrBtn" onClick={() => setLocalVal([])}>Clear all</button>
+            </div>
           )}
         </>
       )}
 
       {cfg.filterType === 'range' && (
-        <div className="fbRangeGrid">
-          <div>
-            <div className="fbRangeLabel">Min</div>
+        <div className="feRangePair">
+          <div className="feRangeField">
+            <div className="feRangeLabel">From</div>
             <input
               autoFocus
-              className="fbRangeInp"
+              className="feRangeInp"
               type="number"
               placeholder="No minimum"
               value={localVal.min}
               onChange={e => setLocalVal(p => ({ ...p, min: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && commit()}
             />
           </div>
-          <div className="fbRangeSep">—</div>
-          <div>
-            <div className="fbRangeLabel">Max</div>
+          <div className="feRangeSep">—</div>
+          <div className="feRangeField">
+            <div className="feRangeLabel">To</div>
             <input
-              className="fbRangeInp"
+              className="feRangeInp"
               type="number"
               placeholder="No maximum"
               value={localVal.max}
               onChange={e => setLocalVal(p => ({ ...p, max: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && commit()}
             />
           </div>
         </div>
       )}
 
       {cfg.filterType === 'typeahead' && (
-        <div style={{ padding: '8px 12px 4px' }}>
+        <div className="feTypeWrap">
           <input
             autoFocus
-            className="fbTypeInp"
-            placeholder={`Search by ${cfg.label.toLowerCase()}…`}
+            className="feTypeInp"
+            placeholder={`Search ${cfg.label.toLowerCase()}…`}
             value={localVal}
-            onChange={e => setLocalVal(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') commit() }}
+            onChange={e => { setLocalVal(e.target.value); setShowSuggest(true) }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { setShowSuggest(false); commit() }
+              if (e.key === 'Escape') setShowSuggest(false)
+            }}
+            onFocus={() => setShowSuggest(true)}
+            onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
           />
+          {showSuggest && suggestions.length > 0 && (
+            <div className="feSuggestDrop">
+              {suggestions.map(s => (
+                <button
+                  key={s}
+                  className="feSuggestItem"
+                  onMouseDown={e => { e.preventDefault(); setLocalVal(s); setShowSuggest(false) }}
+                >{s}</button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      <div className="fbEditorFoot">
+      <div className="feFoot">
         <button className="btn btnS btnSm" onClick={() => { onRemove(); onClose() }}>Remove</button>
-        <button className="btn btnP btnSm" style={{ marginLeft: 'auto' }} onClick={commit}>Apply</button>
+        <button className="btn btnP btnSm feApply" onClick={commit}>Apply</button>
       </div>
     </div>
   )
 }
 
-// ── Attribute picker popover (+ Add Filter) ──────────────────────────────────
-function AttributePicker({ vessels, activeIds, onPick, anchor, onClose }) {
+// ── Filter Tree Panel ────────────────────────────────────────────────────────
+function FilterTreePanel({ vessels, activeIds, onPick, onClose }) {
   const [search, setSearch] = useState('')
-  const popRef = useRef(null)
-  const [pos, setPos] = useState({ top: 0, left: 0 })
+  // Starts fully collapsed — user expands as needed
+  const [expanded, setExpanded] = useState(() => new Set())
 
-  useEffect(() => {
-    if (!anchor) return
-    const rect = anchor.getBoundingClientRect()
-    const vpW = window.innerWidth; const vpH = window.innerHeight
-    let top = rect.bottom + 6; let left = rect.left
-    if (left + 260 > vpW) left = vpW - 270
-    if (top + 380 > vpH) top = rect.top - 386
-    setPos({ top, left })
-  }, [anchor])
+  const allFilterable = useMemo(() => flattenFilterable(ATTRIBUTE_TREE), [])
 
-  useEffect(() => {
-    function h(e) { if (popRef.current && !popRef.current.contains(e.target)) onClose() }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [onClose])
-
-  const grouped = useMemo(() => {
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return []
     const q = search.toLowerCase()
-    return FILTER_GROUPS.map(g => ({
-      ...g,
-      items: FILTER_CONFIGS.filter(f =>
-        f.group === g.id &&
-        !activeIds.includes(f.id) &&
-        (!q || f.label.toLowerCase().includes(q))
-      ),
-    })).filter(g => g.items.length > 0)
-  }, [search, activeIds])
+    return allFilterable.filter(n =>
+      !activeIds.includes(n.filterId) &&
+      (n.label.toLowerCase().includes(q) ||
+       n.path.some(p => p.toLowerCase().includes(q)))
+    )
+  }, [search, activeIds, allFilterable])
+
+  function toggleExpand(id) {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function renderNodes(nodes, depth = 0) {
+    return nodes.map(node => {
+      if (node.children) {
+        if (!hasAnyFilterable(node)) return null
+        const isOpen = expanded.has(node.id)
+        return (
+          <div key={node.id}>
+            <button
+              className={`ftBranch${isOpen ? ' ftOpen' : ''}${depth === 0 ? ' ftBranchRoot' : ''}`}
+              style={{ paddingLeft: 14 + depth * 16 }}
+              onClick={() => toggleExpand(node.id)}
+            >
+              <span className="ftArrow">{isOpen ? '▾' : '▸'}</span>
+              <span className="ftBranchLabel">{node.label}</span>
+            </button>
+            {isOpen && <div className="ftChildren" style={{ borderLeft: depth === 0 ? 'none' : '1px solid var(--bg3)', marginLeft: 22 + depth * 16 }}>{renderNodes(node.children, depth + 1)}</div>}
+          </div>
+        )
+      } else {
+        if (!node.filterId) return null
+        const isActive = activeIds.includes(node.filterId)
+        const cfg = FILTER_MAP[node.filterId]
+        return (
+          <button
+            key={node.id}
+            className={`ftLeaf${isActive ? ' ftLeafActive' : ''}`}
+            style={{ paddingLeft: 10 }}
+            onClick={() => { if (!isActive) { onPick(node.filterId); onClose() } }}
+          >
+            <span className="ftLeafLabel">{node.label}</span>
+            {cfg && !isActive && <span className="ftLeafType">{cfg.filterType}</span>}
+            {isActive && <span className="ftLeafCheck">✓ Added</span>}
+          </button>
+        )
+      }
+    })
+  }
 
   return (
     <div
-      ref={popRef}
-      className="fbAttrPop"
-      style={{ top: pos.top, left: pos.left }}
-      onMouseDown={e => e.stopPropagation()}
+      className="ftOverlay"
+      onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="fbAttrSearch">
-        <input
-          autoFocus
-          className="fbAttrInp"
-          placeholder="Search attributes…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
-      <div className="fbAttrList">
-        {grouped.map(g => (
-          <div key={g.id}>
-            <div className="fbAttrGroupHdr">{g.label}</div>
-            {g.items.map(f => (
-              <button key={f.id} className="fbAttrItem" onClick={() => { onPick(f.id); onClose() }}>
-                <span className="fbAttrItemLabel">{f.label}</span>
-                <span className="fbAttrItemType">{f.filterType}</span>
-              </button>
-            ))}
+      <div className="ftPanel">
+        <div className="ftHead">
+          <div className="ftHeadInfo">
+            <div className="ftTitle">Add Filter</div>
+            <div className="ftSub">Browse categories below, or type to search any attribute</div>
           </div>
-        ))}
-        {grouped.length === 0 && <div className="empty" style={{ padding: 12 }}>No matching attributes</div>}
+          <button className="ftClose" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="ftSearch">
+          <div className="ftSearchIcon">⌕</div>
+          <input
+            autoFocus
+            className="ftSearchInp"
+            placeholder="Search attributes… e.g. DWT, Flag, Owner, Ice Class, COW"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && <button className="ftSearchClear" onClick={() => setSearch('')}>✕</button>}
+        </div>
+
+        <div className="ftBody">
+          {search.trim() ? (
+            searchResults.length > 0 ? (
+              <>
+                <div className="ftResultsHdr">{searchResults.length} attribute{searchResults.length !== 1 ? 's' : ''} found</div>
+                {searchResults.map(n => {
+                  const cfg = FILTER_MAP[n.filterId]
+                  return (
+                    <button
+                      key={n.id}
+                      className="ftResultItem"
+                      onClick={() => { onPick(n.filterId); onClose() }}
+                    >
+                      <div className="ftResultMeta">
+                        <div className="ftResultPath">{n.path.slice(0, -1).join(' › ')}</div>
+                        <div className="ftResultLabel">{n.label}</div>
+                      </div>
+                      {cfg && <span className="ftLeafType">{cfg.filterType}</span>}
+                    </button>
+                  )
+                })}
+              </>
+            ) : (
+              <div className="ftEmpty">No filterable attributes matching "<strong>{search}</strong>"</div>
+            )
+          ) : (
+            <div className="ftTree">{renderNodes(ATTRIBUTE_TREE)}</div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
 
-// ── Main FilterBuilder ──────────────────────────────────────────────────────
+// ── Main FilterBuilder bar ───────────────────────────────────────────────────
 export default function FilterBuilder({ filters, onChange, vessels }) {
-  const [showAttrPicker, setShowAttrPicker] = useState(false)
-  const [editingId, setEditingId] = useState(null)       // fieldId of filter being edited
+  const [showTreePanel, setShowTreePanel] = useState(false)
+  const [editingId, setEditingId]         = useState(null)
   const [editingAnchor, setEditingAnchor] = useState(null)
-  const [addAnchor, setAddAnchor] = useState(null)
   const addBtnRef = useRef(null)
 
   const activeIds = filters.map(f => f.fieldId)
@@ -235,11 +326,9 @@ export default function FilterBuilder({ filters, onChange, vessels }) {
   function addFilter(fieldId) {
     const cfg = FILTER_MAP[fieldId]
     if (!cfg) return
-    // Open editor immediately for the new filter (empty)
-    const el = addBtnRef.current
+    setShowTreePanel(false)
     setEditingId(fieldId)
-    setEditingAnchor(el)
-    // Insert placeholder so editor can compute position
+    setEditingAnchor(addBtnRef.current)
     if (!filters.find(f => f.fieldId === fieldId)) {
       onChange([...filters, { fieldId, type: cfg.filterType, values: [], query: '', min: null, max: null }])
     }
@@ -259,55 +348,55 @@ export default function FilterBuilder({ filters, onChange, vessels }) {
     setEditingAnchor(e.currentTarget)
   }
 
-  const editingCfg  = editingId ? FILTER_MAP[editingId] : null
+  const editingCfg    = editingId ? FILTER_MAP[editingId] : null
   const editingFilter = editingId ? filters.find(f => f.fieldId === editingId) : null
+
+  const hasActiveFilters = filters.some(f => {
+    const t = f.type
+    return !(t === 'multiselect' && (!f.values || !f.values.length)) &&
+           !(t === 'typeahead' && !f.query) &&
+           !(t === 'range' && f.min == null && f.max == null)
+  })
 
   return (
     <div className="fbBar">
-      {/* Active filter chips */}
       {filters.map(f => {
         const cfg = FILTER_MAP[f.fieldId]
         if (!cfg) return null
-        const label = cfg.describe(f)
         const isEmpty = (f.type === 'multiselect' && (!f.values || f.values.length === 0)) ||
                         (f.type === 'typeahead' && !f.query) ||
                         (f.type === 'range' && f.min == null && f.max == null)
         if (isEmpty) return null
+        const label = cfg.describe(f)
         return (
           <div key={f.fieldId} className={`fbChip${editingId === f.fieldId ? ' fbChipActive' : ''}`}>
-            <button className="fbChipLabel" onClick={e => openEditor(e, f.fieldId)}>
-              {label}
-            </button>
-            <button className="fbChipRemove" onClick={() => removeFilter(f.fieldId)} title="Remove filter">✕</button>
+            <button className="fbChipLabel" onClick={e => openEditor(e, f.fieldId)}>{label}</button>
+            <button className="fbChipRemove" onClick={() => removeFilter(f.fieldId)} title="Remove">✕</button>
           </div>
         )
       })}
 
-      {/* Add filter button */}
       <button
         ref={addBtnRef}
         className="fbAddBtn"
-        onClick={e => { setAddAnchor(e.currentTarget); setShowAttrPicker(v => !v) }}
+        onClick={() => setShowTreePanel(v => !v)}
       >
         + Add Filter
       </button>
 
-      {filters.length > 0 && (
+      {hasActiveFilters && (
         <button className="fbClearAll" onClick={() => onChange([])}>Clear all</button>
       )}
 
-      {/* Attribute picker popover */}
-      {showAttrPicker && (
-        <AttributePicker
+      {showTreePanel && (
+        <FilterTreePanel
           vessels={vessels}
           activeIds={activeIds}
-          anchor={addAnchor}
-          onPick={fieldId => { addFilter(fieldId); setShowAttrPicker(false) }}
-          onClose={() => setShowAttrPicker(false)}
+          onPick={addFilter}
+          onClose={() => setShowTreePanel(false)}
         />
       )}
 
-      {/* Filter value editor popover */}
       {editingCfg && editingFilter && (
         <FilterEditor
           cfg={editingCfg}

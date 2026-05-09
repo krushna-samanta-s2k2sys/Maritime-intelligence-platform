@@ -31,7 +31,22 @@ export const ALL_VESSEL_COLUMNS = [
   { id:'fuel',            label:'Fuel Type',         group:'machinery',   always:false, width:110 },
   { id:'propulsion',      label:'Propulsion',        group:'machinery',   always:false, width:110 },
   { id:'teu',             label:'TEU',               group:'cargo',       always:false, width:80  },
-  { id:'yard',            label:'Shipyard',          group:'construction',always:false, width:180 },
+  { id:'teu-r',          label:'Reefer TEU',        group:'cargo',       always:false, width:80  },
+  { id:'ceu',            label:'CEU (Cars)',         group:'cargo',       always:false, width:80  },
+  { id:'pax',            label:'Passengers',        group:'cargo',       always:false, width:80  },
+  { id:'holds',          label:'Holds',             group:'cargo',       always:false, width:60  },
+  { id:'hatches',        label:'Hatches',           group:'cargo',       always:false, width:65  },
+  { id:'lane-metres',    label:'Lane Metres',       group:'cargo',       always:false, width:90  },
+  { id:'yard',           label:'Shipyard',          group:'construction',always:false, width:180 },
+  { id:'dp',             label:'DP Notation',       group:'safety',      always:false, width:70  },
+  { id:'scrubber',       label:'Scrubber',          group:'safety',      always:false, width:110 },
+  { id:'ff-cap',         label:'Fire-fighting',     group:'safety',      always:false, width:90  },
+  { id:'heli',           label:'Helicopter',        group:'safety',      always:false, width:80  },
+  { id:'bow-disch',      label:'Bow Discharge',     group:'safety',      always:false, width:95  },
+  { id:'stern-disch',    label:'Stern Discharge',   group:'safety',      always:false, width:105 },
+  { id:'cow',            label:'COW',               group:'safety',      always:false, width:55  },
+  { id:'igs',            label:'IGS',               group:'safety',      always:false, width:55  },
+  { id:'bwmp',           label:'BWMP',              group:'safety',      always:false, width:60  },
 ]
 
 export const COLUMN_GROUPS = [
@@ -43,6 +58,7 @@ export const COLUMN_GROUPS = [
   { key:'machinery',    label:'Machinery'           },
   { key:'cargo',        label:'Cargo Capacity'      },
   { key:'construction', label:'Construction'        },
+  { key:'safety',       label:'Safety & Green Tech' },
 ]
 
 // Maps column id to vessel record accessor
@@ -79,7 +95,22 @@ export function getCellValue(col, v) {
     case 'fuel':            return v.fuel
     case 'propulsion':      return v.prp
     case 'teu':             return v.teu || '—'
-    case 'yard':            return v.yard
-    default:                return '—'
+    case 'teu-r':          return v.teu_r || '—'
+    case 'ceu':            return v.ceu || '—'
+    case 'pax':            return v.pax || '—'
+    case 'holds':          return v.holds || '—'
+    case 'hatches':        return v.hatches || '—'
+    case 'lane-metres':    return v.lanm || '—'
+    case 'yard':           return v.yard
+    case 'dp':             return v.dp || '—'
+    case 'scrubber':       return v.scrubberFitted || '—'
+    case 'ff-cap':         return v.ffCap ? 'Yes' : 'No'
+    case 'heli':           return v.heli ? 'Yes' : 'No'
+    case 'bow-disch':      return v.bowDisch ? 'Yes' : 'No'
+    case 'stern-disch':    return v.sternDisch ? 'Yes' : 'No'
+    case 'cow':            return v.cow ? 'Yes' : 'No'
+    case 'igs':            return v.igs ? 'Yes' : 'No'
+    case 'bwmp':           return v.bwmp ? 'Yes' : 'No'
+    default:               return '—'
   }
 }
