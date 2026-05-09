@@ -1,12 +1,17 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ENTITIES } from '../data/entities'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { generateHistory } from '../data/vesselTimeline'
 import { useTemporalDate } from '../hooks/useTemporalDate'
 import { useBiTemporalFields } from '../hooks/useBiTemporalFields'
 import BiTemporalTimeline from '../components/vessels/BiTemporalTimeline'
 import EntitySidebar from '../components/vessels/EntitySidebar'
 import EntityContent from '../components/vessels/EntityContent'
+import FilterBuilder from '../components/vessels/FilterBuilder'
+import ColumnPickerModal from '../components/vessels/ColumnPickerModal'
+import { usePreferences } from '../contexts/PreferencesContext'
+import { ALL_VESSEL_COLUMNS, getCellValue } from '../data/vesselColumns'
+import { parseSearch, applySearch, describeFilters } from '../utils/searchParser'
+import { applyFilters } from '../data/filterConfig'
 
 const VS = [
   {id:1,  nm:'PACIFIC STAR',    imo:'9412345',mmsi:'240987654',cs:'SVAZ3',fl:'GR',fn:'Greece',         flag:'🇬🇷',ty:'Container Ship',  dwt:'59,100', gt:'52,400', nt:'28,600', yr:2008,loa:'294.0m',lbp:'281.0m',beam:'32.2m',depth:'19.4m',maxDraft:'13.5m',sumDraft:'13.1m',ow:'Aegean Carriers SA',      bo:'K. Papadopoulos',       op:'Aegean Carriers SA',    mg:'Columbia Ship Mgmt',   pi:'Steamship Mutual',    cls:"Lloyd's Register",clsNot:"100A1 Container Ship LMC UMS",          ice:'None',eng:'MAN B&W 9S90MC-C',        mcr:'72,240 kW',spd:'22.0 kn',fuel:'HFO + MDO',  prp:'FP',    teu:'5,022',teu_r:'600', st:'In Service',up:'2024-01-30',yard:'Hyundai HI, Ulsan',          hn:'H2341', builtYard:'KR'},
@@ -27,7 +32,7 @@ const VS = [
   {id:16, nm:'BRAVE TERN',      imo:'9593513',mmsi:'259511000',cs:'LNBT1',fl:'NO',fn:'Norway',         flag:'🇳🇴',ty:'Offshore Wind',    dwt:'18,000', gt:'20,700', nt:'8,200',  yr:2012,loa:'182.0m',lbp:'168.0m',beam:'42.0m',depth:'16.0m',maxDraft:'6.6m', sumDraft:'6.3m', ow:'Fred. Olsen Windcarrier',bo:'Fred. Olsen & Co',      op:'Fred. Olsen',           mg:'Fred. Olsen',          pi:'Gard P&I',             cls:'DNV GL',          clsNot:'1A1 Self-Elevating Unit DP2',           ice:'None',eng:'Caterpillar 6x3516C DP2',  mcr:'14,400 kW',spd:'12.0 kn',fuel:'MDO',        prp:'Azimuth',st:'In Service',up:'2024-01-27',yard:'Keppel FELS, Singapore',      hn:'KF2441',builtYard:'SG'},
   {id:17, nm:'COSCO UNIVERSE',  imo:'9871234',mmsi:'477111234',cs:'BPCU1',fl:'CN',fn:'China',          flag:'🇨🇳',ty:'Container Ship',  dwt:'197,800',gt:'187,000',nt:'108,400',yr:2020,loa:'400.0m',lbp:'388.0m',beam:'61.5m',depth:'33.5m',maxDraft:'16.5m',sumDraft:'16.0m',ow:'COSCO Shipping',         bo:'COSCO Group / SASAC',   op:'COSCO Shipping Lines',  mg:'COSCO Shipping',       pi:'China P&I Club',      cls:'China Classification',clsNot:'CSA Container Ship',                    ice:'None',eng:'MAN B&W 11G95ME-C10',      mcr:'84,700 kW',spd:'22.0 kn',fuel:'VLSFO + MDO', prp:'FP',    teu:'21,237',teu_r:'1,200',st:'In Service',up:'2024-01-30',yard:'Shanghai Jiangnan, China',    hn:'JN3882',builtYard:'CN'},
   {id:18, nm:'SUNRISE CARRIER', imo:'9412888',mmsi:'351881234',cs:'3ESC1',fl:'PA',fn:'Panama',         flag:'🇵🇦',ty:'Bulk Carrier',     dwt:'76,200', gt:'40,800', nt:'25,200', yr:2007,loa:'225.0m',lbp:'217.0m',beam:'32.3m',depth:'20.0m',maxDraft:'14.2m',sumDraft:'13.8m',ow:'Sunrise Maritime Ltd',   bo:'Sunrise Maritime Ltd',  op:'Sunrise Maritime Ltd',  mg:'V.Ships Greece',       pi:'North of England P&I',cls:'DNV GL',          clsNot:'1A1 Bulk Carrier',                      ice:'None',eng:'MAN B&W 6S60MC-C',        mcr:'13,560 kW',spd:'14.3 kn',fuel:'HFO',        prp:'FP',    holds:'7',hatches:'7',st:'In Service',up:'2024-01-20',yard:'Imabari SB, Japan',           hn:'I1882', builtYard:'JP'},
-  {id:19, nm:'NORDERNEY',       imo:'9388042',mmsi:'211222000',cs:'DKND1',fl:'DE',fn:'Germany',        flag:'🇩🇪',ty:'RoRo',             dwt:'16,200', gt:'24,200', nt:'9,800',  yr:2008,loa:'192.0m',lbp:'183.0m',beam:'26.5m',depth:'15.8m',maxDraft:'6.8m', sumDraft:'6.5m', ow:'DFDS A/S',              bo:'DFDS A/S',              op:'DFDS Logistics',        mg:'DFDS A/S',             pi:'Swedish Club',        cls:'DNV GL',          clsNot:'1A1 RoRo Ship',                         ice:'1A', eng:'Wärtsilä 12V46',          mcr:'14,400 kW',spd:'22.0 kn',fuel:'HFO + MDO',  prp:'CP',    lanm:'4,000 lm',st:'In Service',up:'2024-01-28',yard:'Flensburger SB, Germany',    hn:'F1441', builtYard:'DE'},
+  {id:19, nm:'NORDERNEY',       imo:'9388042',mmsi:'211222000',cs:'DKND1',fl:'DE',fn:'Germany',        flag:'🇩🇪',ty:'RoRo',             dwt:'16,200', gt:'24,200', nt:'9,800',  yr:2008,loa:'192.0m',lbp:'183.0m',beam:'26.5m',depth:'15.8m',maxDraft:'6.8m', sumDraft:'6.5m', ow:'DFDS A/S',              bo:'DFDS A/S',              op:'DFDS Logistics',        mg:'DFDS A/S',             pi:'Swedish Club',        cls:'DNV GL',          clsNot:'1A1 RoRo Ship',                         ice:'1A', eng:'Wärtsilä 12V46',          mcr:'14,400 kW',spd:'22.0 kn',fuel:'HFO + MDO',  prp:'CP',    st:'In Service',up:'2024-01-28',yard:'Flensburger SB, Germany',    hn:'F1441', builtYard:'DE'},
   {id:20, nm:'BOURBON LIBERTY', imo:'9450993',mmsi:'228082000',cs:'FNBL1',fl:'FR',fn:'France',         flag:'🇫🇷',ty:'Offshore Supply',  dwt:'4,200',  gt:'3,800',  nt:'1,800',  yr:2010,loa:'75.0m', lbp:'67.0m', beam:'18.0m',depth:'7.2m', maxDraft:'5.8m', sumDraft:'5.5m', ow:'Bourbon Offshore',      bo:'Jaccar Holdings',       op:'Bourbon Offshore',      mg:'Bourbon Offshore',     pi:'Steamship Mutual',    cls:'Bureau Veritas',  clsNot:'I Hull Mach OSV DP2',                   ice:'None',eng:'Cummins QSK60 x4',        mcr:'5,440 kW', spd:'14.5 kn',fuel:'MDO',        prp:'Azimuth DP2',st:'In Service',up:'2024-01-26',yard:'Ulstein Verft, Norway',       hn:'UV2441',builtYard:'NO'},
   {id:21, nm:'LNG JAMAL',       imo:'9234567',mmsi:'441001234',cs:'HLKL1',fl:'KR',fn:'South Korea',    flag:'🇰🇷',ty:'LNG Carrier',      dwt:'78,900', gt:'93,200', nt:'44,800', yr:2008,loa:'286.0m',lbp:'274.0m',beam:'46.0m',depth:'25.2m',maxDraft:'12.2m',sumDraft:'11.5m',ow:'Korea LNG Shipping',     bo:'Korea Gas Corp',        op:'Korea LNG Shipping',    mg:'Korea LNG Shipping',   pi:'Korea P&I Club',      cls:'Korean Register', clsNot:'KR LNG Carrier GTT Mark III',           ice:'None',eng:'Wärtsilä 12V50DF x2',      mcr:'24,000 kW',spd:'19.5 kn',fuel:'LNG + HFO',  prp:'FP',    st:'In Service',up:'2024-01-29',yard:'Hyundai HI, Ulsan',          hn:'H2501', builtYard:'KR'},
   {id:22, nm:'DIANA BULKER',    imo:'9501882',mmsi:'538081234',cs:'V7DB1',fl:'MH',fn:'Marshall Islands',flag:'🇲🇭',ty:'Bulk Carrier',     dwt:'82,100', gt:'43,300', nt:'26,600', yr:2013,loa:'229.0m',lbp:'221.0m',beam:'36.5m',depth:'19.6m',maxDraft:'14.8m',sumDraft:'14.3m',ow:'Diana Shipping',         bo:'Simeon Palios',         op:'Diana Shipping',        mg:'Diana Shipping',       pi:'North of England P&I',cls:'DNV GL',          clsNot:'1A1 Bulk Carrier',                      ice:'None',eng:'MAN B&W 6S60ME-C8',        mcr:'13,560 kW',spd:'14.5 kn',fuel:'HFO + MDO',  prp:'FP',    holds:'7',hatches:'7',st:'In Service',up:'2024-01-29',yard:'Imabari SB, Japan',           hn:'I2181', builtYard:'JP'},
@@ -36,74 +41,95 @@ const VS = [
   {id:25, nm:'PIONEER TRADER',  imo:'9499283',mmsi:'636018000',cs:'A8PT1',fl:'LR',fn:'Liberia',        flag:'🇱🇷',ty:'General Cargo',    dwt:'9,880',  gt:'7,200',  nt:'4,400',  yr:2011,loa:'121.0m',lbp:'113.0m',beam:'19.6m',depth:'10.5m',maxDraft:'7.8m', sumDraft:'7.5m', ow:'Pioneer Shipping',      bo:'Pioneer Shipping',      op:'Pioneer Shipping',      mg:'Pioneer Shipping',     pi:'UK P&I Club',         cls:'Bureau Veritas',  clsNot:'I Hull Mach General Cargo',             ice:'None',eng:'MAN B&W 6L35MC',          mcr:'4,440 kW', spd:'14.5 kn',fuel:'HFO + MDO',  prp:'FP',    holds:'4',hatches:'4',st:'In Service',up:'2024-01-26',yard:'Jiangzhou SB, China',        hn:'JZ1441',builtYard:'CN'},
 ]
 
-const SHIP_TYPES = ['Bulk Carrier','Container Ship','Oil Tanker','Chemical Tanker','LNG Carrier','LPG Carrier','General Cargo','Car Carrier','RoRo','Offshore Supply','Offshore Wind','Passenger/Cruise','Research Vessel']
-const STATUSES = ['In Service','In Drydock','Laid Up','Detained','Total Loss']
-const CLASS_SOCS = ["Lloyd's Register",'DNV GL','Bureau Veritas','ClassNK','Korean Register','China Classification']
 const STCLS = {'In Service':'stA','Detained':'stR','In Drydock':'stD','Laid Up':'stI','Total Loss':'stR'}
-
 const SRC_CLS = {'IHS Fairplay':'sIHS','AIS':'sAIS','DNV GL':'sDNV',"Lloyd's Register":'sLR','Bureau Veritas':'sBV','ClassNK':'sNK','Korean Register':'sKR','China Classification':'sNK','Flag Registry':'sFLAG','IMO GISIS':'sIHS','OCIMF':'sAIS'}
-function Src({s}) { const cls = SRC_CLS[s]||'sIHS'; const lbl = s&&s.length>8?s.split(' ').map(w=>w[0]).join('').slice(0,4):s||'?'; return <span className={`src ${cls}`}>{lbl}</span> }
+function Src({s}) { const cls=SRC_CLS[s]||'sIHS'; const lbl=s&&s.length>8?s.split(' ').map(w=>w[0]).join('').slice(0,4):s||'?'; return <span className={`src ${cls}`}>{lbl}</span> }
 
 export default function Vessels() {
   const navigate = useNavigate()
-  const [page, setPage] = useState('list')
-  const [vessel, setVessel] = useState(null)
-  const [search, setSearch] = useState('')
-  const [ftFilter, setFtFilter] = useState('')
-  const [stFilter, setStFilter] = useState('')
-  const [entity, setEntity] = useState('imo')
-  const [selField, setSelField] = useState(null)
-  const [editMode, setEditMode] = useState(false)
-  const [viewMode, setViewMode] = useState('fields')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { vesselColumns } = usePreferences()
+
+  // Navigation: ?id=N → detail view, no params → list
+  const detailId = searchParams.get('id')
+  const vessel   = detailId ? VS.find(v => String(v.id) === detailId) || null : null
+
+  const [search,        setSearch]        = useState('')
+  const [activeFilters, setActiveFilters] = useState([])   // [{fieldId, type, values|query|min/max}]
+  const [showColPicker, setShowColPicker] = useState(false)
+  const [entity,        setEntity]        = useState('imo')
+  const [selField,      setSelField]      = useState(null)
+  const [editMode,      setEditMode]      = useState(false)
+  const [viewMode,      setViewMode]      = useState('fields')
+  const [sortKey,       setSortKey]       = useState('name')
+  const [sortDir,       setSortDir]       = useState('asc')
 
   const { curDate, setCurDate, dateToPct, jumpToMilestone, events, TL_START_YR, TL_END_YR } = useTemporalDate(vessel)
   const { fields } = useBiTemporalFields(vessel, entity, curDate)
 
+  // Smart search + filter builder filters combined
   const filtered = useMemo(() => {
     let vl = VS
-    if (search) { const q=search.toLowerCase(); vl=vl.filter(v=>v.nm.toLowerCase().includes(q)||v.imo.includes(q)||v.mmsi.includes(q)||v.fn.toLowerCase().includes(q)||v.ow.toLowerCase().includes(q)) }
-    if (ftFilter) vl=vl.filter(v=>v.ty===ftFilter)
-    if (stFilter) vl=vl.filter(v=>v.st===stFilter)
+
+    if (search.trim()) {
+      const parsed = parseSearch(search)
+      vl = applySearch(vl, parsed)
+    }
+
+    vl = applyFilters(vl, activeFilters)
+
+    vl = [...vl].sort((a, b) => {
+      let av = a.nm, bv = b.nm
+      if (sortKey === 'imo')   { av = a.imo;  bv = b.imo  }
+      if (sortKey === 'built') { av = a.yr;   bv = b.yr   }
+      if (sortKey === 'dwt')   { av = Number(a.dwt.replace(/,/g,'')); bv = Number(b.dwt.replace(/,/g,'')) }
+      if (av < bv) return sortDir === 'asc' ? -1 : 1
+      if (av > bv) return sortDir === 'asc' ?  1 : -1
+      return 0
+    })
     return vl
-  }, [search,ftFilter,stFilter])
+  }, [search, activeFilters, sortKey, sortDir])
+
+  // Search interpretation hints
+  const searchHints = useMemo(() => {
+    if (!search.trim()) return []
+    const parsed = parseSearch(search)
+    return describeFilters(parsed)
+  }, [search])
+
+  // Columns to show
+  const visibleColumns = useMemo(() =>
+    ALL_VESSEL_COLUMNS.filter(c => c.always || vesselColumns.includes(c.id)),
+  [vesselColumns])
 
   function openDetail(id) {
-    setVessel(VS.find(v=>v.id===id))
-    setEntity('imo')
-    setSelField(null)
-    setEditMode(false)
-    setViewMode('fields')
-    setPage('detail')
+    setEntity('imo'); setSelField(null); setEditMode(false); setViewMode('fields')
+    setSearchParams({ id: String(id) })
   }
 
-  function handleSelectEntity(key) {
-    setEntity(key)
-    setSelField(null)
+  function closeDetail() {
+    setSearchParams({})
   }
 
-  function handleSelectField(i) {
-    setSelField(i)
-  }
-
-  if (page==='detail'&&vessel) {
+  if (vessel) {
     const selFieldArr = selField !== null && fields[selField] ? fields[selField] : null
     const histRows = selFieldArr ? generateHistory(selFieldArr[0], vessel, entity) : []
 
     return (
       <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
         <div className="dHead">
-          <button className="backBtn" onClick={()=>setPage('list')}>← Back to Fleet</button>
+          <button className="backBtn" onClick={closeDetail}>← Back to Fleet</button>
           <div style={{width:1,height:26,background:'rgba(255,255,255,.15)'}}/>
           <div><div className="vNm">{vessel.flag} {vessel.nm}</div><div className="vMeta">IMO {vessel.imo} · MMSI {vessel.mmsi} · {vessel.fn} · {vessel.ty}</div></div>
           <div className="dActs">
-            <button className="btn btnT btnSm" onClick={()=>setEditMode(e=>!e)}>{editMode?'✕ Cancel':'✎ Edit'}</button>
+            <button className="btn btnT btnSm" onClick={() => setEditMode(e=>!e)}>{editMode ? '✕ Cancel' : '✎ Edit'}</button>
             <button className="btn btnT btnSm">↗ Export</button>
-            <button className="btn btnT btnSm" onClick={()=>navigate('/movements')}>🗺 Track</button>
-            <button className="btn btnT btnSm" onClick={()=>navigate('/psc')}>🔍 PSC History</button>
+            <button className="btn btnT btnSm" onClick={() => navigate('/movements')}>🗺 Track</button>
+            <button className="btn btnT btnSm" onClick={() => navigate('/psc')}>🔍 PSC History</button>
           </div>
         </div>
 
-        {editMode&&<div className="eBan">⚠ Edit mode active — all changes will be versioned in bi-temporal audit log (valid_from / valid_to / transaction_time)</div>}
+        {editMode && <div className="eBan">⚠ Edit mode active — all changes will be versioned in bi-temporal audit log (valid_from / valid_to / transaction_time)</div>}
 
         <div className="vCard">
           <div style={{fontSize:22}}>{vessel.flag}</div>
@@ -116,114 +142,155 @@ export default function Vessels() {
           </div>
         </div>
 
-        <BiTemporalTimeline
-          vessel={vessel}
-          curDate={curDate}
-          onDateChange={setCurDate}
-          dateToPct={dateToPct}
-          jumpToMilestone={jumpToMilestone}
-          events={events}
-          TL_START_YR={TL_START_YR}
-          TL_END_YR={TL_END_YR}
-        />
+        <BiTemporalTimeline vessel={vessel} curDate={curDate} onDateChange={setCurDate} dateToPct={dateToPct} jumpToMilestone={jumpToMilestone} events={events} TL_START_YR={TL_START_YR} TL_END_YR={TL_END_YR} />
 
         <div style={{display:'grid',gridTemplateColumns:'200px 1fr 290px',flex:1,minHeight:0,overflow:'hidden'}}>
-          <EntitySidebar
-            vessel={vessel}
-            curDate={curDate}
-            curEntity={entity}
-            onSelectEntity={handleSelectEntity}
-          />
-
-          <EntityContent
-            vessel={vessel}
-            curDate={curDate}
-            curEntity={entity}
-            editMode={editMode}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            selField={selField}
-            onSelectField={handleSelectField}
-          />
-
+          <EntitySidebar vessel={vessel} curDate={curDate} curEntity={entity} onSelectEntity={key => { setEntity(key); setSelField(null) }} />
+          <EntityContent vessel={vessel} curDate={curDate} curEntity={entity} editMode={editMode} viewMode={viewMode} onViewModeChange={setViewMode} selField={selField} onSelectField={setSelField} />
           <div className="histPanel">
             <div className="histHead">
               <div className="histTitle">ATTRIBUTE HISTORY</div>
               <div className="histAttr">{selFieldArr ? selFieldArr[0] : '— Select a field'}</div>
             </div>
             <div className="histList">
-              {selFieldArr ? histRows.map((h,i)=>(
+              {selFieldArr ? histRows.map((h,i) => (
                 <div key={i} className={`histRow${i===0?' histCur':''}`}>
                   <div className="histVal">{h.val}</div>
                   <div className="histMeta"><Src s={h.src}/><span>valid {h.from} → {h.to||'Present'}</span></div>
                 </div>
-              )):<div className="empty">Click any field to view bi-temporal change history</div>}
+              )) : <div className="empty">Click any field to view bi-temporal change history</div>}
             </div>
             <div className="sqlBox">
               <div className="sqlBoxHdr"><span className="sqlLabel">BigQuery · Bi-temporal</span></div>
-              {selFieldArr&&<div style={{padding:'0 14px 8px',display:'block'}}>
-                <pre style={{fontSize:9,fontFamily:"'IBM Plex Mono',monospace",color:'#98c379',lineHeight:1.6,margin:0}}>{`SELECT value, valid_from, valid_to,\n  transaction_time\nFROM \`sp_maritime.vessel_history\`\nWHERE imo = '${vessel.imo}'\n  AND attribute = '${selFieldArr[0]}'\nORDER BY transaction_time DESC`}</pre>
-              </div>}
+              {selFieldArr && (
+                <div style={{padding:'0 14px 8px',display:'block'}}>
+                  <pre style={{fontSize:9,fontFamily:"'IBM Plex Mono',monospace",color:'#98c379',lineHeight:1.6,margin:0}}>{`SELECT value, valid_from, valid_to,\n  transaction_time\nFROM \`sp_maritime.vessel_history\`\nWHERE imo = '${vessel.imo}'\n  AND attribute = '${selFieldArr[0]}'\nORDER BY transaction_time DESC`}</pre>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {editMode&&<div className="eActBar"><button className="btn btnS" onClick={()=>setEditMode(false)}>Cancel</button><button className="btn btnP" onClick={()=>{setEditMode(false)}}>💾 Save Changes</button></div>}
+        {editMode && <div className="eActBar"><button className="btn btnS" onClick={() => setEditMode(false)}>Cancel</button><button className="btn btnP" onClick={() => setEditMode(false)}>💾 Save Changes</button></div>}
       </div>
     )
   }
 
   return (
     <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+      {/* Search + toolbar */}
       <div className="sBar">
-        <div className="siWrap"><span className="siIc">🔍</span><input className="si" placeholder="Search vessel name, IMO, MMSI, flag, owner…" value={search} onChange={e=>setSearch(e.target.value)}/></div>
-        <select className="fSel" value={ftFilter} onChange={e=>setFtFilter(e.target.value)}><option value="">All Ship Types</option>{SHIP_TYPES.map(t=><option key={t}>{t}</option>)}</select>
-        <select className="fSel" value={stFilter} onChange={e=>setStFilter(e.target.value)}><option value="">All Statuses</option>{STATUSES.map(s=><option key={s}>{s}</option>)}</select>
-        <select className="fSel"><option value="">All Class Societies</option>{CLASS_SOCS.map(c=><option key={c}>{c}</option>)}</select>
-        <button className="btn btnP">🔍 Search</button>
+        <div className="siWrap" style={{flex:1,minWidth:260}}>
+          <span className="siIc">🔍</span>
+          <input
+            className="si"
+            placeholder='Search: name, IMO, flag, owner… or try "vlcc detained", "built>2015 container", "flag:panama"'
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && <button className="siClear" onClick={() => setSearch('')} title="Clear search">✕</button>}
+        </div>
+        <select className="fSel" value={sortKey} onChange={e => setSortKey(e.target.value)}>
+          <option value="name">Sort: Name A→Z</option>
+          <option value="imo">Sort: IMO ↑</option>
+          <option value="built">Sort: Built Year</option>
+          <option value="dwt">Sort: DWT</option>
+        </select>
+        <button className="btn btnS btnSm" onClick={() => setShowColPicker(true)} title="Customise columns">⊞ Columns</button>
         <button className="btn btnT">+ Add Vessel</button>
       </div>
-      <div className="rBar">
-        <div>Showing <strong>{filtered.length}</strong> of <strong>847,392</strong> vessels</div>
-        <div style={{display:'flex',gap:6,alignItems:'center'}}><span>Sort:</span><select className="sel" style={{padding:'3px 8px',fontSize:11}}><option>Name A→Z</option><option>IMO ↑</option><option>Built Year ↓</option><option>DWT ↓</option></select></div>
+
+      {/* Search interpretation hints */}
+      {searchHints.length > 0 && (
+        <div className="searchHints">
+          <span className="searchHintsLabel">Searching by:</span>
+          {searchHints.map((h, i) => <span key={i} className="tag tB" style={{fontSize:9}}>{h}</span>)}
+        </div>
+      )}
+
+      {/* Filter builder bar */}
+      <div className="fbBarWrap">
+        <FilterBuilder
+          filters={activeFilters}
+          onChange={setActiveFilters}
+          vessels={VS}
+        />
       </div>
-      <div className="tWrap">
-        <table className="vt">
-          <thead><tr>
-            <th style={{width:26}}><input type="checkbox"/></th>
-            <th>Vessel Name</th><th>IMO / MMSI</th><th>Flag</th><th>Ship Type</th>
-            <th>DWT</th><th>GT</th><th>Built</th><th>LOA</th>
-            <th>Registered Owner</th><th>Technical Manager</th><th>Class Society</th><th>Status</th><th>Updated</th>
-          </tr></thead>
-          <tbody>
-            {filtered.map(v=>{
-              const sc=STCLS[v.st]||'stI'
-              return (
-                <tr key={v.id}>
-                  <td><input type="checkbox"/></td>
-                  <td><button className="vLnk" style={{background:'none',border:'none',padding:0,cursor:'pointer'}} onClick={()=>openDetail(v.id)}>{v.flag} {v.nm}</button></td>
-                  <td><div className="mn" style={{fontSize:11}}>{v.imo}</div><div className="mn" style={{fontSize:9,color:'var(--txt3)'}}>{v.mmsi}</div></td>
-                  <td style={{fontSize:11}}>{v.flag} {v.fn}</td>
-                  <td><span className="tag tN" style={{fontSize:9}}>{v.ty}</span></td>
-                  <td className="mn" style={{fontSize:11}}>{v.dwt}</td>
-                  <td className="mn" style={{fontSize:11}}>{v.gt}</td>
-                  <td style={{fontSize:11}}>{v.yr}</td>
-                  <td style={{fontSize:11}}>{v.loa}</td>
-                  <td style={{fontSize:11,maxWidth:150,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v.ow}</td>
-                  <td style={{fontSize:11,maxWidth:130,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v.mg}</td>
-                  <td><span className="tag tN" style={{fontSize:9}}>{v.cls}</span></td>
-                  <td><span className={`stBadge ${sc}`}><span className="stDot"/>{v.st}</span></td>
-                  <td style={{fontSize:10,color:'var(--txt3)'}}>{v.up}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+
+      {/* Results bar */}
+      <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+        <div className="rBar">
+          <div>Showing <strong>{filtered.length}</strong> of <strong>847,392</strong> vessels</div>
+          <div style={{fontSize:10,color:'var(--txt3)'}}>
+            {visibleColumns.length} columns · {vesselColumns.length} configured
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="tWrap">
+          <table className="vt">
+            <thead>
+              <tr>
+                <th style={{width:26}}><input type="checkbox"/></th>
+                {visibleColumns.map(col => (
+                  <th key={col.id} style={{minWidth:col.width,cursor:'pointer',userSelect:'none'}} onClick={() => {
+                    if (sortKey===col.id) setSortDir(d=>d==='asc'?'desc':'asc')
+                    else { setSortKey(col.id); setSortDir('asc') }
+                  }}>
+                    {col.label}{sortKey===col.id ? (sortDir==='asc'?' ▲':' ▼') : ''}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(v => {
+                const sc = STCLS[v.st] || 'stI'
+                return (
+                  <tr key={v.id}>
+                    <td><input type="checkbox"/></td>
+                    {visibleColumns.map(col => {
+                      const val = getCellValue(col.id, v)
+                      if (col.id === 'name') return (
+                        <td key={col.id} style={{whiteSpace:'nowrap'}}>
+                          <span className="vtFlagBadge">{v.fl}</span>
+                          <button className="vLnk" onClick={() => openDetail(v.id)}>{v.nm}</button>
+                        </td>
+                      )
+                      if (col.id === 'imo') return (
+                        <td key={col.id}>
+                          <div className="mn" style={{fontSize:11}}>{v.imo}</div>
+                          <div className="mn" style={{fontSize:9,color:'var(--txt3)'}}>{v.mmsi}</div>
+                        </td>
+                      )
+                      if (col.id === 'type') return <td key={col.id}><span className="tag tN" style={{fontSize:9}}>{v.ty}</span></td>
+                      if (col.id === 'status') return <td key={col.id}><span className={`stBadge ${sc}`}><span className="stDot"/>{v.st}</span></td>
+                      if (col.id === 'class') return <td key={col.id}><span className="tag tN" style={{fontSize:9}}>{v.cls}</span></td>
+                      if (['dwt','gt','nt','mcr'].includes(col.id)) return <td key={col.id} className="mn" style={{fontSize:11}}>{val}</td>
+                      return (
+                        <td key={col.id} style={{fontSize:11,maxWidth:col.width,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                          {typeof val === 'string' ? val : '—'}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="pgBar">
+          {[1,2,3,'…',847].map((p,i) => typeof p==='number'
+            ? <button key={i} className={`pgBtn${p===1?' on':''}`}>{p}</button>
+            : <span key={i} style={{color:'var(--txt3)',fontSize:11,padding:'0 4px'}}>{p}</span>
+          )}
+          <span style={{fontSize:11,color:'var(--txt3)',marginLeft:'auto'}}>Page 1 of 33,895 · 25 per page</span>
+        </div>
       </div>
-      <div className="pgBar">
-        {[1,2,3,'…',847].map((p,i)=>typeof p==='number'?<button key={i} className={`pgBtn${p===1?' on':''}`}>{p}</button>:<span key={i} style={{color:'var(--txt3)',fontSize:11,padding:'0 4px'}}>{p}</span>)}
-        <span style={{fontSize:11,color:'var(--txt3)',marginLeft:'auto'}}>Page 1 of 33,895 · 25 per page</span>
-      </div>
+
+      {/* Column picker modal */}
+      {showColPicker && <ColumnPickerModal onClose={() => setShowColPicker(false)} />}
     </div>
   )
 }

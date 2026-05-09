@@ -1,0 +1,829 @@
+    Ship Status Code
+    Ship Status Effective Date
+    Ship Status
+    Shiptype Level 2
+    Shiptype Level 3
+    Shiptype Level 4
+    Shiptype Level 5 Hull Type
+    Shiptype Level 5 Sub Group
+    Shiptype Level 5 Sub Type
+    StatCode5
+    Shiptype Level 5
+    Shiptype Group
+      Anchor handling
+      Articulated
+      Drill BargeInd
+      BARGE LIFT
+      Beam Trawler
+      BIBO: bulk in/bulk out
+      Biological research
+      Bottom-door discharge
+      Cable Laying
+      Cannery
+      Chain-ferry
+      Construction
+      Crane (IWW)
+      Debris Collector
+      Deck-cargo vessel
+      Dhow (not sailing)
+      Dock Ship
+      Dredge/reclaim
+      Dredger (Fishing)
+      Dredging, plough
+      Drilling Mud/Cement Tanks
+      Droneship support vessel
+      Enclosed Bulk Carrier
+      Environmental research
+      Factory Stern Trawler
+      Fish Carrier Frozen
+      Fish Carrier Well Boat
+      Fishing industry
+      FLNG
+      FSRU
+      Geological research
+      Geophysical research
+      Gillnetter
+      Hatchless Container Ship
+      HSC
+      Hydrographic research
+      Hydrological research
+      Laden Vehicles, Road
+      Landing craft (IWW)
+      Launch
+      Lift netters
+      Longliner
+      Maintenance Ship
+      Multi-purpose (fishing)
+      Oceanographic research
+      Offshore Diving Facilities
+      Offshore industry
+      Oil Pollution Recovery
+      Operates submersibles
+      Other fishing vessels
+      Other line vessels
+      Other seiners
+      Pair Trawling
+      Part Of Integ. Tug/Barge Sys
+      PASSENGERS, 1-12 BERTHS
+      Pelagic Purse Seiner
+      Pipe layer
+      Pole & Line Fishing
+      Potting
+      Processing facility
+      Purse Seiner
+      Research
+      Rock Installation
+      Rocket part recovery vessel
+      ROV Operation
+      Safety standby equipped
+      Salvage
+      Sand-pump discharge
+      Search/Rescue
+      Seiner
+      Seismographic research
+      Seismographic research 2D
+      Seismographic research 3D
+      Self-discharging
+      Shrimp Trawler
+      Side Fishing
+      Single centre cutter arm
+      Single side arm
+      Sounding research
+      Split-Hull at centre-line
+      Spoil delivery to shore
+      Spoil delivery, boom
+      Sport Fishing
+      Stationary
+      Stern Trawler
+      Submerged Turret Loading
+      Survey research
+      Training vessel
+      Trap setters
+      Trawler
+      Tuna Fishing
+      Twin side arms
+      Unmanned Barge Or Pontoon
+      Utility vessel
+      Water tractor
+      Weather research
+      Well Stimulation Vessel
+      Wind Farm Installation
+      Wind Farm Support
+      Work(ing) (IWW)
+      Accommodation
+    Naval combatant
+    Harbour
+    Cruise
+    Excursion
+    Inter-island
+    River/canal
+    River/sea
+    Government, other
+    Naval auxiliary
+    Protected waters
+    Name
+    IMO
+    LRNO
+    Maritime Mobile Service Identity (MMSI) Number
+    Callsign
+    Fishing Numnber
+      Port of Registry
+      Port of Registry Code
+      Port of Registry Full Code
+    Official Number
+      Flag Name
+      Flag Effective Date
+      Flag Code
+      Ship Email
+    ENI
+    PandI Club
+    PandI Club Code
+    Crew List Date
+    Nationality
+    Total Crew
+    Total Ratings
+    Total Officers
+    TotalCadets
+    TotalTrainees
+    TotalRidingSquad
+    TotalUndeclared
+    Bale Capacity
+    Bollard Pull
+    Bow Stoppers SWL
+    Bow to Centre Manifold
+    Cargo Capacities Narrative
+    Cargo Other Capacity
+    Cargo Other Type
+    Clear Deck Area
+    Clear Height of RORO Lanes
+    Crane SWL
+    Derrick SWL
+    Gas Capacity
+    Grain Capacity
+    Hatches Descriptive Narrative
+    Holds Descriptive Narrative
+    Insulated Capacity
+    Lanes Doors Ramps Narrative
+    Largest Hatch Breadth
+    Largest Hatch Length
+    Length of RORO Lanes
+    Lines per Side
+    Liquid Capacity
+    Number of Cabins
+    Number of Cargo Pumps
+    Number of Cargo Tanks
+    Number of Cars
+    Number of Crew
+    Number of Hatches
+    Number of Holds
+    Number of RORO Lanes
+    Number of RORO Ramps
+    Number of Slop Tanks
+    Number of Tanks
+    Passenger Capacity
+    Passengers Berthed
+    Pumping Capacity
+    Reefer Points
+    Slop Tank Capacity
+    Special Tanks Descriptive Narrative
+    Specialist Tanker Narrative
+    Tanks Descriptive Narrative
+    Temp Maximum
+    Temp Minimum
+    TEU
+    TEU Capacity 14t Homogenous
+      Bow Discharge Facility
+      Bow Loading Facility
+      Bow Stoppers No
+      Bow Stoppers Type
+      Cargo Grades Segregations
+      Cargo Tank Heat Exchanger Material
+      Cargo Tank Heat Exchangers
+      Closed Loading System
+      Crude Oil Washing COW
+      Flash Point Over 60c
+      Flash Point Under 60c
+      Cargo Tank Coatings
+      Heating Coils in Cargo Tanks
+      Slop Tank Coatings
+      Tank Coatings Narrative
+      Heating Coils Material
+      IMO Chemical Class I
+      IMO Chemical Class II
+      IMO Chemical Class III
+      Inert Gas System IGS
+      Single Point Mooring
+      Stern Discharge Facility
+      Stern Loading Facility
+      Vapour Recovery System
+    Type
+    Position
+    Number of RORO Ramps
+    Ramp Location
+    Ramp SWL
+      RORO Ramp Position
+      RORO Ramp Length
+      RORO Ramp Width
+      RORO Ramp SWL
+      RORO Ramp Inclination Up
+      RORO Ramp Inclination Down
+      RORO Ramp Maximum Axl Weight
+      RORO Ramp Type
+    Type
+    Material
+    Length
+    Breadth
+    Position
+    Liquefaction
+    Regasification
+    Reliquefaction
+    Fully Pressurised
+    Fully Refrigerated
+    Semi Pressurised/Refrigerated
+    Liquified Hydrogen Carrier
+    Bunkering (Methanol)
+    Ammonia
+    Ethane
+    Ethylene
+    VCM
+    LNG Cargo Ready
+    Asphalt/Bitumen
+    Fitted for containers
+    Refrig machinery (Reefer)
+    Fitted for ref containers
+    Refrig machinery (Non-Reefer)
+    Timber deck stanchions
+    Ro-Ro facility
+    Accommodation
+    Heavy load
+    Class Narrative
+    Classification Society
+    Class Soc Of Issuer
+    Other Issuing Authority
+    Classification Society Code
+      Effective Date
+      Class
+      Class Indicator
+      Class Code
+      Class ID
+      Withdrawn Date
+      Reason
+    Class Notation
+      ShipRight SERS (LR Class)
+      BC-A
+      CSR Common Structural Rules
+      BC-B
+      OIWS Offshore In-Water Survey
+      Grab
+      IWS In-Water Survey
+      ESP Enhanced Survey Programme
+      pt higher tensile steel (LR)
+      BC-C
+      SERS(LR) Non-LR Class
+    Dual Registration
+  SOC
+  Document of Compliance
+    Safety Management Certificate Auditor
+    Safety Management Certificate Compliance (Convention/Voluntary)
+    Safety Management Certificate Date Expires
+    Safety Management Certificate Date Issued
+    Safety Management Certificate DOC Company
+    Safety Management Certificate Flag
+    Safety Management Certificate Issuer
+    Safety Management Certificate Other Description
+    Safety Management Certificate Ship Name
+    Safety Management Certificate Ship Type
+    Safety Management Certificate Source
+    Inspection Id
+    Certificate ID
+    Certificate Title Code
+    Certificate Title
+    Issuing Authority Code
+    Issuing Authority
+    Class Soc Of Issuer
+    Other Issuing Authority
+    Issue Date
+    Expiry Date
+    Last Survey Date
+    Survey Authority Code
+    Survey Authority
+    Other Survey Authority
+    Latest Survey Place
+    Latest Survey Place Code
+    Survey Authority Type
+    Inspection date
+    Inspected by
+    Inspection ID
+    Defect Code
+    Defect Text
+    Action 1
+    Action 2
+    Action 3
+    Other Action
+    Main Defect Code
+    Main Defect text
+    Other Recognised Org Resp
+    Recognised org Resp
+    Recognised org Resp Code
+    Recognised Org Resp Y/N
+    Action Code 1
+    Action Code 2
+    Action Code 3
+    Defect ID
+    Class is Responsible
+    Detention Reason Deficiency
+    Defective Item Code
+    Nature of Defect Code
+    Nature of Defect decode
+    IsAccidentalDamage
+  IOPP
+    Fire-fighting 1
+    Fire-fighting 2
+    Fire-fighting Capable
+    Enchanced fire equip containers
+    C02 fitted in holds
+    Fire-fighting 3
+    Extra fire safety for AFVs
+      PandI Club
+      PandI Club Code
+    Survey Authority Code
+    Survey Authority
+    Other Survey Authority
+    Latest Survey Place
+    Latest Survey Place Code
+    Survey Authority Type
+  Class Society Code
+    Last
+    Next
+  Special Survey Lakes*
+  Continuous Hull Survey
+  Continuous Machinery Survey*
+  Tail Shaft Survey*
+    Last
+    Next
+  Annual Survey
+    Production Vessel Indicator
+    Lead ship In series by IMO Number
+    Standard Ship Design
+    Sister Ship
+    Country Of Build
+    Country Of Build Code
+    Yard Number
+    Ice Class Code
+    Ice Class
+    Ice Breaking
+    Ice Strengthened
+    FS Ice Class 1A
+    FS Ice Class 1B
+    FS Ice Class 1C
+    FS Ice Class 1A Super
+    FS Ice Class II
+    Polar Ice Class PC1
+    Polar Ice Class PC2
+    Polar Ice Class PC3
+    Polar Ice Class PC4
+    Polar Ice Class PC5
+    Polar Ice Class PC6
+    Polar Ice Class PC7
+    Icebreaking, arranged for (IWW)
+    Ice Capability Descriptive Narrative
+    Manifold Height at Ballast Condition
+    Mainfold Height at Laden Condition
+      PSPC
+      PSPC-DSS Spaces Bulk Carrier
+      PSPC-Void Spaces
+      PSPC-Cargo Oil Tanks
+      Non specific Cargo Coating Tar Epoxy
+      Non specific Slop Coating Tar Epoxy
+      Manifold Height at Ballast Condition
+      Mainfold Height at Laden Condition
+      Tank Type
+      Tank Coat
+    Slop Tank
+      Number of Pumps
+      Cubic Meters Capacity
+      Cubic Tons Capacity
+    Multi Load Lines
+    Deck Heat Exchanger Indicator
+    Deck Heat Exchanger Material
+    Country Of Breaking
+    Place of Breaking
+    Recycling Country
+    Recycling Country Code
+    Recycling Date Arrival
+    Recycling Date Commenced
+    Recycling per LDT price
+    Recycyling Shipbreaker
+    Recycling Total Price
+    Net Tonnage
+    Panama Canal Net Tonnage PCNT
+    Suez Canal Net Tonnage SCNT
+    Tonnage Effective Date
+    Tonnage system 69 convention
+    Gross Tonnage
+    Compensated Gross Tonnage CGT
+    BWMP
+    BWMP(T)
+    BWMP(E)
+    BWMP(E+T)
+    Spec Ho Any Empty
+    PSPC-Water Ballast Tanks
+    Spec Ho 1 & 3
+    CBT CleanBallast Tanks
+    Spec Ho 1 & 4
+    Spec Ho 1, 4 & 6
+    Spec Ho 1,4,5,7,8 or 2,3,6,9
+    Spec Ho 2
+    Spec Ho 2 & 4
+    Spec Ho 2 & 5
+    Spec Ho 2 & 4 or 3
+    Spec Ho 2, 5 or 4
+    Spec Ho 2, 3 & 4
+    Spec Ho 2, 4 & 6
+    Spec Ho 2, 4 & 7
+    Spec Ho 2, 4, 6 or 4
+    Spec Ho 2, 4, 6 & 8
+    Spec Ho 2, 4, 6, 8 & 10
+    Spec Ho 2, 5 or 3, 5 or 4
+    Spec Ho 2 & 4 or 1, 3 & 5
+    Spec Ho 2, 5 & 7
+    Spec Ho 2, 5 & 8
+    Spec Ho 2, 5 or 3, 5 or 4 or 3
+    Spec Ho 2, 4 & 6 or 1, 3 & 5
+    Spec Ho 2, 4 & 6 or 1, 3, 5&7
+    Spec Ho 3
+    Spec Ho 3 or 4
+    Spec Ho 3 or 2 & 4
+    Spec Ho 3, 5 & 7
+    BallastWaterManufacturer
+    BallastWaterModel
+    BallastWaterClassNotation
+    Spec Ho 4
+    Segregated Ballast Tank Protected Location
+    Segregated Ballast Capacity
+    Alternative Deadweight
+    Alternative Draught
+    Breadth Extreme
+    Breadth Moulded
+    Discharge Diameter of Cargo Manifold
+    Mid Point Manifold Aft Ballast
+    Mid Point Manifold Aft Laden
+    Mid Point Manifold Aft Light
+    Mid Point Manifold Forward Ballast
+    Mid Point Manifold Forward Laden
+    Mid Point Manifold Forward Light
+      Container rows: 6
+      Container rows: 7
+      Container rows: 8
+      Container rows: 9
+      Container rows: 10
+      Container rows: 11
+      Container rows: 12
+      Container rows: 13
+      Container rows: 14
+      Container rows: 15
+      Container rows: 16
+      Container rows: 17
+      Container rows: 18
+      Container rows: 19
+      Container rows: 20
+      Container rows: 21
+      Container rows: 22
+      Container rows: 23
+      Container rows: 24
+      Fitted for containers
+    Depth
+    Parallel Body Length Ballast
+    Parallel Body Length Laden
+    Parallel Body Length Light
+    Drill Depth Max
+    Deadweight
+    Displacement
+    Draught
+    Formula DWT
+    Freeboard
+    Length Between Perpendiculars LBP
+    Length Overall LOA
+    Length Registered
+    Light Displacement Tonnage
+    Keel to Mast Height
+    Water Depth max
+    Tonnes Per Centimetre Immersion TPCI
+    Hull Material
+    Tween Deck Fixed
+    Tween Deck Portable
+    Hull Material Code
+    Hull Shape Code
+      Tanks on dk
+      Tanks on dk, 1 of
+      Tanks on dk, 2 of
+      Tanks on dk, 3 of
+      Tanks on dk, 4 of
+      Tanks on dk, 5 of
+      Tanks on dk, 6 of
+      Tanks on dk, 7 of
+      Tanks on dk, 8 of
+      LPG ta on dk
+      LPG ta on dk, 1 of
+      LPG ta on dk, 2 of
+      LPG ta on dk, 3 of
+      LPG ta on dk, 4 of
+      LPG ta on dk, 5 of
+      LPG ta on dk, 6 of
+      LPG ta on dk, 7 of
+      LPG ta on dk, 8 of
+      Fuel tanks on dk
+      Fuel tanks on dk, 1 of
+      Fuel tanks on dk, 2 of
+      Fuel tanks on dk, 4 of
+      Tanks on dk, 9 of
+      Tanks on dk, 12 of
+      1 Bulkhead
+      2 Bulkheads
+      3 Bulkheads
+      4 Bulkheads
+      5 Bulkheads
+      6 Bulkheads
+      7 Bulkheads
+      8 Bulkheads
+      9 Bulkheads
+      10 Bulkheads
+      11 Bulkheads
+      12 Bulkheads
+      13 Bulkheads
+      14 Bulkheads
+      15 Bulkheads
+      16 Bulkheads
+      17 Bulkheads
+      18 Bulkheads
+      19 Bulkheads
+      20 Bulkheads
+      21 Bulkheads
+      Cell Guides In 1 Hold
+      Cell Guides In 2 Holds
+      Cell Guides In 3 Holds
+      Cell Guides In 4 Holds
+      Cell Guides In 5 Holds
+      Container guides on deck
+      Container: fixed guides
+      Container: portable guides
+    Helicopter Facility
+    Str. Heavy Cargo
+    Squared Boxed Holds
+    Hull Type
+    Hull Type Code
+    Number of Decks
+    Bulbous Bow
+    Alterations Descriptive Narrative
+    Construction Descriptive Narrative
+    Bow Visor
+    Shipbuilder
+    Shipbuilder Company Code
+    Shipbuilder Full Style
+    Shipbuilder Sub Contractor
+    Shipbuilder Sub Contractor Code
+    Shipbuilder Sub ContractorShipyard Yard Hull No
+    Delivery
+    Launch Date
+    Keel Laid Date
+    Contract Date
+    Year of Build
+    Date Breaking Commenced
+    Newconstruction Entry Date
+    Death Date
+    Year of Decomission
+    Conversion Date Latest
+    Delivery Date
+    Date Of Build
+    Newbuild Price USD
+    Moonpools, 1 of
+    Moonpools, 2 of
+    Moonpools, 3 of
+    Moonpools, 4 of
+    Moonpools, 5 of
+  Sanctions
+    Dark
+    STS
+      Position
+      Engine Type
+      Engine Designer
+      Engine Builder
+      Engine Model
+      Number of Cylinders
+      Bore
+      Stroke Cycle
+      Stroke Type
+      Power BHP
+      Power KW
+      RPM
+      Engine Builder Code
+      Engine Maker Code
+      Cylinder Arrangement Code
+      Cylinder Arrangement Decode
+      BHP of Main Oil Engines
+      Main Engine Designer Code
+      Main Engine Designer Group
+      Main Engine Designer Group Code
+      Main Engine Type Code
+      Main Engine Type Of Installation Code
+      Main Engine Type Of Installation Decode
+      Engine Builder
+      Engine Designer
+      Engine Model
+      Number of Cylinders
+      Bore
+      Stroke
+      Stroke Type
+      Max Power
+      KW Each
+      Auxiliary Engine Narrative
+      Indicator
+        Gearing Type
+        Number
+        KW
+        KW
+        Voltage
+        AC/DC Indicator
+        Frequency
+        Generator Position
+      KW Each
+      Voltage 1
+      Voltage 2
+      Frequency
+      ACDC
+      Auxiliary Generators Descriptive Narrative
+    Gearing
+    Number
+    KW
+    Power bhp ihp ship max
+    Power bhp ihp ship service
+    Power kw max
+    Power kw service
+    Scrubber Designer
+    Scrubber Retrofitted
+    Scrubber Retrofitted Year
+    Scrubber Type
+    Autonomous Vessel
+    Cold Ironing (Shore-Power)
+    Cold Ironing Shore-Power Ready
+    Carbon Capture System Fitted
+    Carbon Capture System Ready
+    Scrubber Ready
+    Scrubber Fitted
+    EEDI
+    EEDI 1
+    EEDI 2
+    EEDI 3
+    QUALSHIP 21 (Non-Class)
+    Main Engine Tier III HPEGR
+    Main Engine Tier III K-ECOS
+    Main Engine Tier III iCER
+    Main Engine Tier III EcoEGR
+    Main Engine Tier III ISCR
+    Main Engine Tier III HPSCR
+    Main Engine Tier III LPSCR
+    Main Engine Tier III EGRTC
+    Main Engine Tier III EGRBP
+    Green Award Cert (Non-Class)
+    QUALSHIP E-Zero (Non-Class)
+    Wind assisted
+    Battery Power Assisted
+    Cyber Safe
+    IHM Green Passport Cert
+    Green Award Cert (Non-Class)
+    QUALSHIP E-Zero (Non-Class)
+    QUALSHIP 21 (Non-Class)
+    Solar Power Assisted
+    Gear No Largest
+    Gear SWL Largest
+    Gear Type
+    Number of Gears
+    Max SWL of Gear
+    Gear Type Largest
+    Gearless
+    Crane SWL
+    Gear Descriptive Narrative
+    BatteryManufacturer
+    BatteryCapacityKWh
+    BatteryVoltageMaxVDC
+    BatteryVoltageMinVDC
+    BatteryTechnology
+    BatteryPropulsionType
+    BatteryRetrofitted
+    BatteryRetrofittedYear
+    BatteryIntegrator
+    Max
+    Service
+    Thrusters Descriptive Narrative
+    Thruster Type
+    Thruster Type Code
+    Number of Thrusters
+    Thrusters Position
+    Thrusters BHP
+      DP0 IMO Notation
+      DP1 IMO Notation
+      DP2 IMO Notation
+      DP3 IMO Notation
+    Thrusters KW
+    Builder
+    Country of Build
+    Design
+    Model
+    Main/Aux Eng.
+    Boiler Manufacturer
+    Fuel Type 1 Capacity
+    Fuel Type 1 First
+    Nuclear Power Indicator
+    Fuel Type 1 Code
+    Fuel Type 2 Capacity
+    Fuel Type 2 Second
+    Fuel Type 2 Code
+    Consumption Speed 1
+    Consumption Speed 2
+    Consumption Value 1
+    Consumption Value 2
+      Ammonia Ready
+      Hydrogen Ready
+      Methanol Ready
+      Gas Ready
+      Hydrogen Fuelled
+      Ammonia Fuelled
+      Methanol Fuelled
+      Battery Powered
+      Biofuel Capable
+      Gas Fuelled
+      Distillate
+      Residual
+      Gas Boil Off
+      Coal
+      Ethane
+      LNG
+      LPG
+      LVOC
+    Propulsion Type
+    Propulsion Type Code
+    Auxiliary Propulsion Indicator
+    Propeller Manufacturer
+    Propeller Type
+    Propeller Position
+    Propeller Type Code
+    RPM Service
+    RPM Maximum
+    Nozzle Type
+    Screw
+    Number Of All Engines
+    Number Of Auxiliary Engines
+    Number of Generators
+    Number of Main Engines
+    Number of Motors
+    Number Of Propulsion Units
+    Number of Thrusters
+    Total Bunker Capacity
+    Total Horsepower of Auxiliary Generators
+    Total Horsepower of Main Engines
+    Total Horsepower of Main Generators
+    Total Kilowatts of Main Engines
+    Total Power Of All Engines
+    Total Power Of Auxilliary Engines
+    Total Power of Motors
+    Registered Owner
+    Registered Owner Code
+    Registered Owner Country of Domicile
+    Registered Owner Country of Domicile Code
+    Registered Owner Country Of Control
+    Registered Owner Country Of Registration
+    Technical Manager
+    Technical Manager Code
+    Technical Manager Country Of Domicile
+    Technical Manager Country Of Domicile Code
+    Technical Manager Country Of Control
+    Technical Manager Country Of Registration
+    Bareboat Charter Company
+    Bareboat Charter Company Code
+    Bareboat Charter Country of Control
+    Bareboat Charter Country of Control Code
+    Bareboat Charter Country of Domicile
+    Bareboat Charter Country of Domicile Code
+    Bareboat Charter Country of Registration
+    Bareboat Charter Country of Registration Code
+    Bareboat Charter Effective Date
+    Charterer Latest Reported
+    DOC Company
+    DOC Company Country of Domicile
+    DOC Company Country of Domicile code
+    DOC Country Of Control
+    DOC Country Of Registration
+    Document of Compliance DOC Company Code
+    Ship Manager
+    Ship Manager Company Code
+    Ship Manager Country of Domicile Name
+    Ship Manager Country of Domicile Code
+    Ship Manager Country Of Control
+    Ship Manager Country Of Registration
+    Sequence
+    Sale Date
+    Sale Price USD
+    Type
+    Reported Sold To
+    Sales Text
+    Reported Sold To Code

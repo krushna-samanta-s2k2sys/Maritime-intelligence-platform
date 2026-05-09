@@ -1,0 +1,298 @@
+      SOC
+      Document of Compliance
+      IOPP
+      Class Society Code
+      Special Survey Lakes*
+      Continuous Hull Survey
+      Continuous Machinery Survey*
+      Tail Shaft Survey*
+      Annual Survey
+      Sanctions
+      Attempted Boarding Indicator
+      Cargo Loading Status Code
+      Cargo Loading Status
+      Casualty Action
+      Classification Society
+      Complimentary text
+      Component
+      Component Postiion
+      Country Code ISO 2
+      Country Code
+      Vessel Date Of Build
+      Description
+      Environment Location
+      Event Start Date
+      Event End Date
+      Event ID
+      Event Type
+      Event Type Detail
+      Event Type Detail ID
+      Event Type ID
+      Fired Upon Indicator
+      Flag
+      Headline
+      Incident ID
+      Location Name
+      Marsden Grid Reference
+      Parent Event Indicated
+      Pollutant
+      Pollutant Quantity
+      Pollutant Unit
+      Pollution Indicator
+      Published Date
+      Registered Owner At Time
+      Registered Owner CoD At Time
+      Registered Owner Code At Time
+      Registered Owner Country At Time
+      SecurityTeamOnBoard Indicator
+      Serious
+      Significance
+      Total Loss Indicator
+      Town Name
+      Vessel DWT
+      Vessel Flag
+      Vessel GT
+      Vessel Name
+      Vessel Type
+      Vessel Type Decode
+      Weather
+    LR IMO Ship No
+    Ship Name
+    Inspection ID
+    Inspection Date
+    Inspection Port Decode
+    UNLOCODE
+    Country
+    Authorisation
+    Source
+    Other Inspection Type
+    Follow up Inspection
+    Expanded Inspection
+    Ship  Detained
+    Number of Defects
+    Number of Days Detained
+    Number of Part Days Detained
+    Release Date
+    Owner
+    Manager
+    Charterer
+    Cargo
+    Flag
+    Call Sign
+    Class
+    Dead Weight
+    Gross Tonnage
+    Ship Type Code
+    Ship Type Decode
+    Keel laid
+    Year of Build
+    Last Updated
+    Pre Arrival Information
+      Port ID
+      World Port Number
+      Port Name
+      Status
+      Master POID
+      UNLOCODE
+      Time Zone
+      Daylight Saving Time
+      WS Port
+      Max Draught
+      Max DWT
+      Max LOA
+      Max Beam
+      Max Offshore Draught
+      Max Offshore DWT
+      Max Offshore LOA
+      Max Offshore BCM
+      ISPS Compliant
+      CSI Compliant
+      ECO Port
+      Emission Control Area
+      Dry Bulk Facilities
+      Breakbulk Facilities
+      Container Facilities
+      RoRo Facilities
+      Passenger Facilities
+      Liquid Facilities
+      LNG Facilities
+      LPG Facilities
+      Dry Dock Facilities
+      Free Trade Zone
+      Annual Tonnage
+      Tonnage Date
+      Tonnage Combined Port ID
+      Tonnage Combined Port Names
+      Annual TEU
+      TEU date
+      TEU Combined Port ID
+      TEU Combined Port Names
+      Annual Number of Passengers
+      Number of Passengers Date
+      Passengers Combined Port ID
+      Passengers Combined Port Names
+      Annual Number of Vessels
+      Number of Vessels Date
+      Vessels Combined Port ID
+      Vessels Combined Port Names
+      Oily Bilge Water
+      Oily Bilge Water Max Quantity
+      Oily Bilge Water Total
+      Oily Bilge Water Note
+      Oily Residues
+      Oily Residues Max Quantity
+      Oily Residues Total
+      Oily Residues Note
+      Oily Tank Washings
+      Oily Tank Washings Max Quantity
+      Oily Tank Washings Total
+      Oily Tanks Washings Note
+      Dirty Ballast Water
+      Dirty Ballast Water Max Quantity
+      Dirty Ballast Water Total
+      Dirty Ballast Water Note
+      Scale Sludge Tank Cleaning
+      Scale Sludge Tank Cleaning Max Qty
+      Scale Sludge Tank Cleaning Total
+      Scale Sludge Tank Cleaning Note
+      Oily Mixture
+      Oily Mixture Max Quantity
+      Oily Mixture Total
+      Oily Mixture Note
+      Chemical NLS
+      Chemical NLS Max Quantity
+      Chemical NLS Total
+      Chemical NLS Note
+      Sewage
+      Sewage Max Quantity
+      Sewage Total
+      Sewage Note
+      Garbage
+      Garbage Max Quantity
+      Garbage Total
+      Garbage Note
+      Ozone Depleting
+      Ozone Depleting Max Quantity
+      Ozone Depleting Total
+      Ozone Depleting Note
+      Exhaust Gas Cleaning
+      Exhaust Gas Cleaning Max Quantity
+      Exhaust Gas Cleaning Total
+      Exhaust Gas Cleaning Note
+      Images
+    Distance Tables
+    OWCODE
+      Short Company Name
+      Country Name
+      Telephone
+      Email Address
+      Website
+      Full Name
+      Care of Code
+      Room Floor Building 1
+      Room Floor Building 2
+      Room Floor Building 3
+      PO Box
+      Street Number
+      Street
+      Pre Post Code
+      Post Post Code
+      Nationality of Registration
+      Nationality of Control
+      Location Code
+      Nationality of Registration Code
+      Nationality of Control Code
+      Last Change Date
+      Parent Company
+      Company Status
+      Full Address
+      Founded Date
+      OWCODE
+      Registered Owner Count
+      Ship Manager Count
+      Operator Count
+      Group Owner Count
+      DOC Count
+      Fleet Size
+      In Service Count
+      Technical Manager Count
+      Ship Builder
+      Ship Builder - Subcontractor
+      Ship Scrapper
+      Engine Builder
+      Ship Owner
+      Shop Operator
+      Port Authority
+      Port Operator
+      Terminal Owner
+      Terminal Operator
+    Relationships
+    Company Orderbook
+      Engine Builder Largest Code
+      Engine Builder Short Name
+      Engine Builder Full Name
+      Telex
+      Town Code
+      Facsimile
+    Charter Party Commodity
+    Charter Party Dates
+    Charter Party Rate
+    Charter Party Terms
+    Charter Party Tonnage
+    Charterer Code
+    Commodity
+    Commodity Sub Type
+    Date off Fixture
+    Date on Fixture
+    Date Reported
+    Destination Area
+    Destination Port
+    Destination Port Code
+    Fixture ID
+    Origin Area
+    Origin Port
+    Origin Port Code
+    Shipname Reported
+    Size
+    Timecharter Rate
+      Company Overall Compliance Status
+      Parent Company Compliance Risk
+      Company In FATF Jurisdiction
+      Company In OFAC Sanctioned Country
+      Company On Australian Sanction List
+      Company On BES Sanction List
+      Company On Canadian Sanction List
+      Company On EU Sanction List
+      Company On OFAC Sanction List
+      Company On OFAC Non SDN Sanction List
+      Company On OFAC SSI List
+      Company On Swiss Sanction List
+      Company On UAE Sanction List
+      Company On UN Sanction List
+  IMO Numbering Core (Ships and Company)
+    Dark Ship
+    STS
+    Berth Calls
+    Port Calls
+    Port and Anchorage Calls
+      Lock
+      AIS Antenna Locations
+      Railway
+      Dam
+      Aquaculture/Farm
+      Pipelines
+      Shipwreck
+      Transit
+      Artificial Reef
+      Restricted Area
+      Protected Area
+      Anchorage
+      Waiting Area
+      Dumping Grounds
+      Minerals
+      Refineries
+      Joint War Commission Area's
+    Images
+      Vessel
+      Terrestrial
+      Satellite
