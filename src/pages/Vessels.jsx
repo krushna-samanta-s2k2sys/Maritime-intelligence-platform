@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { generateHistory } from '../data/vesselTimeline'
 import { getAttrValue, LEAF_TEMPORAL_MAP } from '../data/attrValueMap'
@@ -49,14 +49,15 @@ function Src({s}) { const cls=SRC_CLS[s]||'sIHS'; const lbl=s&&s.length>8?s.spli
 export default function Vessels() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { vesselColumns, attrFavorites, toggleAttrFavorite, persona } = usePreferences()
+  const { vesselColumns, attrFavorites, toggleAttrFavorite, persona,
+          vesselFilters, updateVesselFilters } = usePreferences()
 
   // Navigation: ?id=N → detail view, no params → list
   const detailId = searchParams.get('id')
   const vessel   = detailId ? VS.find(v => String(v.id) === detailId) || null : null
 
   const [search,        setSearch]        = useState('')
-  const [activeFilters, setActiveFilters] = useState([])   // [{fieldId, type, values|query|min/max}]
+  const [activeFilters, setActiveFilters] = useState(() => vesselFilters)
   const [showColPicker, setShowColPicker] = useState(false)
   const [activeNode,    setActiveNode]    = useState('general')
   const [selLeafId,     setSelLeafId]     = useState(null)
@@ -65,6 +66,28 @@ export default function Vessels() {
   const [showTimeline,  setShowTimeline]  = useState(true)
   const [sortKey,       setSortKey]       = useState('name')
   const [sortDir,       setSortDir]       = useState('asc')
+  const [histPanelWidth,     setHistPanelWidth]     = useState(320)
+  const [histPanelCollapsed, setHistPanelCollapsed] = useState(false)
+  const histWidthRef = useRef(320)
+
+  function startHistResize(e) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = histWidthRef.current
+    function onMove(ev) {
+      const newW = Math.max(240, Math.min(600, startW - (ev.clientX - startX)))
+      histWidthRef.current = newW
+      setHistPanelWidth(newW)
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.classList.remove('ew-resizing')
+    }
+    document.body.classList.add('ew-resizing')
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
 
   const { curDate, setCurDate, dateToPct, jumpToMilestone, events, TL_START_YR, TL_END_YR } = useTemporalDate(vessel)
 
@@ -189,20 +212,35 @@ export default function Vessels() {
             editMode={editMode}
             selLeafId={selLeafId}
             curDate={curDate}
-            onSelectLeaf={(id, label) => { setSelLeafId(id); setSelLeafLabel(label) }}
+            onSelectLeaf={(id, label) => { setSelLeafId(id); setSelLeafLabel(label); setHistPanelCollapsed(false) }}
           />
 
           {/* Right: field edit + history panel */}
-          <div className="vdHistPanel">
-            <FieldEditPanel
-              vessel={vessel}
-              leaf={selLeafId ? { id: selLeafId, label: selLeafLabel } : null}
-              editMode={editMode}
-              curDate={curDate}
-              histRows={histRows}
-              onClose={() => { setSelLeafId(null); setSelLeafLabel(null) }}
-              onJumpDate={setCurDate}
-            />
+          <div
+            className={`vdHistPanel${histOpen ? ' histOpen' : ''}${histOpen && histPanelCollapsed ? ' histCollapsed' : ''}`}
+            style={histOpen && !histPanelCollapsed ? { flex: `0 0 ${histPanelWidth}px`, width: histPanelWidth } : undefined}
+          >
+            {histOpen && (
+              <>
+                <div className="vdHistResizeHandle" onMouseDown={startHistResize} title="Drag to resize" />
+                <button
+                  className="vdHistCollapseBtn"
+                  onClick={() => setHistPanelCollapsed(c => !c)}
+                  title={histPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+                >{histPanelCollapsed ? '‹' : '›'}</button>
+              </>
+            )}
+            {!histPanelCollapsed && (
+              <FieldEditPanel
+                vessel={vessel}
+                leaf={selLeafId ? { id: selLeafId, label: selLeafLabel } : null}
+                editMode={editMode}
+                curDate={curDate}
+                histRows={histRows}
+                onClose={() => { setSelLeafId(null); setSelLeafLabel(null) }}
+                onJumpDate={setCurDate}
+              />
+            )}
           </div>
         </div>
 
@@ -236,7 +274,6 @@ export default function Vessels() {
           <option value="built">Sort: Built Year</option>
           <option value="dwt">Sort: DWT</option>
         </select>
-        <button className="btn btnS btnSm" onClick={() => setShowColPicker(true)} title="Customise columns">⊞ Columns</button>
         <button className="btn btnT">+ Add Vessel</button>
       </div>
 
@@ -248,13 +285,14 @@ export default function Vessels() {
         </div>
       )}
 
-      {/* Filter builder bar */}
+      {/* Filter builder bar + column picker */}
       <div className="fbBarWrap">
         <FilterBuilder
           filters={activeFilters}
-          onChange={setActiveFilters}
+          onChange={f => { setActiveFilters(f); updateVesselFilters(f) }}
           vessels={VS}
         />
+        <button className="btn btnS btnSm fbColsBtn" onClick={() => setShowColPicker(true)} title="Customise columns">⊞ Columns</button>
       </div>
 
       {/* Results bar */}

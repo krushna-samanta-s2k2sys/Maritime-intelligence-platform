@@ -1,16 +1,12 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ATTRIBUTE_TREE } from '../../data/attributeTree'
 import { getChangedFieldCount } from '../../data/vesselTimeline'
 
-// Maps attribute-tree branch IDs → entity keys used by getChangedFieldCount
 const NODE_ENTITY_KEYS = {
-  // General
   'general':          ['imo', 'flag'],
   'gen-identity':     ['imo', 'flag'],
   'gen-status':       ['imo'],
   'gen-crew':         ['crew'],
-
-  // Ownership & Management
   'ownership':        ['ownership', 'finance'],
   'own-regowner':     ['ownership'],
   'own-techman':      ['ownership'],
@@ -19,21 +15,15 @@ const NODE_ENTITY_KEYS = {
   'own-bareboat':     ['ownership'],
   'own-charterer':    ['ownership'],
   'own-sp':           ['finance'],
-
-  // Classification & Surveys
   'classification':   ['class', 'certs'],
   'class-society':    ['class'],
   'class-notation':   ['class'],
   'class-surveys':    ['class', 'certs'],
-
-  // Safety & Certification
   'safety':           ['certs'],
   'safety-doc':       ['certs'],
   'safety-smc':       ['certs'],
   'safety-iopp':      ['certs'],
   'safety-insurance': ['ownership'],
-
-  // Compliance
   'compliance':       ['sanctions'],
   'comp-sanctions':   ['sanctions'],
 }
@@ -44,7 +34,6 @@ function getNodeChg(vessel, nodeId, curDate) {
   return [...new Set(keys)].reduce((sum, k) => sum + getChangedFieldCount(vessel, k, curDate), 0)
 }
 
-// Reorder top-level tree: pinned favorites first, then persona-priority order, then rest
 function sortedTopLevel(tree, favorites, personaSections) {
   const order = personaSections?.length ? personaSections : tree.map(n => n.id)
   return [...tree].sort((a, b) => {
@@ -58,9 +47,15 @@ function sortedTopLevel(tree, favorites, personaSections) {
   })
 }
 
+const MIN_W = 140
+const MAX_W = 480
+const DEFAULT_W = 220
+
 export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectNode, favorites = new Set(), onToggleFavorite, personaAttrSections }) {
-  // Start fully collapsed — key={vessel.id} in parent resets this on new vessel
-  const [expanded, setExpanded] = useState(new Set())
+  const [expanded,   setExpanded]   = useState(new Set())
+  const [collapsed,  setCollapsed]  = useState(false)
+  const [sbWidth,    setSbWidth]    = useState(DEFAULT_W)
+  const widthRef = useRef(DEFAULT_W)
 
   const showChg = curDate && curDate < '2024-01-30'
 
@@ -73,9 +68,27 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
     })
   }
 
-  const sorted = sortedTopLevel(ATTRIBUTE_TREE, favorites, personaAttrSections)
+  function startResize(e) {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = widthRef.current
 
-  // Find where pinned ends and persona-ordered begins for the divider
+    function onMove(ev) {
+      const newW = Math.max(MIN_W, Math.min(MAX_W, startW + (ev.clientX - startX)))
+      widthRef.current = newW
+      setSbWidth(newW)
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.classList.remove('ew-resizing')
+    }
+    document.body.classList.add('ew-resizing')
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
+  const sorted = sortedTopLevel(ATTRIBUTE_TREE, favorites, personaAttrSections)
   const pinnedCount = sorted.filter(n => favorites.has(n.id)).length
 
   function renderNode(node, depth, index) {
@@ -87,9 +100,7 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
     const isPersonaPri = depth === 0 && !isFav && personaAttrSections?.length > 0 &&
       personaAttrSections.indexOf(node.id) < 3
 
-    // Divider before first non-pinned item when there are pinned items
     const showPinnedSep = depth === 0 && pinnedCount > 0 && index === pinnedCount
-
     const sep = showPinnedSep ? (
       <div key={node.id + '-sep'} className="atSbSep">
         <span className="atSbSepLbl">All sections</span>
@@ -122,7 +133,7 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
           </div>
           {isExp && (
             <div>
-              {node.children.map(c => renderNode(c, depth + 1))}
+              {node.children.map((c, ci) => renderNode(c, depth + 1, ci))}
             </div>
           )}
         </div>
@@ -144,14 +155,42 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
     return sep ? [sep, el] : el
   }
 
+  if (collapsed) {
+    return (
+      <div className="atSidebar atSbCollapsed">
+        <button
+          className="atSbExpandBtn"
+          onClick={() => setCollapsed(false)}
+          title="Expand navigation"
+        >›</button>
+      </div>
+    )
+  }
+
   return (
-    <div className="atSidebar">
-      {pinnedCount > 0 && (
-        <div className="atSbSep atSbSepTop">
-          <span className="atSbSepLbl">Pinned</span>
-        </div>
-      )}
-      {sorted.map((n, i) => renderNode(n, 0, i))}
+    <div
+      className="atSidebar"
+      style={{ flex: `0 0 ${sbWidth}px`, width: sbWidth, minWidth: sbWidth }}
+    >
+      {/* Collapse button */}
+      <button
+        className="atSbCollapseBtn"
+        onClick={() => setCollapsed(true)}
+        title="Collapse navigation"
+      >‹</button>
+
+      {/* Nav content */}
+      <div className="atSbContent">
+        {pinnedCount > 0 && (
+          <div className="atSbSep atSbSepTop">
+            <span className="atSbSepLbl">Pinned</span>
+          </div>
+        )}
+        {sorted.map((n, i) => renderNode(n, 0, i))}
+      </div>
+
+      {/* Resize handle on right edge */}
+      <div className="atSbResizeHandle" onMouseDown={startResize} title="Drag to resize" />
     </div>
   )
 }

@@ -9,12 +9,18 @@ export const COUNTRIES = [
 ]
 
 const T = (type, extra = {}) => ({ type, ...extra })
-const num  = (unit)    => T('number', { unit })
-const sel  = (options) => T('select', { options })
-const bool             = T('boolean')
-const date             = T('date')
-const text             = T('text')
-const country          = T('country')
+const num      = (unit)    => T('number',     { unit })
+const sel      = (options) => T('select',     { options })
+const multi    = (options) => T('multivalue', { options })
+const bool                 = T('boolean')
+const date                 = T('date')
+const datetime             = T('datetime')
+const text                 = T('text')
+const textarea             = T('textarea')
+const email                = T('email')
+const url                  = T('url')
+const country              = T('country')
+const year     = T('number', { unit: '', validate: v => v >= 1800 && v <= 2035 ? null : 'Invalid year' })
 
 export const FIELD_DEFS = {
   // ── General → Identity ──
@@ -37,6 +43,7 @@ export const FIELD_DEFS = {
   'af-type':        sel(['Bulk Carrier','Container Ship','Tanker','VLCC','ULCC','LNG Carrier','LPG Carrier',
                          'Car Carrier','Cruise Ship','Ferry','General Cargo','RORO','OBO','Chemical Tanker',
                          'OSV','PSV','AHTS','Dredger','Tug','Other']),
+  'af-tradetypes':  multi(['Dry Bulk','Liquid Bulk','Containers','Vehicles','Break Bulk','Project Cargo','Passengers','Supply & Support','Wind Installation','Research']),
   'af-stl2':        text,
   'af-stl3':        text,
   'af-stl4':        text,
@@ -153,7 +160,7 @@ export const FIELD_DEFS = {
   'af-tier3lpscr':  bool, 'af-tier3egrtc': bool, 'af-tier3egrbp': bool,
 
   // ── Machinery → Fuel ──
-  'af-fuel':        sel(['HFO','VLSFO','MDO','MGO','LNG','LPG','Methanol','Dual-Fuel HFO/LNG','Dual-Fuel HFO/MDO']),
+  'af-fuel':        multi(['HFO','VLSFO','MDO','MGO','LNG','LPG','Methanol','Ammonia','Hydrogen','Biofuel']),
   'af-fuelcap':     num('MT'),
   'af-fuel2cap':    num('MT'),
   'af-bunker':      num('MT'),
@@ -202,9 +209,161 @@ export const FIELD_DEFS = {
   'af-genpos':      text,
   'af-genhpaux':    num('hp'),
   'af-genhpmain':   num('hp'),
-  'af-auxnarr':     text,
+  'af-auxnarr':     textarea,
+
+  // ── General → Identity (unmapped) ──
+  'af-flageff':     date,
+  'af-flagcode':    text,
+  'af-porcode':     text,
+  'af-porfull':     text,
+  'af-fishno':      text,
+  'af-email':       email,
+  'af-nationality': country,
+
+  // ── Construction → Dimensions (unmapped) ──
+  'af-breadthe':    num('m'),
+  'af-altdwt':      num('MT'),
+  'af-altdraught':  num('m'),
+  'af-waterdepth':  num('m'),
+  'af-drilldepth':  num('m'),
+  'af-parbodball':  num('m'),
+  'af-parbodlad':   num('m'),
+  'af-parbodlight': num('m'),
+
+  // ── Construction → Tonnage (unmapped) ──
+  'af-formuladwt':  num('MT'),
+  'af-tonnageeff':  date,
+  'af-tonn69':      bool,
+
+  // ── Construction → Key Dates (unmapped) ──
+  'af-dateofbuild': date,
+  'af-ncentry':     date,
+  'af-breakstart':  date,
+  'af-decommyear':  year,
+  'af-newbuild':    num('USD'),
+
+  // ── Construction → Builder (unmapped) ──
+  'af-builtcountryc': text,
+  'af-shipbuildcode': text,
+  'af-shipbuildfull': text,
+  'af-shipbuildsubc': text,
+  'af-stddesign':   text,
+  'af-prodindicator': bool,
+
+  // ── Crew (unmapped) ──
+  'af-trainees':    num('persons'),
+  'af-ridingsquad': num('persons'),
+  'af-undeclared':  num('persons'),
+
+  // ── Ownership & Management ──
+  'af-regownfull':  text,
+  'af-regowncode':  text,
+  'af-regowncountry': country,
+  'af-regowndate':  date,
+  'af-docconame':   text,
+  'af-doccocode':   text,
+  'af-doccofull':   text,
+  'af-techmanname': text,
+  'af-techmancode': text,
+  'af-techmanfull': text,
+  'af-shipmanname': text,
+  'af-shipmancode': text,
+  'af-shipmanfull': text,
+  'af-bareowner':   text,
+  'af-charterer':   text,
+  'af-groupbenown': text,
+  'af-groupbenowncode': text,
+
+  // ── Classification & Surveys ──
+  'af-clssocname':  text,
+  'af-clssoccode':  text,
+  'af-clsnotation': textarea,
+  'af-clseffdate':  date,
+  'af-clsexpdate':  date,
+  'af-survanndate': date,
+  'af-survdockdate': date,
+  'af-survspecdate': date,
+  'af-survcontinuous': bool,
+
+  // ── Safety & Certification ──
+  'af-docissdate':  date,
+  'af-docexpdate':  date,
+  'af-docissauth':  text,
+  'af-smcissdate':  date,
+  'af-smcexpdate':  date,
+  'af-smcissauth':  text,
+  'af-ioppissdate': date,
+  'af-ioppexpdate': date,
+  'af-ioppissauth': text,
+  'af-piclub':      text,
+  'af-piclubadr':   textarea,
+  'af-piexpdate':   date,
+
+  // ── Finance ──
+  'af-saleprice':   num('USD'),
+  'af-saledate':    date,
+  'af-mortgaged':   bool,
+  'af-mortgagee':   text,
+  'af-lientype':    text,
+  'af-charterrate': num('USD/day'),
+
+  // ── Cargo / Capacity ──
+  'af-teu':         num('TEU'),
+  'af-teur':        num('TEU'),
+  'af-teu14':       num('TEU'),
+  'af-ceu':         num('CEU'),
+  'af-cbm':         num('m³'),
+  'af-holds':       num(''),
+  'af-hatches':     num(''),
+  'af-grainspace':  num('m³'),
+  'af-balespace':   num('m³'),
+  'af-liquid':      num('m³'),
+  'af-pax':         num('persons'),
+  'af-berths':      num('berths'),
+  'af-cardecks':    num(''),
+  'af-carheight':   num('m'),
+  'af-lanemet':     num('m'),
+  'af-trailerspace': num('units'),
+
+  // ── Compliance & Sanctions ──
+  'af-sanctions':   multi(['OFAC SDN','UN','EU','UK HMT','OFAC Non-SDN','Japan METI','Canada','Australia']),
+  'af-sanctiondate': date,
+  'af-sanctionnotes': textarea,
+  'af-pscdetentions': num(''),
+  'af-pscdeficiencies': num(''),
+  'af-pscdate':     date,
+  'af-pscrisk':     sel(['Low','Medium','High','Very High']),
 }
 
+// ── Pattern-based inference for unmapped fields ────────────────────────────
 export function getFieldDef(leafId) {
-  return FIELD_DEFS[leafId] || { type: 'text' }
+  if (FIELD_DEFS[leafId]) return FIELD_DEFS[leafId]
+
+  const id = leafId.toLowerCase()
+
+  // All shiptype-group indicator flags are boolean
+  if (id.startsWith('af-stg-')) return bool
+
+  // Email fields
+  if (id.includes('email') || id.includes('mail')) return email
+
+  // URL / website fields
+  if (id.includes('url') || id.includes('website') || id.includes('web')) return url
+
+  // Date patterns — ends with 'date', 'eff', 'effdate', 'expdate'
+  if (/(date|effdate|expdate|issdate|effdt)$/.test(id)) return date
+
+  // Year patterns
+  if (/(year|yr)$/.test(id)) return year
+
+  // Narrative / notes / remarks → textarea
+  if (/(narr|narrative|desc|note|notes|remark|remarks|comment|comments|detail|address|adr)$/.test(id)) return textarea
+
+  // Numeric patterns — known unit suffixes in the ID itself
+  if (/(kw|bhp|rpm|dwt|gt|nt|ldt|cgt|teu|cbm|ton|tonne|knot|kts|mtr|metres|mm|cm)/.test(id)) return num('')
+
+  // Boolean indicators — starts with common bool prefixes
+  if (/^af-(has|is|fitted|equipped|capable|ready|certified)/.test(id)) return bool
+
+  return text
 }

@@ -104,7 +104,7 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
             {filteredValues.map(opt => {
               const on = localVal.includes(opt.value)
               return (
-                <label key={opt.value} className={`feOpt${on ? ' feOptOn' : ''}`}>
+                <label key={opt.value} className={`feOpt${on ? ' feOptOn' : ''}`} onClick={() => toggleValue(opt.value)}>
                   <span className={`feChk${on ? ' on' : ''}`}>{on ? '✓' : ''}</span>
                   <span className="feOptLabel">{opt.label}</span>
                   <span className="feOptCount">{opt.count}</span>

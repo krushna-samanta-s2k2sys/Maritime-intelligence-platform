@@ -58,10 +58,9 @@ function CompareTable({ vessel, leaves, activeNode, editMode, selLeafId, onSelec
             const masterVal = getAttrValue(vessel, leaf.id) || '—'
             const isSel = selLeafId === leaf.id
             const seed = leaf.label + (vessel?.imo || '') + activeNode
-            const autoUpd = dRand('auto' + seed) > 0.75
 
             return (
-              <tr key={leaf.id}>
+              <tr key={leaf.id} className={isSel ? 'msRowSel' : ''}>
                 <td>
                   <div
                     className={'msAttr' + (isSel ? ' selA' : '')}
@@ -70,32 +69,17 @@ function CompareTable({ vessel, leaves, activeNode, editMode, selLeafId, onSelec
                 </td>
 
                 <td className="msMaster">
-                  <div className="msMasterV">{masterVal}</div>
+                  <div
+                    className={'msMasterV' + (editMode ? ' msMasterVEdit' : '')}
+                    onClick={() => onSelectLeaf(leaf.id, leaf.label)}
+                    title={editMode ? 'Click to edit' : undefined}
+                  >
+                    {masterVal}
+                    {editMode && <span className="afEditHint">✎</span>}
+                  </div>
                   <div className="msMasterSrc">
                     <span className="src sIHS" style={{ fontSize: 8 }}>IHS</span>
-                    {autoUpd
-                      ? <span className="msAutoTag">AUTO</span>
-                      : <span className="msAutoTag msOvrTag">OVERRIDE</span>
-                    }
                   </div>
-                  {editMode && (
-                    <div style={{ marginTop: 4 }}>
-                      <input
-                        className="overrideInput"
-                        placeholder="Override value..."
-                        id={'ovr_' + leaf.id}
-                      />
-                      <button
-                        className="overrideBtn"
-                        onClick={() => {
-                          const inp = document.getElementById('ovr_' + leaf.id)
-                          if (!inp || !inp.value.trim()) return
-                          const ts = new Date().toISOString().substr(0, 19).replace('T', ' ')
-                          alert('Manual override for "' + leaf.label + '":\nNew value: "' + inp.value.trim() + '"\nSaved with transaction_time: ' + ts + '\nSource flagged as ANALYST_OVERRIDE in audit log.')
-                        }}
-                      >&#9998; Save Override</button>
-                    </div>
-                  )}
                 </td>
 
                 {vendors.map(v => {
@@ -130,14 +114,12 @@ function CompareTable({ vessel, leaves, activeNode, editMode, selLeafId, onSelec
                         <span style={{ fontSize: 8, color: 'var(--txt3)', fontFamily: 'monospace' }}>{score.toFixed(2)}</span>
                       </div>
                       <div className="msVTs">{ts}</div>
-                      {editMode && (
+                      {editMode && cellCls === 'diff' && (
                         <button
                           className="applyBtn"
-                          onClick={() => {
-                            const ts2 = new Date().toISOString().substr(0, 19).replace('T', ' ')
-                            alert('Applied from ' + v.key + ':\n"' + value + '"\nwill be saved with transaction_time: ' + ts2 + '\nPrevious value retained in bi-temporal audit log.')
-                          }}
-                        >&#10003; Apply to Master</button>
+                          onClick={() => onSelectLeaf(leaf.id, leaf.label)}
+                          title="Open edit panel to apply this value"
+                        >&#10003; Review &amp; Apply</button>
                       )}
                     </td>
                   )
@@ -206,7 +188,6 @@ export default function AttrContentPanel({ vessel, activeNode, editMode, selLeaf
                   const isEmpty = !curVal || curVal === '—'
                   const isChg   = inHistMode && histVal !== curVal && histVal !== '' && curVal !== ''
                   const isSel   = selLeafId === leaf.id
-                  // In historical mode and the field changed: show historical value as the main value
                   const displayVal = isChg ? histVal : (curVal || '—')
 
                   return (

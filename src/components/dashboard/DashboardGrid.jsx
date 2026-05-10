@@ -484,22 +484,29 @@ export default function DashboardGrid() {
   }
   function handleDragEnd() { setDragId(null); setDragOverId(null) }
 
-  // ── Horizontal resize (right edge handle) ──
-  function startHResize(e, cardId) {
+  // ── Corner resize (bottom-right handle — controls width + height together) ──
+  function startCResize(e, cardId) {
     e.preventDefault(); e.stopPropagation()
-    const gridW = gridRef.current?.getBoundingClientRect().width || 1200
+    const gridW   = gridRef.current?.getBoundingClientRect().width || 1200
     const colUnit = (gridW + GRID_GAP) / 12
-    const card = layoutRef.current.find(c => c.id === cardId)
-    resizingRef.current = { side: 'h', id: cardId, startX: e.clientX, startW: card?.w || 6, colUnit }
+    const el      = e.currentTarget.closest('.dashCardWrap')
+    const card    = layoutRef.current.find(c => c.id === cardId)
+    resizingRef.current = {
+      id: cardId,
+      startX: e.clientX, startY: e.clientY,
+      startW: card?.w || 6,
+      startH: el?.offsetHeight || 300,
+      colUnit,
+    }
 
     function onMove(ev) {
       const r = resizingRef.current
-      if (!r || r.side !== 'h') return
+      if (!r) return
       const rawCols = r.startW + (ev.clientX - r.startX) / r.colUnit
-      const best = VALID_WIDTHS.reduce((a, b) =>
-        Math.abs(rawCols - a) <= Math.abs(rawCols - b) ? a : b
-      )
-      const val = { id: r.id, w: best }
+      const bestW   = VALID_WIDTHS.reduce((a, b) =>
+        Math.abs(rawCols - a) <= Math.abs(rawCols - b) ? a : b)
+      const newH    = Math.max(80, r.startH + (ev.clientY - r.startY))
+      const val     = { id: r.id, w: bestW, h: newH }
       liveResizeRef.current = val
       setLiveResize(val)
     }
@@ -507,49 +514,18 @@ export default function DashboardGrid() {
     function onUp() {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
-      document.body.classList.remove('h-resizing')
+      document.body.classList.remove('c-resizing')
       const live = liveResizeRef.current
-      if (live?.w != null) {
-        updateDashboardLayout(layoutRef.current.map(c => c.id === live.id ? { ...c, w: live.w } : c))
+      if (live) {
+        updateDashboardLayout(layoutRef.current.map(c =>
+          c.id === live.id ? { ...c, w: live.w, h: Math.round(live.h) } : c
+        ))
       }
       resizingRef.current = null; liveResizeRef.current = null
       setLiveResize(null)
     }
 
-    document.body.classList.add('h-resizing')
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-  }
-
-  // ── Vertical resize (bottom edge handle) ──
-  function startVResize(e, cardId) {
-    e.preventDefault(); e.stopPropagation()
-    const el = e.currentTarget.closest('.dashCardWrap')
-    const startH = el?.offsetHeight || 300
-    resizingRef.current = { side: 'v', id: cardId, startY: e.clientY, startH }
-
-    function onMove(ev) {
-      const r = resizingRef.current
-      if (!r || r.side !== 'v') return
-      const newH = Math.max(120, r.startH + (ev.clientY - r.startY))
-      const val = { id: r.id, h: newH }
-      liveResizeRef.current = val
-      setLiveResize(val)
-    }
-
-    function onUp() {
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-      document.body.classList.remove('v-resizing')
-      const live = liveResizeRef.current
-      if (live?.h != null) {
-        updateDashboardLayout(layoutRef.current.map(c => c.id === live.id ? { ...c, h: Math.round(live.h) } : c))
-      }
-      resizingRef.current = null; liveResizeRef.current = null
-      setLiveResize(null)
-    }
-
-    document.body.classList.add('v-resizing')
+    document.body.classList.add('c-resizing')
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
   }
@@ -596,7 +572,7 @@ export default function DashboardGrid() {
             <div
               key={card.id}
               className={`dashCardWrap w${cardW}${isDragging ? ' dash-dragging' : ''}${isDragOver && !isDragging ? ' dash-dragover' : ''}${isResizing ? ' dash-resizing' : ''}`}
-              style={cardH ? { minHeight: cardH } : undefined}
+              style={cardH ? { height: cardH } : undefined}
               draggable={editMode && !resizingRef.current}
               onDragStart={editMode ? e => handleDragStart(e, card.id) : undefined}
               onDragOver={editMode ? e => handleDragOver(e, card.id) : undefined}
@@ -611,14 +587,13 @@ export default function DashboardGrid() {
                   <button className="dashRemoveBtn" title="Remove card" onClick={() => removeCard(card.id)}>✕</button>
                 </div>
               )}
-              <div className={editMode ? 'dashCardBody' : ''} style={cardH ? { minHeight: cardH - (editMode ? 34 : 0) } : undefined}>
+              <div className={editMode ? 'dashCardBody' : ''} style={cardH ? { height: cardH - (editMode ? 34 : 0), overflow: 'hidden' } : undefined}>
                 <CardRenderer cardId={card.id} />
               </div>
               {editMode && (
                 <>
                   <div className="dashCardEditOverlay" />
-                  <div className="dashResizeHandleH" onMouseDown={e => startHResize(e, card.id)} title="Drag to resize width" />
-                  <div className="dashResizeHandleV" onMouseDown={e => startVResize(e, card.id)} title="Drag to resize height" />
+                  <div className="dashResizeHandleC" onMouseDown={e => startCResize(e, card.id)} title="Drag to resize" />
                 </>
               )}
             </div>

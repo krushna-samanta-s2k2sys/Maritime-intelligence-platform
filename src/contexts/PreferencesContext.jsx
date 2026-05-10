@@ -16,11 +16,13 @@ export function PreferencesProvider({ children }) {
   const [layoutOverrides, setLayoutOvr]   = useState(() => load('mip_layouts', {}))
   const [columnOverrides, setColumnOvr]   = useState(() => load('mip_columns', {}))
   const [attrFavsOvr,     setAttrFavsOvr] = useState(() => load('mip_attr_favs', {}))
+  const [filterOverrides, setFilterOvr]   = useState(() => load('mip_filters', {}))
 
   const persona = PERSONAS[personaId] || PERSONAS[DEFAULT_PERSONA_ID]
 
   const dashboardLayout = layoutOverrides[personaId] ?? persona.dashboardCards
   const vesselColumns   = columnOverrides[personaId]  ?? persona.vesselColumns
+  const vesselFilters   = filterOverrides[personaId]  ?? []
   const attrFavorites   = new Set(attrFavsOvr[personaId] ?? [])
 
   function switchPersona(id) {
@@ -54,6 +56,19 @@ export function PreferencesProvider({ children }) {
     save('mip_columns', ovr)
   }
 
+  function updateVesselFilters(filters) {
+    const ovr = { ...filterOverrides, [personaId]: filters }
+    setFilterOvr(ovr)
+    save('mip_filters', ovr)
+  }
+
+  function resetVesselFilters() {
+    const ovr = { ...filterOverrides }
+    delete ovr[personaId]
+    setFilterOvr(ovr)
+    save('mip_filters', ovr)
+  }
+
   function toggleAttrFavorite(nodeId) {
     const cur = new Set(attrFavsOvr[personaId] ?? [])
     cur.has(nodeId) ? cur.delete(nodeId) : cur.add(nodeId)
@@ -67,6 +82,7 @@ export function PreferencesProvider({ children }) {
       personaId, persona, switchPersona,
       dashboardLayout, updateDashboardLayout, resetDashboardLayout,
       vesselColumns, updateVesselColumns, resetVesselColumns,
+      vesselFilters, updateVesselFilters, resetVesselFilters,
       attrFavorites, toggleAttrFavorite,
     }}>
       {children}
