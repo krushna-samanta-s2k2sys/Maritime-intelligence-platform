@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { getFieldDef, COUNTRIES } from '../../data/fieldTypes'
+import { getFieldDef, COUNTRIES, simulateVendorDiff } from '../../data/fieldTypes'
 import { dRand } from '../../data/entities'
 
 const TODAY = '2024-01-30'
@@ -309,7 +309,9 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
       const hasCoverage = dRand('cov' + v.key + seed) < v.coverage
       if (!hasCoverage) return { ...v, val: '—', hasData: false, matches: false, score: 0, asOf: '' }
       const conflictR = dRand('cfl' + v.key + seed)
-      const val = conflictR < 0.12 ? '(differs)' : curVal
+      const val = conflictR < 0.12
+        ? simulateVendorDiff(curVal, leaf.id, v.key + seed, dRand)
+        : curVal
       const matches = val === curVal
       const score = matches
         ? 0.90 + dRand('sc' + v.key + seed) * 0.10

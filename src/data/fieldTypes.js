@@ -367,3 +367,66 @@ export function getFieldDef(leafId) {
 
   return text
 }
+
+// ── Simulate a plausible vendor-reported value that differs from master ─────
+// dRandFn is passed in to avoid a circular import with entities.js
+export function simulateVendorDiff(curVal, leafId, seed, dRandFn) {
+  if (!curVal || curVal === '—') return curVal
+  const def = getFieldDef(leafId)
+  const r = dRandFn('d' + seed)
+
+  switch (def.type) {
+    case 'select': {
+      const others = (def.options || []).filter(o => o !== curVal)
+      if (!others.length) return curVal
+      return others[Math.floor(r * others.length)]
+    }
+    case 'boolean': {
+      if (curVal === 'Yes') return 'No'
+      if (curVal === 'No')  return 'Yes'
+      return curVal
+    }
+    case 'number': {
+      const match = String(curVal).match(/^[\d,]+(\.\d+)?/)
+      if (!match) return curVal
+      const n = parseFloat(match[0].replace(/,/g, ''))
+      if (isNaN(n) || n === 0) return curVal
+      const factor = 0.88 + r * 0.24
+      const newN = Math.round(n * factor * 10) / 10
+      return String(curVal).replace(match[0], String(newN))
+    }
+    case 'country': {
+      const others = COUNTRIES.filter(c => c !== curVal)
+      return others[Math.floor(r * others.length)] || curVal
+    }
+    case 'date':
+    case 'datetime': {
+      const parts = String(curVal).split('-')
+      if (parts.length < 3) return curVal
+      const [y, m, d] = parts.map(Number)
+      if (!y) return curVal
+      const offset = Math.floor(r * 11) - 5
+      let nm = m + offset, ny = y
+      while (nm > 12) { nm -= 12; ny++ }
+      while (nm < 1)  { nm += 12; ny-- }
+      return `${ny}-${String(nm).padStart(2,'0')}-${String(d || 15).padStart(2,'0')}`
+    }
+    case 'multivalue': {
+      const arr = Array.isArray(curVal) ? curVal : String(curVal).split(',').map(s => s.trim())
+      const others = (def.options || []).filter(o => !arr.includes(o))
+      if (!others.length) return curVal
+      const pick = others[Math.floor(r * others.length)]
+      return arr.length ? [...arr.slice(0, -1), pick].join(', ') : pick
+    }
+    default: {
+      const suffixes = [' Ltd', ' Inc', ' Corp', ' Group', ' International', ' S.A.', ' GmbH', ' B.V.']
+      const s = String(curVal)
+      const compMatch = s.match(/\b(ltd|inc|corp|group|s\.a\.|gmbh|b\.v\.)\b/i)
+      if (compMatch) {
+        const alt = suffixes[Math.floor(r * suffixes.length)].trim()
+        return s.replace(compMatch[0], alt)
+      }
+      return s + suffixes[Math.floor(r * suffixes.length)]
+    }
+  }
+}

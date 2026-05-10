@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ATTRIBUTE_TREE } from '../../data/attributeTree'
 import { getAttrValue, getAttrValueAtDate } from '../../data/attrValueMap'
 import { dRand, buildVendorList } from '../../data/entities'
+import { simulateVendorDiff } from '../../data/fieldTypes'
 
 function findNode(nodes, id) {
   for (const n of nodes) {
@@ -95,10 +96,10 @@ function CompareTable({ vessel, leaves, activeNode, editMode, selLeafId, onSelec
                   let value = masterVal
                   let cellCls = 'match', valCls = 'matchV', score = 1.0
                   if (conflictR < 0.04) {
-                    value = '(vendor differs)'
+                    value = simulateVendorDiff(masterVal, leaf.id, v.key + seed, dRand)
                     cellCls = 'diff'; valCls = 'diffV'; score = 0.62
                   } else if (conflictR < 0.12) {
-                    value = masterVal + (masterVal.match(/[0-9]/) ? ' *' : '')
+                    value = simulateVendorDiff(masterVal, leaf.id, 'mn' + v.key + seed, dRand)
                     cellCls = 'diff'; valCls = 'diffV'; score = 0.87
                   }
                   const barColor = score >= 0.95 ? '#34a853' : score >= 0.75 ? '#f59e0b' : '#d93025'
