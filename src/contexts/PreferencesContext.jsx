@@ -15,11 +15,13 @@ export function PreferencesProvider({ children }) {
   const [personaId, setPersonaId]         = useState(() => load('mip_persona', DEFAULT_PERSONA_ID))
   const [layoutOverrides, setLayoutOvr]   = useState(() => load('mip_layouts', {}))
   const [columnOverrides, setColumnOvr]   = useState(() => load('mip_columns', {}))
+  const [attrFavsOvr,     setAttrFavsOvr] = useState(() => load('mip_attr_favs', {}))
 
   const persona = PERSONAS[personaId] || PERSONAS[DEFAULT_PERSONA_ID]
 
   const dashboardLayout = layoutOverrides[personaId] ?? persona.dashboardCards
   const vesselColumns   = columnOverrides[personaId]  ?? persona.vesselColumns
+  const attrFavorites   = new Set(attrFavsOvr[personaId] ?? [])
 
   function switchPersona(id) {
     setPersonaId(id)
@@ -52,11 +54,20 @@ export function PreferencesProvider({ children }) {
     save('mip_columns', ovr)
   }
 
+  function toggleAttrFavorite(nodeId) {
+    const cur = new Set(attrFavsOvr[personaId] ?? [])
+    cur.has(nodeId) ? cur.delete(nodeId) : cur.add(nodeId)
+    const ovr = { ...attrFavsOvr, [personaId]: [...cur] }
+    setAttrFavsOvr(ovr)
+    save('mip_attr_favs', ovr)
+  }
+
   return (
     <Ctx.Provider value={{
       personaId, persona, switchPersona,
       dashboardLayout, updateDashboardLayout, resetDashboardLayout,
       vesselColumns, updateVesselColumns, resetVesselColumns,
+      attrFavorites, toggleAttrFavorite,
     }}>
       {children}
     </Ctx.Provider>

@@ -13,7 +13,7 @@ export function buildTimeline(v) {
   if (v.st === 'Detained')  evts.push({date:(yr+10)+'-08-20',label:'PSC Detention',type:'inspect',icon:'🔍',color:'#c8102e'})
   if (yr < 2014)            evts.push({date:(yr+10)+'-07-01', label:'Drydock #2',  type:'maint',  icon:'🔧',color:'#b45309'})
   if (yr < 2010)            evts.push({date:(yr+14)+'-05-20',label:'Owner Change', type:'owner',  icon:'🤝',color:'#6200ea'})
-  evts.push({date:'2024-01-30',label:'Current State',type:'current',icon:'📍',color:'#137333'})
+  evts.push({date:'2024-01-30',label:'Latest',type:'current',icon:'📍',color:'#137333'})
   evts.sort((a, b) => a.date.localeCompare(b.date))
   return evts
 }
@@ -134,23 +134,64 @@ export function getChangedFieldCount(v, key, ds) {
   return n
 }
 
-export function generateHistory(lbl, vessel, curEntity) {
-  const base = getEntityFields(vessel, curEntity)
-  const fld = base.find(f => f[0] === lbl)
-  const val = fld ? fld[1] : '—'
-  const src = fld ? fld[2] : 'IHS Fairplay'
+const ALL_ENTITY_KEYS = [
+  'imo','flag','ownership','class','certs','dimensions',
+  'construction','propulsion','cargo','safety','ais','finance','portcalls','inspections',
+]
+
+export function generateHistory(lbl, vessel, preferredEntityKey, fallbackVal) {
   const yr = vessel ? vessel.yr : 2010
+
+  if (preferredEntityKey) {
+    // Build real history by sampling at every lifecycle milestone + vessel birth
+    const evts = buildTimeline(vessel)
+    const checkDates = ['2024-01-30', ...evts.map(e => e.date), yr + '-01-01']
+      .filter((d, i, a) => a.indexOf(d) === i)
+      .sort((a, b) => b.localeCompare(a)) // newest → oldest
+
+    const rows = []
+    let segVal = null, segSrc = 'IHS Fairplay'
+
+    for (let i = 0; i < checkDates.length; i++) {
+      const d = checkDates[i]
+      const fields = getEntityFieldsAtDate(vessel, preferredEntityKey, d)
+      const fld = fields?.find(f => f[0] === lbl)
+      if (!fld) continue
+      const v = fld[1], s = fld[2]
+
+      if (segVal === null) {
+        // First value found — start the current-era segment
+        segVal = v; segSrc = s
+        rows.push({ val: v, src: s, from: d, to: null })
+      } else if (v !== segVal) {
+        // Value changed: the running segment started at the previous date we saw this value
+        rows[rows.length - 1] = { ...rows[rows.length - 1], from: checkDates[i - 1] }
+        segVal = v; segSrc = s
+        rows.push({ val: v, src: s, from: d, to: checkDates[i - 1] })
+      }
+      // Same value → extend the current segment back in time (handled at end)
+    }
+
+    if (rows.length > 0) {
+      // Oldest segment extends back to the earliest date we checked
+      rows[rows.length - 1] = { ...rows[rows.length - 1], from: checkDates[checkDates.length - 1] }
+      return rows
+    }
+  }
+
+  // Fallback for unmapped fields: synthetic history using the raw current value
+  const val = (fallbackVal && fallbackVal !== '—') ? fallbackVal : '—'
+  const src = 'IHS Fairplay'
   let prevVal = val
-  if (val && val.match(/^[\d,]+/) && val !== '—') {
-    const num = parseFloat(val.replace(/[,]/g,''))
-    prevVal = !isNaN(num)
-      ? (num * 0.98).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + val.replace(/^[\d,.]+/,'')
-      : val
+  if (val !== '—' && String(val).match(/^[\d,]+/)) {
+    const num = parseFloat(String(val).replace(/,/g, ''))
+    if (!isNaN(num))
+      prevVal = (num * 0.98).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + String(val).replace(/^[\d,.]+/, '')
   }
   return [
-    { val,      src,            from:'2024-01-15', to:null },
-    { val,      src,            from:'2022-09-01', to:'2024-01-15' },
-    { val:prevVal, src:'IHS Fairplay', from:(yr+5)+'-03-01', to:'2022-09-01' },
-    { val:'—',  src:'IHS Fairplay', from:yr+'-01-01', to:(yr+5)+'-03-01' }
+    { val,         src,             from: '2024-01-15',      to: null },
+    { val,         src,             from: '2022-09-01',      to: '2024-01-15' },
+    { val: prevVal, src: 'IHS Fairplay', from: (yr + 5) + '-03-01', to: '2022-09-01' },
+    { val: '—',    src: 'IHS Fairplay', from: yr + '-01-01',        to: (yr + 5) + '-03-01' },
   ]
 }

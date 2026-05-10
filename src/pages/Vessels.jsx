@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { generateHistory } from '../data/vesselTimeline'
+import { getAttrValue, LEAF_TEMPORAL_MAP } from '../data/attrValueMap'
 import { useTemporalDate } from '../hooks/useTemporalDate'
-import { useBiTemporalFields } from '../hooks/useBiTemporalFields'
 import BiTemporalTimeline from '../components/vessels/BiTemporalTimeline'
-import EntitySidebar from '../components/vessels/EntitySidebar'
-import EntityContent from '../components/vessels/EntityContent'
+import AttrTreeSidebar from '../components/vessels/AttrTreeSidebar'
+import AttrContentPanel from '../components/vessels/AttrContentPanel'
+import FieldEditPanel from '../components/vessels/FieldEditPanel'
 import FilterBuilder from '../components/vessels/FilterBuilder'
 import ColumnPickerModal from '../components/vessels/ColumnPickerModal'
 import { usePreferences } from '../contexts/PreferencesContext'
@@ -48,7 +49,7 @@ function Src({s}) { const cls=SRC_CLS[s]||'sIHS'; const lbl=s&&s.length>8?s.spli
 export default function Vessels() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { vesselColumns } = usePreferences()
+  const { vesselColumns, attrFavorites, toggleAttrFavorite, persona } = usePreferences()
 
   // Navigation: ?id=N → detail view, no params → list
   const detailId = searchParams.get('id')
@@ -57,15 +58,15 @@ export default function Vessels() {
   const [search,        setSearch]        = useState('')
   const [activeFilters, setActiveFilters] = useState([])   // [{fieldId, type, values|query|min/max}]
   const [showColPicker, setShowColPicker] = useState(false)
-  const [entity,        setEntity]        = useState('imo')
-  const [selField,      setSelField]      = useState(null)
+  const [activeNode,    setActiveNode]    = useState('general')
+  const [selLeafId,     setSelLeafId]     = useState(null)
+  const [selLeafLabel,  setSelLeafLabel]  = useState(null)
   const [editMode,      setEditMode]      = useState(false)
-  const [viewMode,      setViewMode]      = useState('fields')
+  const [showTimeline,  setShowTimeline]  = useState(true)
   const [sortKey,       setSortKey]       = useState('name')
   const [sortDir,       setSortDir]       = useState('asc')
 
   const { curDate, setCurDate, dateToPct, jumpToMilestone, events, TL_START_YR, TL_END_YR } = useTemporalDate(vessel)
-  const { fields } = useBiTemporalFields(vessel, entity, curDate)
 
   // Smart search + filter builder filters combined
   const filtered = useMemo(() => {
@@ -103,7 +104,8 @@ export default function Vessels() {
   [vesselColumns])
 
   function openDetail(id) {
-    setEntity('imo'); setSelField(null); setEditMode(false); setViewMode('fields')
+    setActiveNode('general'); setSelLeafId(null); setSelLeafLabel(null)
+    setEditMode(false); setShowTimeline(false)
     setSearchParams({ id: String(id) })
   }
 
@@ -112,66 +114,104 @@ export default function Vessels() {
   }
 
   if (vessel) {
-    const selFieldArr = selField !== null && fields[selField] ? fields[selField] : null
-    const histRows = selFieldArr ? generateHistory(selFieldArr[0], vessel, entity) : []
+    // Resolve exact entity key + label for mapped leaves; fall back to tree label for others
+    const leafMeta     = selLeafId ? LEAF_TEMPORAL_MAP[selLeafId] : null
+    const histLabel    = leafMeta ? leafMeta.label    : selLeafLabel
+    const histEntity   = leafMeta ? leafMeta.entity   : null
+    const histFallback = selLeafId ? getAttrValue(vessel, selLeafId) : null
+    const histRows = selLeafLabel
+      ? generateHistory(histLabel, vessel, histEntity, histFallback)
+      : []
+    const histOpen = selLeafId !== null
 
     return (
       <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+
+        {/* ── Compact vessel bar ── */}
         <div className="dHead">
-          <button className="backBtn" onClick={closeDetail}>← Back to Fleet</button>
-          <div style={{width:1,height:26,background:'rgba(255,255,255,.15)'}}/>
-          <div><div className="vNm">{vessel.flag} {vessel.nm}</div><div className="vMeta">IMO {vessel.imo} · MMSI {vessel.mmsi} · {vessel.fn} · {vessel.ty}</div></div>
+          <button className="backBtn" onClick={closeDetail}>← Fleet</button>
+          <div className="dHeadDiv"/>
+          <span className="vdHeadFlag">{vessel.flag}</span>
+          <span className="vNm">{vessel.nm}</span>
+          <span className="vdHdrMono">IMO {vessel.imo}</span>
+          <span className="tag tN" style={{fontSize:9,flexShrink:0}}>{vessel.ty}</span>
+          <span className={`stBadge ${STCLS[vessel.st]||'stI'}`} style={{flexShrink:0}}><span className="stDot"/>{vessel.st}</span>
+          <div className="dHeadDiv"/>
+          <span className="vdHdrKpi">DWT<strong>{vessel.dwt}</strong></span>
+          <span className="vdHdrKpi">GT<strong>{vessel.gt}</strong></span>
+          <span className="vdHdrKpi">LOA<strong>{vessel.loa}</strong></span>
+          <span className="vdHdrKpi">Built<strong>{vessel.yr}</strong></span>
           <div className="dActs">
-            <button className="btn btnT btnSm" onClick={() => setEditMode(e=>!e)}>{editMode ? '✕ Cancel' : '✎ Edit'}</button>
+            <button
+              className={`btn btnSm${showTimeline ? ' btnP' : ' btnT'}`}
+              onClick={() => setShowTimeline(t => !t)}
+              title="Toggle bi-temporal timeline"
+            >⏱ Timeline</button>
+            <button className="btn btnT btnSm" onClick={() => setEditMode(e=>!e)}>
+              {editMode ? '✕ Cancel' : '✎ Edit'}
+            </button>
             <button className="btn btnT btnSm">↗ Export</button>
             <button className="btn btnT btnSm" onClick={() => navigate('/movements')}>🗺 Track</button>
-            <button className="btn btnT btnSm" onClick={() => navigate('/psc')}>🔍 PSC History</button>
+            <button className="btn btnT btnSm" onClick={() => navigate('/psc')}>🔍 PSC</button>
           </div>
         </div>
 
-        {editMode && <div className="eBan">⚠ Edit mode active — all changes will be versioned in bi-temporal audit log (valid_from / valid_to / transaction_time)</div>}
+        {editMode && <div className="eBan">⚠ Edit mode — all changes versioned in bi-temporal audit log (valid_from / valid_to / transaction_time)</div>}
 
-        <div className="vCard">
-          <div style={{fontSize:22}}>{vessel.flag}</div>
-          <div><div className="vCardName">{vessel.nm}</div><div className="vCardMeta">IMO {vessel.imo} · {vessel.mmsi} · {vessel.cs}</div></div>
-          <div className="vCardKPIs">
-            {[['DWT',vessel.dwt],['GT',vessel.gt],['LOA',vessel.loa],['Built',vessel.yr],['Flag',vessel.fn],['Class',vessel.cls]].map(([l,v])=>(
-              <div className="kpiBox" key={l}><div className="kpiBoxV">{v}</div><div className="kpiBoxL">{l}</div></div>
-            ))}
-            <span className={`stBadge ${STCLS[vessel.st]||'stI'}`}><span className="stDot"/>{vessel.st}</span>
+        {/* ── Collapsible bi-temporal timeline ── */}
+        {showTimeline && (
+          <BiTemporalTimeline
+            vessel={vessel} curDate={curDate} onDateChange={setCurDate}
+            dateToPct={dateToPct} jumpToMilestone={jumpToMilestone}
+            events={events} TL_START_YR={TL_START_YR} TL_END_YR={TL_END_YR}
+          />
+        )}
+
+        {/* ── 3-panel body: tree | attributes | history ── */}
+        <div className={`vdBody${histOpen ? ' histOpen' : ''}`}>
+
+          {/* Left: full attribute tree */}
+          <AttrTreeSidebar
+            key={vessel.id}
+            vessel={vessel}
+            curDate={curDate}
+            activeNode={activeNode}
+            favorites={attrFavorites}
+            onToggleFavorite={toggleAttrFavorite}
+            personaAttrSections={persona.attrSections}
+            onSelectNode={id => { setActiveNode(id); setSelLeafId(null); setSelLeafLabel(null) }}
+          />
+
+          {/* Centre: all attributes for selected node */}
+          <AttrContentPanel
+            vessel={vessel}
+            activeNode={activeNode}
+            editMode={editMode}
+            selLeafId={selLeafId}
+            curDate={curDate}
+            onSelectLeaf={(id, label) => { setSelLeafId(id); setSelLeafLabel(label) }}
+          />
+
+          {/* Right: field edit + history panel */}
+          <div className="vdHistPanel">
+            <FieldEditPanel
+              vessel={vessel}
+              leaf={selLeafId ? { id: selLeafId, label: selLeafLabel } : null}
+              editMode={editMode}
+              curDate={curDate}
+              histRows={histRows}
+              onClose={() => { setSelLeafId(null); setSelLeafLabel(null) }}
+              onJumpDate={setCurDate}
+            />
           </div>
         </div>
 
-        <BiTemporalTimeline vessel={vessel} curDate={curDate} onDateChange={setCurDate} dateToPct={dateToPct} jumpToMilestone={jumpToMilestone} events={events} TL_START_YR={TL_START_YR} TL_END_YR={TL_END_YR} />
-
-        <div style={{display:'grid',gridTemplateColumns:'200px 1fr 290px',flex:1,minHeight:0,overflow:'hidden'}}>
-          <EntitySidebar vessel={vessel} curDate={curDate} curEntity={entity} onSelectEntity={key => { setEntity(key); setSelField(null) }} />
-          <EntityContent vessel={vessel} curDate={curDate} curEntity={entity} editMode={editMode} viewMode={viewMode} onViewModeChange={setViewMode} selField={selField} onSelectField={setSelField} />
-          <div className="histPanel">
-            <div className="histHead">
-              <div className="histTitle">ATTRIBUTE HISTORY</div>
-              <div className="histAttr">{selFieldArr ? selFieldArr[0] : '— Select a field'}</div>
-            </div>
-            <div className="histList">
-              {selFieldArr ? histRows.map((h,i) => (
-                <div key={i} className={`histRow${i===0?' histCur':''}`}>
-                  <div className="histVal">{h.val}</div>
-                  <div className="histMeta"><Src s={h.src}/><span>valid {h.from} → {h.to||'Present'}</span></div>
-                </div>
-              )) : <div className="empty">Click any field to view bi-temporal change history</div>}
-            </div>
-            <div className="sqlBox">
-              <div className="sqlBoxHdr"><span className="sqlLabel">BigQuery · Bi-temporal</span></div>
-              {selFieldArr && (
-                <div style={{padding:'0 14px 8px',display:'block'}}>
-                  <pre style={{fontSize:9,fontFamily:"'IBM Plex Mono',monospace",color:'#98c379',lineHeight:1.6,margin:0}}>{`SELECT value, valid_from, valid_to,\n  transaction_time\nFROM \`sp_maritime.vessel_history\`\nWHERE imo = '${vessel.imo}'\n  AND attribute = '${selFieldArr[0]}'\nORDER BY transaction_time DESC`}</pre>
-                </div>
-              )}
-            </div>
+        {editMode && (
+          <div className="eActBar">
+            <button className="btn btnS" onClick={() => setEditMode(false)}>Cancel</button>
+            <button className="btn btnP" onClick={() => setEditMode(false)}>💾 Save Changes</button>
           </div>
-        </div>
-
-        {editMode && <div className="eActBar"><button className="btn btnS" onClick={() => setEditMode(false)}>Cancel</button><button className="btn btnP" onClick={() => setEditMode(false)}>💾 Save Changes</button></div>}
+        )}
       </div>
     )
   }

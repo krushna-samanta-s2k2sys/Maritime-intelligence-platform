@@ -70,7 +70,7 @@ export default function TopNav() {
           <button className="aiBtn">
             <span>✦</span> Ask AI
           </button>
-          <div style={{width:'1px',height:'22px',background:'rgba(255,255,255,.12)'}}></div>
+          <div className="navSep"></div>
 
           {/* User menu */}
           <div className="userWrap" ref={userRef}>

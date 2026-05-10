@@ -2,36 +2,43 @@ import SourceBadge from '../common/SourceBadge'
 
 export default function FieldsView({ fields, currentFields, editMode, selField, onSelectField }) {
   if (!fields || fields.length === 0) {
-    return <div className="empty">No fields available.</div>
+    return <div className="empty" style={{ padding: 32 }}>No fields available.</div>
   }
 
   return (
-    <div className="detGrid" style={{ padding: '4px 10px' }}>
+    <div className="detGrid2">
       {fields.map((f, i) => {
         const [lbl, val, src, desc] = f
         const isChanged = currentFields && currentFields[i] && currentFields[i][1] !== val
-        const isSel = selField === i
+        const isSel     = selField === i
+        const isEmpty   = !val || val === '—' || val === 'N/A'
 
         return (
           <div
             key={i}
-            className={'detField' + (isSel ? ' sel' : '') + (isChanged ? ' changed' : '')}
-            onClick={() => onSelectField(i, lbl)}
+            className={`detField2${isSel ? ' sel' : ''}${isChanged ? ' changed' : ''}`}
+            onClick={() => onSelectField(i)}
             title={desc || ''}
           >
-            <div className="fieldLbl">{lbl}{isChanged ? ' ▲' : ''}</div>
+            <div className="f2Lbl">{lbl}{isChanged ? ' ▲' : ''}</div>
+
             {editMode ? (
-              <input className="inp" defaultValue={val} style={{ fontSize: 12, padding: '4px 8px', marginTop: 3 }} />
+              <input
+                className="inp"
+                defaultValue={isEmpty ? '' : val}
+                style={{ fontSize: 12, padding: '4px 8px', marginTop: 4, width: '100%', boxSizing: 'border-box' }}
+              />
             ) : (
-              <div className="fieldVal mn">{val}</div>
+              <div className={`f2Val${isEmpty ? ' f2Empty' : ''}`}>{val || '—'}</div>
             )}
+
             {isChanged && !editMode && (
-              <div style={{ fontSize: 8, color: '#b45309', marginTop: 2 }}>
-                ▲ Current: {currentFields[i][1]}
-              </div>
+              <div className="f2Changed">▲ Now: {currentFields[i][1]}</div>
             )}
-            <div className="fieldSrc">
+
+            <div className="f2Foot">
               <SourceBadge src={src} />
+              {desc && <span className="f2Desc" title={desc}>ⓘ</span>}
             </div>
           </div>
         )

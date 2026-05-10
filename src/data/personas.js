@@ -2,6 +2,7 @@ export const PERSONAS = {
   'full-access': {
     id: 'full-access', name: 'Full Access', icon: '🔐', color: '#1558d6',
     description: 'Complete access to all maritime data and features',
+    attrSections: ['general','construction','machinery','ownership','classification','safety','cargo','compliance'],
     dashboardCards: [
       { id: 'kpi-row',         w: 12 },
       { id: 'live-map',        w: 8  },
@@ -17,6 +18,7 @@ export const PERSONAS = {
   'vessel-analyst': {
     id: 'vessel-analyst', name: 'Vessel Analyst', icon: '🚢', color: '#0094b3',
     description: 'Vessel registry, technical data and certification analyst',
+    attrSections: ['general','construction','machinery','classification','safety','ownership','cargo','compliance'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 3 },
       { id: 'kpi-active',      w: 3 },
@@ -32,6 +34,7 @@ export const PERSONAS = {
   'port-analyst': {
     id: 'port-analyst', name: 'Port Analyst', icon: '⚓', color: '#137333',
     description: 'Port operations and vessel arrival/departure analyst',
+    attrSections: ['general','cargo','construction','safety','machinery','classification','ownership','compliance'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 4 },
       { id: 'kpi-ports',       w: 4 },
@@ -45,6 +48,7 @@ export const PERSONAS = {
   'companies-analyst': {
     id: 'companies-analyst', name: 'Companies Analyst', icon: '🏢', color: '#ea580c',
     description: 'Company registry, ownership structures and corporate hierarchy',
+    attrSections: ['ownership','general','compliance','classification','safety','construction','machinery','cargo'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 3 },
       { id: 'kpi-companies',   w: 3 },
@@ -60,6 +64,7 @@ export const PERSONAS = {
   'registry-analyst': {
     id: 'registry-analyst', name: 'Vessel Registry', icon: '📋', color: '#6200ea',
     description: 'Vessel registration, flag state data and IMO identity',
+    attrSections: ['general','classification','safety','ownership','construction','machinery','cargo','compliance'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 4 },
       { id: 'kpi-active',      w: 4 },
@@ -73,6 +78,7 @@ export const PERSONAS = {
   'ownership-management': {
     id: 'ownership-management', name: 'Ownership Mgmt', icon: '🤝', color: '#c8102e',
     description: 'Beneficial ownership, management and P&I club tracking',
+    attrSections: ['ownership','compliance','general','classification','safety','construction','machinery','cargo'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 3 },
       { id: 'kpi-companies',   w: 3 },
@@ -87,6 +93,7 @@ export const PERSONAS = {
   'dimensions-analyst': {
     id: 'dimensions-analyst', name: 'Dimensions Analyst', icon: '📐', color: '#b45309',
     description: 'Physical dimensions, technical specifications and machinery',
+    attrSections: ['construction','machinery','general','classification','safety','ownership','cargo','compliance'],
     dashboardCards: [
       { id: 'kpi-fleet',       w: 4 },
       { id: 'kpi-active',      w: 4 },
@@ -100,6 +107,7 @@ export const PERSONAS = {
   'compliance-officer': {
     id: 'compliance-officer', name: 'Compliance Officer', icon: '🚨', color: '#c8102e',
     description: 'Sanctions screening, PSC compliance and risk monitoring',
+    attrSections: ['compliance','safety','classification','ownership','general','construction','machinery','cargo'],
     dashboardCards: [
       { id: 'kpi-sanctions',   w: 3 },
       { id: 'kpi-psc',         w: 3 },

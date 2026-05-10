@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>S&amp;P Maritime Intelligence Platform</title>
+    <script>
+      // Restore path encoded by 404.html redirect
+      (function(l){
+        if(l.search[1]==='p'&&l.search.slice(0,3)==='?p='){
+          var decoded=l.search.slice(1).split('&').map(function(s){return s.replace(/~and~/g,'&')});
+          window.history.replaceState(null,null,
+            l.pathname.slice(0,-1)+decoded[0].slice(2)+
+            (decoded[1]?'?'+decoded[1].replace(/^q=/,''):'')+l.hash);
+        }
+      }(window.location));
+    </script>
   </head>
   <body>
     <div id="root"></div>
