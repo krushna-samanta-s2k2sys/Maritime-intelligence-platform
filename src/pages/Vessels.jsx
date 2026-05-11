@@ -223,11 +223,14 @@ export default function Vessels() {
             {histOpen && (
               <>
                 <div className="vdHistResizeHandle" onMouseDown={startHistResize} title="Drag to resize" />
-                <button
-                  className="vdHistCollapseBtn"
-                  onClick={() => setHistPanelCollapsed(c => !c)}
-                  title={histPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-                >{histPanelCollapsed ? '‹' : '›'}</button>
+                <div className="vdHistHeader">
+                  <button
+                    className="vdHistCollapseBtn"
+                    onClick={() => setHistPanelCollapsed(c => !c)}
+                    title={histPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+                  >{histPanelCollapsed ? '‹' : '›'}</button>
+                  {!histPanelCollapsed && <span className="vdHistHeaderTitle">Field History</span>}
+                </div>
               </>
             )}
             {!histPanelCollapsed && (

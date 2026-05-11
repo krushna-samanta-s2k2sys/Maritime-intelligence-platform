@@ -109,7 +109,7 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
 
     if (hasCh) {
       const el = (
-        <div key={node.id} className={`atSbGroup${isFav ? ' atSbPinned' : ''}`}>
+        <div key={node.id} className={`atSbGroup${isFav ? ' atSbPinned' : ''}${isPersonaPri ? ' atSbPersonaPri' : ''}`}>
           <div
             className={`atSbHdr${depth === 0 ? ' atSbRoot' : ''}${isAct ? ' atSbActive' : ''}`}
             style={{ paddingLeft: 8 + depth * 12 }}
@@ -121,7 +121,7 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
               aria-label={isExp ? 'Collapse' : 'Expand'}
             >{isExp ? '▾' : '▸'}</button>
             <span className="atSbLabel">{node.label}</span>
-            {isPersonaPri && <span className="atSbRoleDot" title="Priority for your role" />}
+            {isPersonaPri && <span className="atSbRoleBadge" title="Priority for your role">For You</span>}
             {chg > 0 && <span className="detSbChg">+{chg}</span>}
             {depth === 0 && (
               <button
@@ -172,8 +172,9 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
       className="atSidebar"
       style={{ flex: `0 0 ${sbWidth}px`, width: sbWidth, minWidth: sbWidth }}
     >
-      {/* Header strip with collapse button */}
+      {/* Header strip */}
       <div className="atSbHeader">
+        <span className="atSbHeaderTitle">Navigation</span>
         <button
           className="atSbCollapseBtn"
           onClick={() => setCollapsed(true)}

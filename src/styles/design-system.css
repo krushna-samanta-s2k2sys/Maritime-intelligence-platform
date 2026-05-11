@@ -1032,10 +1032,16 @@ body.c-resizing{cursor:nwse-resize!important;user-select:none}
   cursor:ew-resize;z-index:20;transition:background .15s}
 .vdHistResizeHandle:hover,.vdHistResizeHandle:active{background:rgba(21,88,214,.2)}
 
+/* Right panel header strip */
+.vdHistHeader{display:flex;align-items:center;gap:8px;
+  padding:5px 8px;flex-shrink:0;
+  background:#1a3566;border-bottom:1px solid #0f2040;min-height:30px}
+.vdHistHeaderTitle{flex:1;font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:#a8c4f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 /* Collapse / expand button */
-.vdHistCollapseBtn{position:absolute;top:6px;left:6px;z-index:21;
-  width:20px;height:20px;border-radius:50%;border:1px solid var(--bd);
-  background:var(--bg2);color:var(--txt3);font-size:13px;line-height:1;
+.vdHistCollapseBtn{width:20px;height:20px;border-radius:50%;border:1px solid #2d4f88;
+  background:#243f6e;color:#a8c4f0;font-size:13px;line-height:1;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:all .12s;flex-shrink:0}
 .vdHistCollapseBtn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -1093,20 +1099,23 @@ body.c-resizing{cursor:nwse-resize!important;user-select:none}
 /* Scrollable content wrapper inside expanded sidebar */
 .atSbContent{flex:1;overflow-y:auto;min-height:0}
 
-/* Header strip containing the collapse button */
-.atSbHeader{display:flex;justify-content:flex-end;align-items:center;
-  padding:3px 6px;flex-shrink:0;border-bottom:1px solid var(--bg3);min-height:24px}
+/* Header strip — panel title + collapse button */
+.atSbHeader{display:flex;align-items:center;gap:6px;
+  padding:5px 8px;flex-shrink:0;
+  background:#1a3566;border-bottom:1px solid #0f2040;min-height:30px}
+.atSbHeaderTitle{flex:1;font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:#a8c4f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Collapse / expand buttons */
-.atSbCollapseBtn{width:20px;height:20px;border-radius:50%;border:1px solid var(--bd);
-  background:var(--bg2);color:var(--txt3);font-size:13px;line-height:1;
+.atSbCollapseBtn{width:20px;height:20px;border-radius:50%;border:1px solid #2d4f88;
+  background:#243f6e;color:#a8c4f0;font-size:13px;line-height:1;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:all .12s;flex-shrink:0}
 .atSbCollapseBtn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
-.atSbExpandBtn{width:100%;height:100%;border:none;background:none;cursor:pointer;
-  font-size:16px;color:var(--txt3);transition:color .12s;display:flex;
+.atSbExpandBtn{width:100%;height:100%;border:none;background:#1a3566;cursor:pointer;
+  font-size:16px;color:#a8c4f0;transition:color .12s;display:flex;
   align-items:center;justify-content:center}
-.atSbExpandBtn:hover{color:var(--blue)}
+.atSbExpandBtn:hover{color:#fff}
 
 /* Resize handle on right edge */
 .atSbResizeHandle{position:absolute;top:0;right:0;bottom:0;width:5px;
@@ -1115,21 +1124,27 @@ body.c-resizing{cursor:nwse-resize!important;user-select:none}
 body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 
 .atSbGroup{}
+/* Sub-group / leaf rows */
 .atSbHdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px 0;
   cursor:pointer;font-size:11px;font-weight:600;color:var(--txt2);
   user-select:none;transition:background .1s;min-width:0}
 .atSbHdr:hover{background:var(--bg2)}
-.atSbRoot{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-  color:var(--txt3);background:var(--bg2);border-bottom:1px solid var(--bg3);
-  border-top:1px solid var(--bg3);padding:5px 8px 5px 0;margin-top:1px}
+
+/* Root section headers — prominent navy strip */
+.atSbRoot{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:#1a3566;background:#dce8fb;
+  border-left:3px solid #2563eb;
+  border-bottom:1px solid #b9d0f5;border-top:1px solid #b9d0f5;
+  padding:7px 8px 7px 5px;margin-top:2px}
 .atSbRoot:first-child{margin-top:0;border-top:none}
+
 .atSbActive{background:#e8f0fe !important;color:var(--blue) !important}
 .atSbArrowBtn{background:none;border:none;cursor:pointer;color:inherit;font-size:9px;
   padding:0;line-height:1;flex-shrink:0;width:16px;text-align:center;font-family:inherit}
-.atSbLabel{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  font-size:11px}
-.atSbHdr.atSbRoot .atSbLabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.atSbLeaf{padding:3px 8px 3px 0;cursor:pointer;display:flex;align-items:center;
+.atSbLabel{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.atSbHdr.atSbRoot .atSbLabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.atSbLeaf{padding:4px 8px 4px 0;cursor:pointer;display:flex;align-items:center;
   transition:background .1s;min-width:0}
 .atSbLeaf:hover{background:var(--bg2)}
 .atSbLeaf.atSbActive{background:#e8f0fe !important;color:var(--blue) !important}
@@ -1153,38 +1168,56 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
   padding:1px 4px;border-radius:3px;font-weight:600}
 
 /* ── PINNED / PERSONA-PRIORITY SIDEBAR ─────────────────── */
-/* Pinned (starred) section gets a subtle left accent */
-.atSbGroup.atSbPinned > .atSbHdr {
-  border-left:2px solid #f59e0b;
-  padding-left:6px !important;
+
+/* Pinned (starred) root section — amber warm background */
+.atSbGroup.atSbPinned > .atSbHdr.atSbRoot {
+  background:#fff3cd;
+  border-left:3px solid #f59e0b;
+  color:#854d0e;
+  border-bottom-color:#fde68a;border-top-color:#fde68a;
+}
+.atSbGroup.atSbPinned > .atSbHdr.atSbRoot .atSbArrowBtn { color:#a16207; }
+
+/* Persona-priority root section — mint green background */
+.atSbGroup.atSbPersonaPri > .atSbHdr.atSbRoot {
+  background:#d1fae5;
+  border-left:3px solid #10b981;
+  color:#064e3b;
+  border-bottom-color:#a7f3d0;border-top-color:#a7f3d0;
+}
+.atSbGroup.atSbPersonaPri > .atSbHdr.atSbRoot .atSbArrowBtn { color:#065f46; }
+
+/* "For You" role badge */
+.atSbRoleBadge {
+  font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+  color:#065f46;background:#a7f3d0;border:1px solid #6ee7b7;
+  padding:1px 5px;border-radius:8px;flex-shrink:0;white-space:nowrap;
 }
 
 /* Star toggle button — visible only on row hover, always visible when starred */
 .atSbStarBtn {
   background:none;border:none;cursor:pointer;
-  font-size:11px;line-height:1;padding:0 2px;margin-left:auto;flex-shrink:0;
+  font-size:12px;line-height:1;padding:0 2px;margin-left:auto;flex-shrink:0;
   color:var(--txt3);opacity:0;transition:opacity .15s,color .15s;
 }
 .atSbHdr:hover .atSbStarBtn { opacity:1; }
 .atSbStarBtn.starred { opacity:1; color:#f59e0b; }
 .atSbStarBtn:hover { color:#f59e0b !important; opacity:1; }
 
-/* Small dot indicating top-3 priority for current persona role */
-.atSbRoleDot {
-  width:5px;height:5px;border-radius:50%;background:var(--blue);
-  opacity:.45;flex-shrink:0;margin-left:4px;
-}
-
 /* Section dividers */
 .atSbSep {
-  display:flex;align-items:center;gap:6px;
-  padding:6px 8px 3px;
+  display:flex;align-items:center;gap:8px;
+  padding:5px 10px 4px;background:var(--bg2);
+  border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);
 }
-.atSbSepTop { padding-top:4px; }
+.atSbSepTop {
+  background:#fff8e1;border-top:none;border-bottom:1px solid #fde68a;padding:5px 10px 4px;
+}
 .atSbSepLbl {
   font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
   color:var(--txt3);white-space:nowrap;
 }
+.atSbSepTop .atSbSepLbl { color:#a16207; }
 
 /* ── ATTRIBUTE PROPERTY LIST (Fields view) ──────────────── */
 .afSection { border-bottom:1px solid var(--bg3) }
@@ -1285,7 +1318,7 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 /* ══════════════════════════════════════════════════════════
    FIELD EDIT PANEL  (.ep)
    ══════════════════════════════════════════════════════════ */
-.ep{display:flex;flex-direction:column;height:100%;overflow:hidden;background:#fff;padding-left:5px}
+.ep{display:flex;flex-direction:column;height:100%;overflow:hidden;background:#fff}
 
 /* Header */
 .epHdr{padding:8px 10px 8px 12px;border-bottom:1px solid var(--bd);flex-shrink:0;
