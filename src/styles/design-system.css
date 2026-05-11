@@ -1543,3 +1543,54 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 .epEmptyIcon{font-size:28px;opacity:.3}
 .epEmptyTitle{font-size:11px;font-weight:700;color:var(--txt2)}
 .epEmptySub{font-size:10px;color:var(--txt3);line-height:1.5;max-width:200px}
+
+/* ══════════════════════════════════════════════════════════
+   ATTRIBUTE PIN BUTTON
+   ══════════════════════════════════════════════════════════ */
+.afPinBtn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--txt3);
+  opacity:0;padding:0 3px;flex-shrink:0;line-height:1;transition:opacity .1s,color .1s;
+  margin-left:2px;vertical-align:middle}
+.afRow:hover .afPinBtn{opacity:1}
+.afPinBtn.afPinBtnOn{opacity:1;color:#f59e0b}
+.afPinBtn:hover{color:#f59e0b;opacity:1}
+
+/* Pinned section banner */
+.afPinnedSection{border-bottom:2px solid #fef3c7;margin-bottom:0}
+.afPinnedHdr{display:flex;align-items:center;gap:6px;padding:5px 12px;
+  background:#fffbeb;border-left:3px solid #f59e0b;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#92400e}
+.afPinnedHdrIcon{font-size:11px;color:#f59e0b}
+.afPinnedHdrLabel{flex:1}
+.afPinnedHdrCount{font-size:9px;font-weight:400;color:#b45309;
+  background:#fef3c7;border-radius:8px;padding:1px 6px}
+.afPinnedClearBtn{background:none;border:1px solid #fcd28a;border-radius:3px;
+  cursor:pointer;font-size:9px;color:#b45309;padding:1px 6px;
+  font-family:inherit;transition:background .1s}
+.afPinnedClearBtn:hover{background:#fef3c7}
+
+/* ══════════════════════════════════════════════════════════
+   FILE UPLOAD ZONE  (used in FieldEditPanel)
+   ══════════════════════════════════════════════════════════ */
+.epUploadZone{border:2px dashed var(--bd2);border-radius:6px;padding:14px 12px;
+  text-align:center;cursor:pointer;background:var(--bg2);transition:all .15s;
+  display:flex;flex-direction:column;align-items:center;gap:3px}
+.epUploadZone:hover{border-color:var(--blue);background:#f0f7ff}
+.epUploadDrag{border-color:var(--blue);background:#e8f0fe;border-style:solid}
+.epUploadIcon{font-size:18px;opacity:.5}
+.epUploadText{font-size:11px;font-weight:600;color:var(--txt2)}
+.epUploadSub{font-size:9px;color:var(--txt3)}
+
+.epUploadList{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.epUploadFile{display:flex;align-items:center;gap:7px;padding:5px 8px;
+  background:var(--bg2);border:1px solid var(--bd);border-radius:4px;min-width:0}
+.epUploadFileIcon{font-size:14px;flex-shrink:0}
+.epUploadFileInfo{flex:1;min-width:0}
+.epUploadFileName{font-size:10px;font-weight:600;color:var(--txt);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.epUploadFileMeta{display:flex;gap:6px;font-size:9px;color:var(--txt3);margin-top:1px;
+  overflow:hidden}
+.epUploadBucket{font-family:monospace;color:var(--blue);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.epUploadFileRemove{background:none;border:none;cursor:pointer;color:var(--txt3);
+  font-size:11px;flex-shrink:0;padding:0 2px;line-height:1}
+.epUploadFileRemove:hover{color:var(--red)}

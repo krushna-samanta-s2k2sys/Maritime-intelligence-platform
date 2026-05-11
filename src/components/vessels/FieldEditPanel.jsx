@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { getFieldDef, COUNTRIES, simulateVendorDiff } from '../../data/fieldTypes'
 import { dRand } from '../../data/entities'
 
@@ -9,9 +9,73 @@ function Src({ s }) {
   return <span className={`src ${SRC_CLS[s] || 'sIHS'}`} style={{ fontSize: 8 }}>{s}</span>
 }
 
+// ── File upload zone ─────────────────────────────────────────────────────────
+function FileUploadZone({ files, setFiles }) {
+  const [drag, setDrag] = useState(false)
+  const inputRef = useRef(null)
+
+  function handleFiles(fileList) {
+    const year = new Date().getFullYear()
+    const arr = Array.from(fileList).map(f => {
+      const ts = Date.now()
+      const icon = f.type.startsWith('image/') ? '🖼' : '📄'
+      return {
+        name: f.name,
+        size: f.size,
+        type: f.type,
+        icon,
+        bucket: `s3://maritime-data-assets/edits/${year}/${ts}-${f.name}`,
+      }
+    })
+    setFiles(prev => [...prev, ...arr])
+  }
+
+  return (
+    <div>
+      <div
+        className={`epUploadZone${drag ? ' epUploadDrag' : ''}`}
+        onDragOver={e => { e.preventDefault(); setDrag(true) }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={e => { e.preventDefault(); setDrag(false); handleFiles(e.dataTransfer.files) }}
+        onClick={() => inputRef.current?.click()}
+      >
+        <span className="epUploadIcon">📎</span>
+        <span className="epUploadText">Drop files or click to upload</span>
+        <span className="epUploadSub">Images, PDF, CSV, Excel, Word</span>
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          style={{ display: 'none' }}
+          accept="image/*,.pdf,.csv,.xlsx,.xls,.doc,.docx"
+          onChange={e => { handleFiles(e.target.files); e.target.value = '' }}
+        />
+      </div>
+      {files.length > 0 && (
+        <div className="epUploadList">
+          {files.map((f, i) => (
+            <div key={i} className="epUploadFile">
+              <span className="epUploadFileIcon">{f.icon}</span>
+              <div className="epUploadFileInfo">
+                <span className="epUploadFileName">{f.name}</span>
+                <span className="epUploadFileMeta">{(f.size / 1024).toFixed(1)} KB</span>
+                <span className="epUploadBucket">{f.bucket}</span>
+              </div>
+              <button
+                className="epUploadFileRemove"
+                type="button"
+                onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))}
+              >✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Multi-value tag input ────────────────────────────────────────────────────
 function MultiValueInput({ options, value, onChange }) {
-  // value is an array of strings
   const selected = Array.isArray(value) ? value : []
   const [search, setSearch] = useState('')
 
@@ -276,6 +340,10 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
   const [saved, setSaved]         = useState(false)
   const [pickedVendor, setPickedVendor] = useState(null)
 
+  // Reason + file upload shared across edit tabs
+  const [reason, setReason]             = useState('')
+  const [uploadedFiles, setUploadedFiles] = useState([])
+
   const def = leaf ? getFieldDef(leaf.id) : { type: 'text' }
 
   // Reset state when the leaf changes or edit mode toggles
@@ -285,6 +353,7 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
     setCorrFrom(''); setCorrTo(''); setCorrVal(emptyVal(def)); setCorrReason('')
     setInsVal(emptyVal(def)); setInsFrom(''); setInsTo('')
     setSaved(false); setPickedVendor(null)
+    setReason(''); setUploadedFiles([])
   }, [leaf?.id, editMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync timeline position when the active edit tab changes
@@ -370,6 +439,7 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
     if (tab === 'current') { setNewVal(emptyVal(def)); setPickedVendor(null) }
     if (tab === 'correct') { setCorrFrom(''); setCorrTo(''); setCorrVal(emptyVal(def)); setCorrReason('') }
     if (tab === 'insert')  { setInsVal(emptyVal(def)); setInsFrom(''); setInsTo('') }
+    setReason(''); setUploadedFiles([])
   }
 
   const showHdrActions = editMode && ['current', 'correct', 'insert'].includes(tab)
@@ -514,6 +584,22 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
               )}
             </div>
 
+            <div className="epField">
+              <label className="epLabel">Reason / Explanation</label>
+              <textarea
+                className="epInput epTextarea"
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                placeholder="Explain why this value is being set (e.g. updated from official registry, corrected from source discrepancy)…"
+                rows={3}
+              />
+            </div>
+
+            <div className="epField">
+              <label className="epLabel">Supporting Documents</label>
+              <FileUploadZone files={uploadedFiles} setFiles={setUploadedFiles} />
+            </div>
+
             <BiTemporalPreview rows={[
               { val: newVal || '(new value)', from: valFrom, to: openEnded ? 'Present' : valTo, tx: 'now (on save)', isNew: true },
               { val: currentVal, from: histRows?.[0]?.from || '—', to: valFrom, tx: histRows?.[0]?.from || '—', isNew: false },
@@ -615,10 +701,19 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
             </div>
 
             <div className="epField">
-              <label className="epLabel">Reason <span className="epOptional">(optional)</span></label>
-              <input type="text" className="epInput"
-                value={corrReason} onChange={e => setCorrReason(e.target.value)}
-                placeholder="e.g. Data entry error, source discrepancy…" />
+              <label className="epLabel">Reason / Explanation <span className="epOptional">(required for audit)</span></label>
+              <textarea
+                className="epInput epTextarea"
+                value={corrReason}
+                onChange={e => setCorrReason(e.target.value)}
+                placeholder="Describe why this correction is needed (e.g. data entry error, source discrepancy, official document reference)…"
+                rows={3}
+              />
+            </div>
+
+            <div className="epField">
+              <label className="epLabel">Supporting Documents</label>
+              <FileUploadZone files={uploadedFiles} setFiles={setUploadedFiles} />
             </div>
 
             {corrFrom && corrTo && hasValue(corrVal) && (
@@ -663,6 +758,22 @@ export default function FieldEditPanel({ vessel, leaf, editMode, curDate, histRo
                 <input type="date" className="epInput epDateNative"
                   value={insTo} onChange={e => setInsTo(e.target.value)} />
               )}
+            </div>
+
+            <div className="epField">
+              <label className="epLabel">Reason / Explanation</label>
+              <textarea
+                className="epInput epTextarea"
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                placeholder="Describe the source of this historical record (e.g. back-filled from port authority records, legacy system migration)…"
+                rows={3}
+              />
+            </div>
+
+            <div className="epField">
+              <label className="epLabel">Supporting Documents</label>
+              <FileUploadZone files={uploadedFiles} setFiles={setUploadedFiles} />
             </div>
 
             {hasValue(insVal) && insFrom && (

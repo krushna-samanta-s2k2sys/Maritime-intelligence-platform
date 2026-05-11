@@ -138,11 +138,21 @@ export default function AttrContentPanel({ vessel, activeNode, editMode, selLeaf
   const [viewMode,      setViewMode]      = useState('fields')
   const [collapsedSecs, setCollapsedSecs] = useState(new Set())
   const [hideEmpty,     setHideEmpty]     = useState(false)
+  const [pinnedLeafIds, setPinnedLeafIds] = useState(new Set())
 
   function toggleSec(id) {
     setCollapsedSecs(prev => {
       const s = new Set(prev)
       s.has(id) ? s.delete(id) : s.add(id)
+      return s
+    })
+  }
+
+  function togglePin(e, leafId) {
+    e.stopPropagation()
+    setPinnedLeafIds(prev => {
+      const s = new Set(prev)
+      s.has(leafId) ? s.delete(leafId) : s.add(leafId)
       return s
     })
   }
@@ -157,12 +167,54 @@ export default function AttrContentPanel({ vessel, activeNode, editMode, selLeaf
 
   const allCollapsed = namedSections.length > 0 && namedSections.every(s => collapsedSecs.has(s.sectionId))
 
+  // All leaf nodes across the entire tree (for resolving pinned IDs)
+  const allTreeLeaves = ATTRIBUTE_TREE.flatMap(n => gatherLeaves(n))
+  const pinnedLeaves  = allTreeLeaves.filter(l => pinnedLeafIds.has(l.id))
+
   function toggleCollapseAll() {
     if (allCollapsed) {
       setCollapsedSecs(new Set())
     } else {
       setCollapsedSecs(new Set(namedSections.map(s => s.sectionId)))
     }
+  }
+
+  function renderLeafRow(leaf, ri, inPinnedSection = false) {
+    const curVal     = getAttrValue(vessel, leaf.id)
+    const histVal    = inHistMode ? getAttrValueAtDate(vessel, leaf.id, curDate) : curVal
+    const isEmpty    = !curVal || curVal === '—'
+    const isChg      = inHistMode && histVal !== curVal && histVal !== '' && curVal !== ''
+    const isSel      = selLeafId === leaf.id
+    const isPinned   = pinnedLeafIds.has(leaf.id)
+    const displayVal = isChg ? histVal : (curVal || '—')
+
+    return (
+      <div
+        key={leaf.id + (inPinnedSection ? '-pin' : '')}
+        className={`afRow${isSel ? ' afSel' : ''}${isChg ? ' afChg' : ''}${isEmpty ? ' afRowEmpty' : ''}${ri % 2 === 1 ? ' afRowAlt' : ''}`}
+        onClick={() => onSelectLeaf(leaf.id, leaf.label)}
+      >
+        <span className={`afLbl${isChg ? ' afLblChg' : ''}`}>{leaf.label}</span>
+
+        <span className={`afVal${isEmpty && !isChg ? ' afEmpty' : ''}${editMode ? ' afValEdit' : ''}`}>
+          {displayVal}
+          {isChg && !editMode && (
+            <span className="afNowBadge" title={`Current value: ${curVal}`}>
+              NOW {curVal}
+            </span>
+          )}
+          {editMode && <span className="afEditHint">✎</span>}
+        </span>
+
+        {leaf.filterId && <span className="afFilterTag">{leaf.filterId}</span>}
+
+        <button
+          className={`afPinBtn${isPinned ? ' afPinBtnOn' : ''}`}
+          onClick={e => togglePin(e, leaf.id)}
+          title={isPinned ? 'Unpin attribute' : 'Pin to top'}
+        >{isPinned ? '★' : '☆'}</button>
+      </div>
+    )
   }
 
   return (
@@ -213,76 +265,60 @@ export default function AttrContentPanel({ vessel, activeNode, editMode, selLeaf
             onSelectLeaf={onSelectLeaf}
           />
         ) : (
-          sections.map(sec => {
-            const isCollapsed = collapsedSecs.has(sec.sectionId)
-            const populatedCount = sec.leaves.filter(l => {
-              const v = getAttrValue(vessel, l.id)
-              return v && v !== '—'
-            }).length
-            const allPop = populatedCount === sec.leaves.length
-            const visibleLeaves = hideEmpty
-              ? sec.leaves.filter(l => { const v = getAttrValue(vessel, l.id); return v && v !== '—' })
-              : sec.leaves
-
-            return (
-              <div key={sec.sectionId} className="afSection">
-                {sec.sectionLabel && (
-                  <div
-                    className={`afSectionHdr${isCollapsed ? ' afSectionHdrCollapsed' : ''}`}
-                    onClick={() => toggleSec(sec.sectionId)}
-                  >
-                    <span className="afSectionChevron">{isCollapsed ? '▸' : '▾'}</span>
-                    <span className="afSectionTitle">{sec.sectionLabel}</span>
-                    <span className={`afSectionPop${allPop ? ' afSectionPopFull' : ''}`}>
-                      {populatedCount}/{sec.leaves.length}
-                    </span>
-                  </div>
-                )}
-
-                {!isCollapsed && (
-                  <div className="afList">
-                    {visibleLeaves.map((leaf, ri) => {
-                      const curVal  = getAttrValue(vessel, leaf.id)
-                      const histVal = inHistMode ? getAttrValueAtDate(vessel, leaf.id, curDate) : curVal
-                      const isEmpty = !curVal || curVal === '—'
-                      const isChg   = inHistMode && histVal !== curVal && histVal !== '' && curVal !== ''
-                      const isSel   = selLeafId === leaf.id
-                      const displayVal = isChg ? histVal : (curVal || '—')
-
-                      return (
-                        <div
-                          key={leaf.id}
-                          className={`afRow${isSel ? ' afSel' : ''}${isChg ? ' afChg' : ''}${isEmpty ? ' afRowEmpty' : ''}${ri % 2 === 1 ? ' afRowAlt' : ''}`}
-                          onClick={() => onSelectLeaf(leaf.id, leaf.label)}
-                        >
-                          <span className={`afLbl${isChg ? ' afLblChg' : ''}`}>
-                            {leaf.label}
-                          </span>
-
-                          <span className={`afVal${isEmpty && !isChg ? ' afEmpty' : ''}${editMode ? ' afValEdit' : ''}`}>
-                            {displayVal}
-                            {isChg && !editMode && (
-                              <span className="afNowBadge" title={`Current value: ${curVal}`}>
-                                NOW {curVal}
-                              </span>
-                            )}
-                            {editMode && <span className="afEditHint">✎</span>}
-                          </span>
-
-                          {leaf.filterId && (
-                            <span className="afFilterTag">{leaf.filterId}</span>
-                          )}
-                        </div>
-                      )
-                    })}
-                    {hideEmpty && visibleLeaves.length === 0 && (
-                      <div className="afEmptySection">All fields in this section are empty</div>
-                    )}
-                  </div>
-                )}
+          <>
+            {/* ── Pinned attributes section ── */}
+            {pinnedLeaves.length > 0 && (
+              <div className="afPinnedSection">
+                <div className="afPinnedHdr">
+                  <span className="afPinnedHdrIcon">★</span>
+                  <span className="afPinnedHdrLabel">Pinned Attributes</span>
+                  <span className="afPinnedHdrCount">{pinnedLeaves.length}</span>
+                  <button className="afPinnedClearBtn" onClick={() => setPinnedLeafIds(new Set())}>Clear all</button>
+                </div>
+                <div className="afList">
+                  {pinnedLeaves.map((leaf, ri) => renderLeafRow(leaf, ri, true))}
+                </div>
               </div>
-            )
-          })
+            )}
+
+            {sections.map(sec => {
+              const isCollapsed = collapsedSecs.has(sec.sectionId)
+              const populatedCount = sec.leaves.filter(l => {
+                const v = getAttrValue(vessel, l.id)
+                return v && v !== '—'
+              }).length
+              const allPop = populatedCount === sec.leaves.length
+              const visibleLeaves = hideEmpty
+                ? sec.leaves.filter(l => { const v = getAttrValue(vessel, l.id); return v && v !== '—' })
+                : sec.leaves
+
+              return (
+                <div key={sec.sectionId} className="afSection">
+                  {sec.sectionLabel && (
+                    <div
+                      className={`afSectionHdr${isCollapsed ? ' afSectionHdrCollapsed' : ''}`}
+                      onClick={() => toggleSec(sec.sectionId)}
+                    >
+                      <span className="afSectionChevron">{isCollapsed ? '▸' : '▾'}</span>
+                      <span className="afSectionTitle">{sec.sectionLabel}</span>
+                      <span className={`afSectionPop${allPop ? ' afSectionPopFull' : ''}`}>
+                        {populatedCount}/{sec.leaves.length}
+                      </span>
+                    </div>
+                  )}
+
+                  {!isCollapsed && (
+                    <div className="afList">
+                      {visibleLeaves.map((leaf, ri) => renderLeafRow(leaf, ri))}
+                      {hideEmpty && visibleLeaves.length === 0 && (
+                        <div className="afEmptySection">All fields in this section are empty</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </>
         )}
       </div>
     </div>
