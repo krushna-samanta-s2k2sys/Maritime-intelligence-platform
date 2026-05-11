@@ -11,6 +11,7 @@ import Compliance from './pages/Compliance'
 import Events from './pages/Events'
 import ImoCore from './pages/ImoCore'
 import GisAis from './pages/GisAis'
+import VesselImages from './pages/VesselImages'
 import Etl from './pages/Etl'
 import Bigquery from './pages/Bigquery'
 
@@ -21,6 +22,7 @@ export default function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="vessels" element={<Vessels />} />
+        <Route path="vessel-images" element={<VesselImages />} />
         <Route path="companies" element={<Companies />} />
         <Route path="ports" element={<Ports />} />
         <Route path="movements" element={<Movements />} />

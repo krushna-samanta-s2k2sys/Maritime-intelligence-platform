@@ -51,7 +51,7 @@ const MIN_W = 140
 const MAX_W = 480
 const DEFAULT_W = 220
 
-export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectNode, favorites = new Set(), onToggleFavorite, personaAttrSections }) {
+export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectNode, favorites = new Set(), onToggleFavorite, personaAttrSections, topContent }) {
   const [expanded,   setExpanded]   = useState(new Set())
   const [collapsed,  setCollapsed]  = useState(false)
   const [sbWidth,    setSbWidth]    = useState(DEFAULT_W)
@@ -172,6 +172,9 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
       className="atSidebar"
       style={{ flex: `0 0 ${sbWidth}px`, width: sbWidth, minWidth: sbWidth }}
     >
+      {/* Injected top content (voyage card, image strip, etc.) */}
+      {topContent}
+
       {/* Header strip */}
       <div className="atSbHeader">
         <span className="atSbHeaderTitle">Navigation</span>

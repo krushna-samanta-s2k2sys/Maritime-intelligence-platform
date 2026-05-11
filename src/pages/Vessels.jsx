@@ -146,7 +146,39 @@ export default function Vessels() {
     setSearchParams({})
   }
 
+  // Date-aware voyage — changes by month so it reacts to curDate on the timeline
+  function getVoyageData(v, date) {
+    const PORTS = ['Rotterdam','Singapore','Shanghai','Fujairah','Houston','Long Beach','Hamburg','Mumbai','Busan','Antwerp','Yokohama','Ningbo','Guangzhou','Port Klang','Piraeus']
+    const d    = date ? new Date(date) : new Date()
+    const seed = parseInt(v.imo.replace(/\D/g,'').slice(-4), 10) + d.getFullYear() * 100 + d.getMonth()
+    const dep  = PORTS[seed % PORTS.length]
+    const arr  = PORTS[(seed * 3 + 7) % PORTS.length]
+    const voyDays = 10 + (seed % 16)             // 10-25 day voyage
+    const prog    = 0.05 + (seed % 90) / 100     // 5-94% progress at this date
+    const depDt   = new Date(d.getTime() - Math.round(prog * voyDays) * 86400000)
+    const etaDt   = new Date(d.getTime() + Math.round((1 - prog) * voyDays) * 86400000)
+    const fmt = dt => dt.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+    return { dep, arr, prog, depDate: fmt(depDt), etaDate: fmt(etaDt) }
+  }
+
+  const TYPE_TAGS = {
+    'Container Ship':'container,ship','Oil Tanker':'oil,tanker,ship',
+    'LNG Carrier':'lng,tanker,vessel','LPG Carrier':'lpg,tanker,vessel',
+    'Bulk Carrier':'bulk,carrier,ship','Chemical Tanker':'chemical,tanker,ship',
+    'Car Carrier':'car,carrier,ship','Passenger/Cruise':'cruise,ship,passenger',
+    'Offshore Wind':'offshore,wind,vessel','Offshore Supply':'offshore,supply,vessel',
+    'RoRo':'roro,ferry,ship','Research Vessel':'research,vessel,ship',
+    'General Cargo':'cargo,ship,vessel',
+  }
+
+  function vesselPhotoUrl(ty, imo, idx) {
+    const tags = TYPE_TAGS[ty] || 'cargo,ship'
+    const lock  = (parseInt(imo.replace(/\D/g,'').slice(-4), 10) * 7 + idx * 31) % 200 + 1
+    return `https://loremflickr.com/240/160/${tags}?lock=${lock}`
+  }
+
   if (vessel) {
+    const voyage = getVoyageData(vessel, curDate)
     // Resolve exact entity key + label for mapped leaves; fall back to tree label for others
     const leafMeta     = selLeafId ? LEAF_TEMPORAL_MAP[selLeafId] : null
     const histLabel    = leafMeta ? leafMeta.label    : selLeafLabel
@@ -203,7 +235,7 @@ export default function Vessels() {
         {/* ── 3-panel body: tree | attributes | history ── */}
         <div className={`vdBody${histOpen ? ' histOpen' : ''}`}>
 
-          {/* Left: full attribute tree */}
+          {/* Left column: sidebar with voyage card + image strip injected at top */}
           <AttrTreeSidebar
             key={vessel.id}
             vessel={vessel}
@@ -213,6 +245,61 @@ export default function Vessels() {
             onToggleFavorite={toggleAttrFavorite}
             personaAttrSections={persona.attrSections}
             onSelectNode={id => { setActiveNode(id); setSelLeafId(null); setSelLeafLabel(null) }}
+            topContent={<>
+              <div className="vdImgStrip">
+                <div className="vdImgStripHd">
+                  <span className="vdVoyageCardTitle">Vessel Images</span>
+                  <button className="vdImgMoreBtn" onClick={() => navigate(`/vessel-images?imo=${vessel.imo}`)}>📷 All →</button>
+                </div>
+                <div className="vdImgRow">
+                  {[0,1,2].map(i => (
+                    <div key={i} className="vdImgThumb"
+                      onClick={() => navigate(`/vessel-images?imo=${vessel.imo}`)}>
+                      <img
+                        src={vesselPhotoUrl(vessel.ty, vessel.imo, i)}
+                        alt={`${vessel.nm} ${i+1}`}
+                        className="vdImgThumbImg"
+                        loading="lazy"
+                        onError={e => { e.target.src = `https://loremflickr.com/80/60/ship,vessel?lock=${vessel.id+i}` }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="vdVoyageCard">
+                <div className="vdVoyageCardHd">
+                  <span className="vdVoyageCardTitle">Current Voyage</span>
+                  <span className="vdVoyageCardDate">{curDate || new Date().toISOString().slice(0,10)}</span>
+                </div>
+                <div className="vdVoyageCardBody">
+                  <div className="vdVcPort">
+                    <span className="vdVcDot" style={{ background:'#16a34a' }}/>
+                    <div className="vdVcPortInfo">
+                      <span className="vdVcPortName">{voyage.dep}</span>
+                      <span className="vdVcPortDate">{voyage.depDate}</span>
+                    </div>
+                  </div>
+                  <div className="vdVcTrack">
+                    <div className="vdVcBar">
+                      <div className="vdVcFill" style={{ width:`${Math.round(voyage.prog * 100)}%` }}/>
+                      <span className="vdVcShip" style={{ left:`${Math.round(voyage.prog * 100)}%` }}>🚢</span>
+                    </div>
+                    <span className="vdVcPct">{Math.round(voyage.prog * 100)}%</span>
+                  </div>
+                  <div className="vdVcPort">
+                    <span className="vdVcDot" style={{ background:'#dc2626' }}/>
+                    <div className="vdVcPortInfo">
+                      <span className="vdVcPortName">{voyage.arr}</span>
+                      <span className="vdVcPortDate">ETA {voyage.etaDate}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="vdVoyageCardActs">
+                  <button className="vdVcActBtn" onClick={() => navigate('/gis-ais')}>🔮 Route Forecast</button>
+                  <button className="vdVcActBtn" onClick={() => navigate('/gis-ais')}>🛤 Past Track</button>
+                </div>
+              </div>
+            </>}
           />
 
           {/* Centre: all attributes for selected node */}

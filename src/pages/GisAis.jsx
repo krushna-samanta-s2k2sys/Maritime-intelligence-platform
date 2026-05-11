@@ -222,6 +222,50 @@ function renderPath(layer, pts, color) {
     .bindTooltip('<b>Current position</b>', { className: 'gis-tt' }).addTo(layer);
 }
 
+function generateForecastPts(v, hoursAhead) {
+  if (!v || v.status !== 'Underway' || v.spd < 0.5) return [];
+  const STEPS  = Math.min(48, hoursAhead * 2);
+  const hdgRad = (v.hdg * Math.PI) / 180;
+  const pts    = [{ lat: v.lat, lon: v.lon, h: 0 }];
+  for (let i = 1; i <= STEPS; i++) {
+    const h       = (i / STEPS) * hoursAhead;
+    const distNm  = v.spd * h;
+    const distDeg = distNm / 60;
+    const lat = v.lat + distDeg * Math.cos(hdgRad);
+    const lon = v.lon + distDeg * Math.sin(hdgRad) / Math.cos(v.lat * Math.PI / 180);
+    pts.push({ lat, lon, h });
+  }
+  return pts;
+}
+
+function renderForecast(layer, v, hoursAhead) {
+  layer.clearLayers();
+  const pts = generateForecastPts(v, hoursAhead);
+  if (pts.length < 2) return;
+
+  L.polyline(pts.map(p => [p.lat, p.lon]), {
+    color: '#a855f7', weight: 2.5, opacity: 0.85, dashArray: '9 6', lineCap: 'round'
+  }).addTo(layer);
+
+  // Hour milestone markers
+  [24, 48, 72].filter(h => h <= hoursAhead).forEach(h => {
+    const idx = Math.round((h / hoursAhead) * (pts.length - 1));
+    const p   = pts[Math.min(idx, pts.length - 1)];
+    L.circleMarker([p.lat, p.lon], {
+      radius: 4, color: '#a855f7', fillColor: '#fff', fillOpacity: 1, weight: 2
+    }).bindTooltip(`+${h}h forecast`, { className: 'gis-tt' }).addTo(layer);
+  });
+
+  // End marker
+  const last = pts[pts.length - 1];
+  L.circleMarker([last.lat, last.lon], {
+    radius: 6, color: '#a855f7', fillColor: '#a855f7', fillOpacity: 0.85, weight: 2
+  }).bindTooltip(
+    `<b>Forecast end</b><br>+${hoursAhead}h · ${Math.round(v.spd * hoursAhead).toLocaleString()} nm`,
+    { className: 'gis-tt' }
+  ).addTo(layer);
+}
+
 // Point-in-polygon ray casting
 function ptInPoly(pt, polyPts) {
   const [lat, lon] = pt;
@@ -284,8 +328,9 @@ export default function GisAis() {
   const markerRefs   = useRef({});  // vessel markers: {v01: L.Marker}
   const portMarkersR = useRef({});  // port markers
   const coMarkersR   = useRef({});  // company markers
-  const pathLayerRef = useRef(null);
-  const drawLayerRef = useRef(null); // preview/draw layer
+  const pathLayerRef     = useRef(null);
+  const forecastLayerRef = useRef(null);
+  const drawLayerRef     = useRef(null); // preview/draw layer
   const vessels      = useRef(VESSELS.map(v => ({ ...v })));
   const simInterval  = useRef(null);
   const toastTimer   = useRef(null);
@@ -320,6 +365,10 @@ export default function GisAis() {
   const [pathShowing,  setPathShowing]  = useState(false);
   const [pathStats,    setPathStats]    = useState(null);
 
+  // Forecast state
+  const [showForecast, setShowForecast] = useState(false);
+  const [forecastHrs,  setForecastHrs]  = useState(72);
+
   // Draw state
   const [drawMode,     setDrawMode]     = useState(null);   // 'polygon'|'polyline'|'circle'|'rect'|null
   const [drawPtCount,  setDrawPtCount]  = useState(0);      // synced from drawPtsRef for display
@@ -339,6 +388,17 @@ export default function GisAis() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+
+  // ── Route forecast draw/clear ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!forecastLayerRef.current) return;
+    if (showForecast && selEntity && selEntity._type === 'vessel') {
+      renderForecast(forecastLayerRef.current, selEntity, forecastHrs);
+    } else {
+      forecastLayerRef.current.clearLayers();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showForecast, selEntity, forecastHrs]);
 
   // ── Map initialisation ────────────────────────────────────────────────────
   useEffect(() => {
@@ -361,8 +421,10 @@ export default function GisAis() {
     const lm    = L.layerGroup();
     const lpath = L.layerGroup().addTo(map);
     const ldraw = L.layerGroup().addTo(map);
-    pathLayerRef.current = lpath;
-    drawLayerRef.current = ldraw;
+    pathLayerRef.current     = lpath;
+    const lforecast = L.layerGroup().addTo(map);
+    forecastLayerRef.current = lforecast;
+    drawLayerRef.current     = ldraw;
     layerRefs.current = { vessels: lv, routes: lr, ports: lp, choke: lc, mou: lm };
 
     // Routes
@@ -502,6 +564,8 @@ export default function GisAis() {
     setDetailOpen(true);
     setPathShowing(false);
     setPathStats(null);
+    setShowForecast(false);
+    forecastLayerRef.current?.clearLayers();
     pathLayerRef.current?.clearLayers();
     markerRefs.current[id]?.setIcon(buildVesselIcon(v, true));
     mapInst.current.setView([v.lat, v.lon], 6, { animate: true });
@@ -573,6 +637,8 @@ export default function GisAis() {
     setDetailOpen(false);
     setSelId(null);
     setSelEntity(null);
+    setShowForecast(false);
+    forecastLayerRef.current?.clearLayers();
     handleClearPath();
   }
 
@@ -1310,10 +1376,61 @@ export default function GisAis() {
                       </div>
                     )}
                   </div>
+                  {/* Route Forecast */}
+                  {v.status === 'Underway' && v.spd > 0.5 && (
+                    <div className="gisDetailSect">
+                      <div className="gisDetailSectHd">Route Forecast</div>
+                      <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:8, lineHeight:1.5 }}>
+                        Projected path based on current heading &amp; speed
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:8 }}>
+                        <span style={{ fontSize:10, color:'var(--txt3)' }}>Horizon:</span>
+                        {[24, 48, 72].map(h => (
+                          <button key={h}
+                            onClick={() => setForecastHrs(h)}
+                            style={{
+                              padding:'2px 8px', fontSize:10, borderRadius:4,
+                              border:`1px solid ${forecastHrs === h ? '#a855f7' : 'var(--bd)'}`,
+                              background: forecastHrs === h ? '#f3e8ff' : '#fff',
+                              color: forecastHrs === h ? '#7c3aed' : 'var(--txt2)',
+                              cursor:'pointer', fontFamily:'inherit', fontWeight: forecastHrs === h ? 700 : 400,
+                            }}
+                          >{h}h</button>
+                        ))}
+                      </div>
+                      <button
+                        className={`gisPathShowBtn${showForecast ? ' showing' : ''}`}
+                        style={showForecast
+                          ? { background:'#f3e8ff', borderColor:'#c084fc', color:'#7c3aed' }
+                          : { background:'#faf5ff', borderColor:'#d8b4fe', color:'#7c3aed' }}
+                        onClick={() => setShowForecast(f => !f)}
+                      >{showForecast ? '🔮 Hide Forecast' : '🔮 Show Forecast'}</button>
+                      {showForecast && (
+                        <div style={{ marginTop:8, padding:'7px 10px', background:'#faf5ff', borderRadius:5, border:'1px solid #e9d5ff' }}>
+                          <div style={{ fontSize:9, fontWeight:700, color:'#7c3aed', textTransform:'uppercase', letterSpacing:.4, marginBottom:5 }}>
+                            {forecastHrs}h Projection
+                          </div>
+                          {[
+                            ['Speed',    `${v.spd} kts`],
+                            ['Heading',  `${v.hdg}° ${hdgToCompass(v.hdg)}`],
+                            ['Distance', `~${Math.round(v.spd * forecastHrs).toLocaleString()} nm`],
+                            ['Dest ETA', v.eta],
+                          ].map(([l, val]) => (
+                            <div key={l} className="gisDetailRow" style={{ borderBottom:'none', padding:'2px 0' }}>
+                              <span className="gisDetailRowLbl">{l}</span>
+                              <span className="gisDetailRowVal" style={{ color:'#7c3aed' }}>{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="gisDetailSect">
                     <div className="gisDetailSectHd">Quick Links</div>
                     <div className="gisDetailLinks">
                       <button className="gisDetailLink primary" onClick={() => navigate(`/vessels?imo=${v.imo}`)}>📋 Full Profile</button>
+                      <button className="gisDetailLink" onClick={() => navigate(`/vessel-images?imo=${v.imo}`)}>📷 Vessel Images</button>
                       <button className="gisDetailLink">🚨 Sanctions</button>
                       <button className="gisDetailLink">📊 Voyage History</button>
                       {v.status === 'AIS Dark' && (

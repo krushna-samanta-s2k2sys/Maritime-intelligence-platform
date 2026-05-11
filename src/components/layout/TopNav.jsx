@@ -150,7 +150,7 @@ export default function TopNav() {
 
         <div className="navTabs">
           <NavLink to="/dashboard"   className={nl}><span className="ntI">▦</span> Dashboard</NavLink>
-          <NavLink to="/vessels"     className={nl}><span className="ntI">🚢</span> Vessels</NavLink>
+          <NavLink to="/vessels"       className={nl}><span className="ntI">🚢</span> Vessels</NavLink>
           <NavLink to="/companies"   className={nl}><span className="ntI">🏢</span> Companies</NavLink>
           <NavLink to="/ports"       className={nl}><span className="ntI">⚓</span> Ports</NavLink>
           <div className="navSep"></div>
@@ -163,6 +163,7 @@ export default function TopNav() {
           <NavLink to="/events"      className={nl}><span className="ntI">⚡</span> Events</NavLink>
           <NavLink to="/imo-core"    className={nl}><span className="ntI">🆔</span> IMO Core</NavLink>
           <NavLink to="/gis-ais"     className={nl}><span className="ntI">🌍</span> GIS / AIS</NavLink>
+          <NavLink to="/vessel-images" className={nl}><span className="ntI">📷</span> Vessel Images</NavLink>
           <div className="navSep"></div>
           <NavLink to="/etl"         className={nl}><span className="ntI">⚙️</span> ETL Pipelines</NavLink>
           <NavLink to="/bigquery"    className={nl}><span className="ntI">🔬</span> BigQuery</NavLink>
