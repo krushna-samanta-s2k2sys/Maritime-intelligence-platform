@@ -13,6 +13,7 @@ import { usePreferences } from '../contexts/PreferencesContext'
 import { ALL_VESSEL_COLUMNS, getCellValue } from '../data/vesselColumns'
 import { parseSearch, applySearch, describeFilters } from '../utils/searchParser'
 import { applyFilters } from '../data/filterConfig'
+import { exportToExcel } from '../utils/exportCsv'
 
 const VS = [
   {id:1,  nm:'PACIFIC STAR',    imo:'9412345',mmsi:'240987654',cs:'SVAZ3',fl:'GR',fn:'Greece',         flag:'🇬🇷',ty:'Container Ship',  dwt:'59,100', gt:'52,400', nt:'28,600', yr:2008,loa:'294.0m',lbp:'281.0m',beam:'32.2m',depth:'19.4m',maxDraft:'13.5m',sumDraft:'13.1m',ow:'Aegean Carriers SA',      bo:'K. Papadopoulos',       op:'Aegean Carriers SA',    mg:'Columbia Ship Mgmt',   pi:'Steamship Mutual',    cls:"Lloyd's Register",clsNot:"100A1 Container Ship LMC UMS",          ice:'None',eng:'MAN B&W 9S90MC-C',        mcr:'72,240 kW',spd:'22.0 kn',fuel:'HFO + MDO',  prp:'FP',    teu:'5,022',teu_r:'600', st:'In Service',up:'2024-01-30',yard:'Hyundai HI, Ulsan',          hn:'H2341', builtYard:'KR'},
@@ -323,6 +324,11 @@ export default function Vessels() {
                 <button className="btn btnS btnSm" onClick={() => setSelectedIds(new Set())}>Deselect All</button>
               </>
             )}
+            <button className="btn btnS btnSm" onClick={() => exportToExcel(
+              filtered, visibleColumns,
+              (colId, row) => getCellValue(colId, row),
+              `vessels-${new Date().toISOString().slice(0,10)}`
+            )}>⬇ Export Excel</button>
             <div style={{fontSize:10,color:'var(--txt3)'}}>{visibleColumns.length} columns · {vesselColumns.length} configured</div>
           </div>
         </div>
@@ -369,12 +375,8 @@ export default function Vessels() {
                           <button className="vLnk" onClick={() => openDetail(v.id)}>{v.nm}</button>
                         </td>
                       )
-                      if (col.id === 'imo') return (
-                        <td key={col.id}>
-                          <div className="mn" style={{fontSize:11}}>{v.imo}</div>
-                          <div className="mn" style={{fontSize:9,color:'var(--txt3)'}}>{v.mmsi}</div>
-                        </td>
-                      )
+                      if (col.id === 'imo') return <td key={col.id} className="mn" style={{fontSize:11}}>{v.imo}</td>
+                      if (col.id === 'mmsi') return <td key={col.id} className="mn" style={{fontSize:11}}>{v.mmsi}</td>
                       if (col.id === 'type') return <td key={col.id}><span className="tag tN" style={{fontSize:9}}>{v.ty}</span></td>
                       if (col.id === 'status') return <td key={col.id}><span className={`stBadge ${sc}`}><span className="stDot"/>{v.st}</span></td>
                       if (col.id === 'class') return <td key={col.id}><span className="tag tN" style={{fontSize:9}}>{v.cls}</span></td>

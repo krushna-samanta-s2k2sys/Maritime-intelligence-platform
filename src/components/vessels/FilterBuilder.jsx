@@ -7,9 +7,15 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
   const [localVal, setLocalVal] = useState(() => {
     if (cfg.filterType === 'multiselect') return filter?.values || []
     if (cfg.filterType === 'range')       return { min: filter?.min ?? '', max: filter?.max ?? '' }
-    if (cfg.filterType === 'typeahead')   return filter?.query || ''
     return ''
   })
+  // Multi-value typeahead state
+  const [typeTags, setTypeTags]       = useState(() =>
+    cfg.filterType === 'typeahead'
+      ? (filter?.values?.length ? filter.values : filter?.query ? [filter.query] : [])
+      : []
+  )
+  const [typeInput, setTypeInput]     = useState('')
   const [search, setSearch]           = useState('')
   const [showSuggest, setShowSuggest] = useState(false)
   const popRef = useRef(null)
@@ -41,10 +47,19 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
       if (min == null && max == null) { onRemove(); return }
       onUpdate({ fieldId: cfg.id, type: 'range', min, max })
     } else if (cfg.filterType === 'typeahead') {
-      if (!localVal.trim()) { onRemove(); return }
-      onUpdate({ fieldId: cfg.id, type: 'typeahead', query: localVal.trim() })
+      const pending = typeInput.trim()
+      const all = pending ? [...typeTags, pending] : typeTags
+      if (all.length === 0) { onRemove(); return }
+      onUpdate({ fieldId: cfg.id, type: 'typeahead', values: all })
     }
     onClose()
+  }
+
+  function addTypeTag(raw) {
+    const v = raw.trim()
+    if (v && !typeTags.includes(v)) setTypeTags(prev => [...prev, v])
+    setTypeInput('')
+    setShowSuggest(false)
   }
 
   const availableValues = useMemo(() =>
@@ -60,19 +75,19 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
   }
 
   const suggestions = useMemo(() => {
-    if (cfg.filterType !== 'typeahead' || !localVal || !cfg.getFieldValue) return []
-    const q = localVal.toLowerCase()
+    if (cfg.filterType !== 'typeahead' || !typeInput || !cfg.getFieldValue) return []
+    const q = typeInput.toLowerCase()
     const seen = new Set()
     const results = []
     for (const v of vessels) {
       const s = cfg.getFieldValue(v)
-      if (s && s.toLowerCase().includes(q) && !seen.has(s)) {
+      if (s && s.toLowerCase().includes(q) && !seen.has(s) && !typeTags.includes(s)) {
         seen.add(s); results.push(s)
         if (results.length >= 8) break
       }
     }
     return results
-  }, [cfg, localVal, vessels])
+  }, [cfg, typeInput, vessels, typeTags])
 
   return (
     <div
@@ -155,29 +170,57 @@ function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, ancho
 
       {cfg.filterType === 'typeahead' && (
         <div className="feTypeWrap">
-          <input
-            autoFocus
-            className="feTypeInp"
-            placeholder={`Search ${cfg.label.toLowerCase()}…`}
-            value={localVal}
-            onChange={e => { setLocalVal(e.target.value); setShowSuggest(true) }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') { setShowSuggest(false); commit() }
-              if (e.key === 'Escape') setShowSuggest(false)
-            }}
-            onFocus={() => setShowSuggest(true)}
-            onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
-          />
-          {showSuggest && suggestions.length > 0 && (
-            <div className="feSuggestDrop">
-              {suggestions.map(s => (
-                <button
-                  key={s}
-                  className="feSuggestItem"
-                  onMouseDown={e => { e.preventDefault(); setLocalVal(s); setShowSuggest(false) }}
-                >{s}</button>
+          {typeTags.length > 0 && (
+            <div className="feTagsList">
+              {typeTags.map(tag => (
+                <span key={tag} className="feTag">
+                  {tag}
+                  <button
+                    className="feTagX"
+                    type="button"
+                    onClick={() => setTypeTags(prev => prev.filter(t => t !== tag))}
+                  >✕</button>
+                </span>
               ))}
             </div>
+          )}
+          <div style={{ position: 'relative' }}>
+            <input
+              autoFocus={typeTags.length === 0}
+              className="feTypeInp"
+              placeholder={typeTags.length > 0 ? 'Add another value…' : `Search ${cfg.label.toLowerCase()}…`}
+              value={typeInput}
+              onChange={e => { setTypeInput(e.target.value); setShowSuggest(true) }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTypeTag(typeInput) }
+                if (e.key === 'Backspace' && !typeInput && typeTags.length) setTypeTags(prev => prev.slice(0, -1))
+                if (e.key === 'Escape') { setShowSuggest(false); commit() }
+              }}
+              onPaste={e => {
+                const text = e.clipboardData.getData('text')
+                if (text.includes(',')) {
+                  e.preventDefault()
+                  const newTags = text.split(',').map(t => t.trim()).filter(Boolean)
+                  setTypeTags(prev => [...new Set([...prev, ...newTags])])
+                }
+              }}
+              onFocus={() => setShowSuggest(true)}
+              onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
+            />
+            {showSuggest && suggestions.length > 0 && (
+              <div className="feSuggestDrop">
+                {suggestions.map(s => (
+                  <button
+                    key={s}
+                    className="feSuggestItem"
+                    onMouseDown={e => { e.preventDefault(); addTypeTag(s) }}
+                  >{s}</button>
+                ))}
+              </div>
+            )}
+          </div>
+          {typeTags.length > 0 && (
+            <div className="feTagHint">Press Enter or , to add · Backspace to remove · Paste comma-separated values</div>
           )}
         </div>
       )}
@@ -354,7 +397,7 @@ export default function FilterBuilder({ filters, onChange, vessels }) {
   const hasActiveFilters = filters.some(f => {
     const t = f.type
     return !(t === 'multiselect' && (!f.values || !f.values.length)) &&
-           !(t === 'typeahead' && !f.query) &&
+           !(t === 'typeahead' && (!f.values?.length) && (!f.query?.trim())) &&
            !(t === 'range' && f.min == null && f.max == null)
   })
 
@@ -364,7 +407,7 @@ export default function FilterBuilder({ filters, onChange, vessels }) {
         const cfg = FILTER_MAP[f.fieldId]
         if (!cfg) return null
         const isEmpty = (f.type === 'multiselect' && (!f.values || f.values.length === 0)) ||
-                        (f.type === 'typeahead' && !f.query) ||
+                        (f.type === 'typeahead' && (!f.values?.length) && (!f.query?.trim())) ||
                         (f.type === 'range' && f.min == null && f.max == null)
         if (isEmpty) return null
         const label = cfg.describe(f)

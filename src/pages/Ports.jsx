@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { exportToExcel } from '../utils/exportCsv'
 import { useSearchParams } from 'react-router-dom'
 import L from 'leaflet'
 import GenAttrTreeSidebar from '../components/shared/GenAttrTreeSidebar'
@@ -254,6 +255,7 @@ function PoFilterEditor({ cfg, filter, ports, onUpdate, onRemove, onClose, ancho
     if (cfg.filterType === 'range') return { min: filter?.min ?? '', max: filter?.max ?? '' }
     return ''
   })
+  const [optSearch, setOptSearch] = useState('')
   const rect = anchorEl?.getBoundingClientRect() || { bottom: 0, left: 0 }
   const pos = { top: rect.bottom + 8, left: Math.min(rect.left, window.innerWidth - 320) }
 
@@ -261,8 +263,26 @@ function PoFilterEditor({ cfg, filter, ports, onUpdate, onRemove, onClose, ancho
     cfg.filterType === 'multiselect' && cfg.getValues ? cfg.getValues(ports) : [],
   [cfg, ports])
 
+  const filteredOpts = optSearch.trim()
+    ? availableValues.filter(opt =>
+        opt.label.toLowerCase().includes(optSearch.toLowerCase()) ||
+        opt.value.toLowerCase().includes(optSearch.toLowerCase())
+      )
+    : availableValues
+
   function toggleValue(val) {
     setLocalVal(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
+  }
+
+  function applyCommaSearch(text) {
+    const terms = text.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+    const matches = availableValues
+      .filter(opt => terms.some(t =>
+        opt.label.toLowerCase().includes(t) || opt.value.toLowerCase().includes(t)
+      ))
+      .map(opt => opt.value)
+    setLocalVal(prev => [...new Set([...prev, ...matches])])
+    setOptSearch('')
   }
 
   function commit() {
@@ -285,18 +305,43 @@ function PoFilterEditor({ cfg, filter, ports, onUpdate, onRemove, onClose, ancho
         <button className="feClose" onClick={onClose}>✕</button>
       </div>
       {cfg.filterType === 'multiselect' && (
-        <div className="feOptList">
-          {availableValues.map(opt => {
-            const on = localVal.includes(opt.value)
-            return (
-              <label key={opt.value} className={`feOpt${on ? ' feOptOn' : ''}`} onClick={() => toggleValue(opt.value)}>
-                <span className={`feChk${on ? ' on' : ''}`}>{on ? '✓' : ''}</span>
-                <span className="feOptLabel">{opt.label}</span>
-                <span className="feOptCount">{opt.count}</span>
-              </label>
-            )
-          })}
-        </div>
+        <>
+          <div className="feSearch">
+            <input
+              autoFocus
+              className="feSearchInp"
+              placeholder="Search or paste comma-separated values…"
+              value={optSearch}
+              onChange={e => setOptSearch(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && optSearch.includes(',')) applyCommaSearch(optSearch)
+              }}
+              onPaste={e => {
+                const text = e.clipboardData.getData('text')
+                if (text.includes(',')) { e.preventDefault(); applyCommaSearch(text) }
+              }}
+            />
+          </div>
+          <div className="feOptList">
+            {filteredOpts.map(opt => {
+              const on = localVal.includes(opt.value)
+              return (
+                <label key={opt.value} className={`feOpt${on ? ' feOptOn' : ''}`} onClick={() => toggleValue(opt.value)}>
+                  <span className={`feChk${on ? ' on' : ''}`}>{on ? '✓' : ''}</span>
+                  <span className="feOptLabel">{opt.label}</span>
+                  <span className="feOptCount">{opt.count}</span>
+                </label>
+              )
+            })}
+            {filteredOpts.length === 0 && <div className="feEmpty">No options found</div>}
+          </div>
+          {localVal.length > 0 && (
+            <div className="feSelBar">
+              <span>{localVal.length} selected</span>
+              <button className="feClrBtn" onClick={() => setLocalVal([])}>Clear all</button>
+            </div>
+          )}
+        </>
       )}
       {cfg.filterType === 'range' && (
         <div className="feRangePair">
@@ -825,6 +870,11 @@ export default function Ports() {
                     <button className="btn btnS btnSm" onClick={() => setSelectedIds(new Set())}>Deselect All</button>
                   </>
                 )}
+                <button className="btn btnS btnSm" onClick={() => exportToExcel(
+                  filtered, visibleCols,
+                  (colId, row) => getPortCellValue(row, colId),
+                  `ports-${new Date().toISOString().slice(0,10)}`
+                )}>⬇ Export Excel</button>
                 <div style={{fontSize:10,color:'var(--txt3)'}}>{visibleCols.length} columns</div>
               </div>
             </div>

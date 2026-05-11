@@ -1,7 +1,8 @@
 // All available vessel list columns — id maps to persona vesselColumns arrays
 export const ALL_VESSEL_COLUMNS = [
   { id:'name',            label:'Vessel Name',       group:'identity',    always:true,  width:160 },
-  { id:'imo',             label:'IMO / MMSI',        group:'identity',    always:false, width:110 },
+  { id:'imo',             label:'IMO Number',         group:'identity',    always:false, width:90  },
+  { id:'mmsi',            label:'MMSI',               group:'identity',    always:false, width:95  },
   { id:'call-sign',       label:'Call Sign',         group:'identity',    always:false, width:80  },
   { id:'flag',            label:'Flag / Country',    group:'identity',    always:false, width:120 },
   { id:'type',            label:'Ship Type',         group:'identity',    always:false, width:130 },
@@ -65,7 +66,8 @@ export const COLUMN_GROUPS = [
 export function getCellValue(col, v) {
   switch (col) {
     case 'name':            return { text: `${v.flag} ${v.nm}`, link: true }
-    case 'imo':             return { imo: v.imo, mmsi: v.mmsi }
+    case 'imo':             return v.imo
+    case 'mmsi':            return v.mmsi
     case 'call-sign':       return v.cs
     case 'flag':            return `${v.flag} ${v.fn}`
     case 'type':            return v.ty

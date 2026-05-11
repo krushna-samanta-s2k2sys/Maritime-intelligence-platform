@@ -6,6 +6,37 @@
 
 function numOf(str) { return Number(String(str).replace(/[,km]/gi, '')) }
 
+// ── Typeahead helpers (support both old `query` and new `values` array) ───────
+function taTerms(f) {
+  return f.values?.length ? f.values : (f.query ? [f.query] : [])
+}
+function taDescribe(label, f) {
+  const terms = taTerms(f)
+  if (terms.length === 0) return label
+  if (terms.length === 1) return `${label}: "${terms[0]}"`
+  return `${label}: ${terms.map(t => `"${t}"`).join(', ')}`
+}
+function taApply(getField) {
+  return (vs, f) => {
+    const terms = taTerms(f)
+    if (!terms.length) return vs
+    return vs.filter(v => {
+      const field = (getField(v) || '').toLowerCase()
+      return terms.some(t => field.includes(t.toLowerCase()))
+    })
+  }
+}
+function taApplyExact(getField) {
+  return (vs, f) => {
+    const terms = taTerms(f)
+    if (!terms.length) return vs
+    return vs.filter(v => {
+      const field = getField(v) || ''
+      return terms.some(t => field.includes(t))
+    })
+  }
+}
+
 export const FILTER_GROUPS = [
   { id: 'identity',    label: 'Identity' },
   { id: 'type',        label: 'Vessel Type' },
@@ -24,26 +55,26 @@ export const FILTER_CONFIGS = [
   {
     id: 'name', label: 'Vessel Name', group: 'identity', filterType: 'typeahead',
     getFieldValue: v => v.nm,
-    describe: f => `Name: "${f.query}"`,
-    apply: (vs, f) => vs.filter(v => v.nm.toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Name', f),
+    apply: taApply(v => v.nm),
   },
   {
     id: 'imo', label: 'IMO Number', group: 'identity', filterType: 'typeahead',
     getFieldValue: v => v.imo,
-    describe: f => `IMO: ${f.query}`,
-    apply: (vs, f) => vs.filter(v => v.imo.includes(f.query)),
+    describe: f => taDescribe('IMO', f),
+    apply: taApplyExact(v => v.imo),
   },
   {
     id: 'mmsi', label: 'MMSI', group: 'identity', filterType: 'typeahead',
     getFieldValue: v => v.mmsi,
-    describe: f => `MMSI: ${f.query}`,
-    apply: (vs, f) => vs.filter(v => v.mmsi.includes(f.query)),
+    describe: f => taDescribe('MMSI', f),
+    apply: taApplyExact(v => v.mmsi),
   },
   {
     id: 'callsign', label: 'Call Sign', group: 'identity', filterType: 'typeahead',
     getFieldValue: v => v.cs || '',
-    describe: f => `Call Sign: ${f.query}`,
-    apply: (vs, f) => vs.filter(v => (v.cs||'').toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Call Sign', f),
+    apply: taApply(v => v.cs || ''),
   },
 
   // ── Vessel Type ───────────────────────────────────────────
@@ -168,20 +199,20 @@ export const FILTER_CONFIGS = [
   {
     id: 'owner', label: 'Owner', group: 'ownership', filterType: 'typeahead',
     getFieldValue: v => v.ow || '',
-    describe: f => `Owner: "${f.query}"`,
-    apply: (vs, f) => vs.filter(v => (v.ow||'').toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Owner', f),
+    apply: taApply(v => v.ow || ''),
   },
   {
     id: 'operator', label: 'Operator', group: 'ownership', filterType: 'typeahead',
     getFieldValue: v => v.op || '',
-    describe: f => `Operator: "${f.query}"`,
-    apply: (vs, f) => vs.filter(v => (v.op||'').toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Operator', f),
+    apply: taApply(v => v.op || ''),
   },
   {
     id: 'manager', label: 'Manager', group: 'ownership', filterType: 'typeahead',
     getFieldValue: v => v.mg || '',
-    describe: f => `Manager: "${f.query}"`,
-    apply: (vs, f) => vs.filter(v => (v.mg||'').toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Manager', f),
+    apply: taApply(v => v.mg || ''),
   },
   {
     id: 'pi', label: 'P&I Club', group: 'ownership', filterType: 'multiselect',
@@ -293,8 +324,8 @@ export const FILTER_CONFIGS = [
   {
     id: 'beneficialOwner', label: 'Beneficial Owner', group: 'ownership', filterType: 'typeahead',
     getFieldValue: v => v.bo || '',
-    describe: f => `Beneficial Owner: "${f.query}"`,
-    apply: (vs, f) => vs.filter(v => (v.bo||'').toLowerCase().includes(f.query.toLowerCase())),
+    describe: f => taDescribe('Beneficial Owner', f),
+    apply: taApply(v => v.bo || ''),
   },
 
   // ── Cargo & Capacity ──────────────────────────────────────
@@ -454,7 +485,7 @@ export const FILTER_MAP = Object.fromEntries(FILTER_CONFIGS.map(f => [f.id, f]))
 function isEmptyFilter(f) {
   if (f.type === 'multiselect') return !f.values || f.values.length === 0
   if (f.type === 'range')       return f.min == null && f.max == null
-  if (f.type === 'typeahead')   return !f.query || !f.query.trim()
+  if (f.type === 'typeahead')   return (!f.values?.length) && (!f.query?.trim())
   return false
 }
 

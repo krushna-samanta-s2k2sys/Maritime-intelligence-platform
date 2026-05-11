@@ -1594,3 +1594,15 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 .epUploadFileRemove{background:none;border:none;cursor:pointer;color:var(--txt3);
   font-size:11px;flex-shrink:0;padding:0 2px;line-height:1}
 .epUploadFileRemove:hover{color:var(--red)}
+
+/* ══════════════════════════════════════════════════════════
+   TYPEAHEAD MULTI-VALUE TAGS  (FilterBuilder — typeahead filters)
+   ══════════════════════════════════════════════════════════ */
+.feTypeWrap{display:flex;flex-direction:column;gap:4px;padding:8px 10px 6px}
+.feTagsList{display:flex;flex-wrap:wrap;gap:4px}
+.feTag{display:inline-flex;align-items:center;gap:3px;background:var(--sp-red);
+  color:#fff;border-radius:4px;padding:2px 6px 2px 8px;font-size:11px;font-weight:500}
+.feTagX{background:none;border:none;color:rgba(255,255,255,.75);cursor:pointer;
+  padding:0;font-size:12px;line-height:1;display:flex;align-items:center}
+.feTagX:hover{color:#fff}
+.feTagHint{font-size:9px;color:var(--txt3);padding:0 2px;line-height:1.4}
