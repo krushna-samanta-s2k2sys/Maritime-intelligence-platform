@@ -43,9 +43,12 @@ export default function Events() {
   const [selId, setSelId] = useState(null);
   const [layers, setLayers] = useState({casualty:true,piracy:true,weather:true,congestion:true,geopolitical:true,env:true});
 
+  const [mapTile, setMapTile] = useState('light');
+
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const layerRefs = useRef({});
+  const tileRef = useRef({});
 
   const filtered = useMemo(() => EVENTS.filter(e => {
     if (evTab !== 'all' && e.cat !== evTab) return false;
@@ -60,7 +63,9 @@ export default function Events() {
   useEffect(() => {
     if (mapInst.current) return;
     const map = L.map(mapRef.current, {zoomControl:true}).setView([20,40],3);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'CartoDB',maxZoom:19}).addTo(map);
+    tileRef.current.light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'CartoDB',maxZoom:19});
+    tileRef.current.dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'CartoDB',maxZoom:19});
+    tileRef.current.light.addTo(map);
     mapInst.current = map;
 
     const CAT_KEYS = {Casualty:'casualty',Piracy:'piracy',Weather:'weather',Congestion:'congestion',Geopolitical:'geopolitical',Environmental:'env'};
@@ -85,6 +90,14 @@ export default function Events() {
 
     return () => { map.remove(); mapInst.current = null; };
   }, []);
+
+  useEffect(() => {
+    const map = mapInst.current;
+    if (!map) return;
+    const tiles = tileRef.current;
+    if (mapTile === 'light') { if (map.hasLayer(tiles.dark)) map.removeLayer(tiles.dark); if (!map.hasLayer(tiles.light)) tiles.light.addTo(map); }
+    else { if (map.hasLayer(tiles.light)) map.removeLayer(tiles.light); if (!map.hasLayer(tiles.dark)) tiles.dark.addTo(map); }
+  }, [mapTile]);
 
   useEffect(() => {
     const map = mapInst.current;
@@ -197,7 +210,7 @@ export default function Events() {
             </div>
           </div>
           {/* Layer Controls */}
-          <div style={{position:'absolute',top:10,right:10,zIndex:1000,background:'rgba(26,29,31,.9)',borderRadius:6,padding:'8px 12px'}}>
+          <div style={{position:'absolute',top:10,right:10,zIndex:1000,background:'rgba(26,29,31,.9)',borderRadius:6,padding:'8px 12px',backdropFilter:'blur(4px)'}}>
             <div style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:.5,color:'rgba(255,255,255,.5)',marginBottom:6}}>Layers</div>
             {[['casualty','Casualties'],['piracy','Piracy'],['weather','Weather'],['congestion','Congestion'],['geopolitical','Geopolitical'],['env','Environmental']].map(([key,label]) => (
               <label key={key} style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'rgba(255,255,255,.7)',cursor:'pointer',padding:'3px 0',whiteSpace:'nowrap'}}>
@@ -205,6 +218,16 @@ export default function Events() {
                 {label}
               </label>
             ))}
+            <div style={{borderTop:'1px solid rgba(255,255,255,.12)',marginTop:6,paddingTop:6}}>
+              <div style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:.5,color:'rgba(255,255,255,.5)',marginBottom:5}}>Map Style</div>
+              <div style={{display:'flex',gap:4}}>
+                {['light','dark'].map(m => (
+                  <button key={m} onClick={() => setMapTile(m)} style={{fontSize:10,padding:'2px 8px',borderRadius:3,cursor:'pointer',border:'1px solid rgba(255,255,255,.2)',background:mapTile===m?'rgba(255,255,255,.25)':'transparent',color:mapTile===m?'#fff':'rgba(255,255,255,.5)',fontWeight:mapTile===m?700:400}}>
+                    {m === 'light' ? '☀ Light' : '🌙 Dark'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

@@ -43,9 +43,12 @@ function mkRow(l, v) {
 }
 
 export default function Ports() {
+  const [mapTile, setMapTile] = useState('light')
+
   const mapRef = useRef(null)
   const mapElRef = useRef(null)
   const markersRef = useRef({})
+  const tileRef = useRef({})
   const [search, setSearch] = useState('')
   const [mouFilter, setMouFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -64,7 +67,9 @@ export default function Ports() {
     if (mapRef.current) return
     const map = L.map(mapElRef.current, { center:[20,20], zoom:2, attributionControl:false })
     mapRef.current = map
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 }).addTo(map)
+    tileRef.current.light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 })
+    tileRef.current.dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 })
+    tileRef.current.light.addTo(map)
 
     PORTS.forEach(p => {
       const sz = p.calls > 30000 ? 10 : p.calls > 10000 ? 7 : 5
@@ -78,6 +83,14 @@ export default function Ports() {
 
     return () => { map.remove(); mapRef.current = null }
   }, [])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const tiles = tileRef.current
+    if (mapTile === 'light') { if (map.hasLayer(tiles.dark)) map.removeLayer(tiles.dark); if (!map.hasLayer(tiles.light)) tiles.light.addTo(map) }
+    else { if (map.hasLayer(tiles.light)) map.removeLayer(tiles.light); if (!map.hasLayer(tiles.dark)) tiles.dark.addTo(map) }
+  }, [mapTile])
 
   function selectPort(p) {
     setSelPort(p); setPdTab('overview')
@@ -291,6 +304,16 @@ export default function Ports() {
           <div ref={mapElRef} style={{width:'100%',height:'100%'}}/>
           <div style={{position:'absolute',bottom:8,left:8,background:'rgba(26,29,31,.85)',color:'rgba(255,255,255,.85)',fontSize:10,fontWeight:600,padding:'4px 10px',borderRadius:4,backdropFilter:'blur(4px)',zIndex:1000,pointerEvents:'none'}}>
             ⚓ 9,241 ports · 847 anchorages · 2,144 terminals
+          </div>
+          <div style={{position:'absolute',top:10,right:10,zIndex:1000,background:'rgba(26,29,31,.88)',borderRadius:5,padding:'6px 10px',backdropFilter:'blur(4px)'}}>
+            <div style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:.5,color:'rgba(255,255,255,.5)',marginBottom:5}}>Map Style</div>
+            <div style={{display:'flex',gap:4}}>
+              {['light','dark'].map(m => (
+                <button key={m} onClick={() => setMapTile(m)} style={{fontSize:10,padding:'2px 8px',borderRadius:3,cursor:'pointer',border:'1px solid rgba(255,255,255,.2)',background:mapTile===m?'rgba(255,255,255,.25)':'transparent',color:mapTile===m?'#fff':'rgba(255,255,255,.5)',fontWeight:mapTile===m?700:400}}>
+                  {m === 'light' ? '☀ Light' : '🌙 Dark'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {/* Port Detail */}

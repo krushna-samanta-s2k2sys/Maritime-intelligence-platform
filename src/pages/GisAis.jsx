@@ -105,7 +105,7 @@ export default function GisAis() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selVessel, setSelVessel] = useState(null);
-  const [tile, setTileState] = useState('dark');
+  const [tile, setTileState] = useState('light');
   const [layers, setLayers] = useState({ vessels: true, routes: true, ports: true, choke: false, mou: false, density: false });
   const [simRunning, setSimRunning] = useState(false);
   const [coords, setCoords] = useState({ lat: '—', lon: '—' });
@@ -138,7 +138,7 @@ export default function GisAis() {
     // Tiles
     tileRefs.current.dark = L.tileLayer(TILE_URLS.dark, { maxZoom: 19 });
     tileRefs.current.light = L.tileLayer(TILE_URLS.light, { maxZoom: 19 });
-    tileRefs.current.dark.addTo(map);
+    tileRefs.current.light.addTo(map);
 
     // Layers
     const lv = L.layerGroup().addTo(map);

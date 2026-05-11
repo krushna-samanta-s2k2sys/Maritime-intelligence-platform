@@ -230,6 +230,7 @@ table.vt tr:hover td{background:var(--bg2)}
   overflow:hidden;display:flex;flex-direction:column;pointer-events:all}
 .mapLayerBtn{font-size:10px;font-weight:600;padding:5px 10px;border:none;background:#fff;cursor:pointer;color:var(--txt2);text-align:left;transition:background .12s}
 .mapLayerBtn:hover,.mapLayerBtn.on{background:var(--nav-bg);color:#fff}
+.mapLayerDivider{height:1px;background:var(--bd);margin:0}
 
 /* ── VESSEL POPUP ────────────────────────────────────── */
 .vpop{min-width:180px;font-size:11px}

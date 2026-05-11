@@ -168,13 +168,17 @@ const LiveMapCard = memo(function LiveMapCard() {
   const mapRef = useRef(null)
   const elRef  = useRef(null)
   const layersRef = useRef({})
+  const tileRef = useRef({})
   const [layersOn, setLayersOn] = useState({ vessels:true, routes:true, ports:true, choke:true })
+  const [mapTile, setMapTile] = useState('light')
 
   useEffect(() => {
     if (mapRef.current || !elRef.current) return
     const map = L.map(elRef.current, { center:[20,20], zoom:2, zoomControl:true, attributionControl:false })
     mapRef.current = map
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(map)
+    tileRef.current.light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19})
+    tileRef.current.dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19})
+    tileRef.current.light.addTo(map)
 
     const routeLayer = L.geoJSON(ROUTE_GEO, {
       style: f => {
@@ -229,6 +233,14 @@ const LiveMapCard = memo(function LiveMapCard() {
     return () => obs.disconnect()
   }, [])
 
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const tiles = tileRef.current
+    if (mapTile === 'light') { if (map.hasLayer(tiles.dark)) map.removeLayer(tiles.dark); if (!map.hasLayer(tiles.light)) tiles.light.addTo(map) }
+    else { if (map.hasLayer(tiles.light)) map.removeLayer(tiles.light); if (!map.hasLayer(tiles.dark)) tiles.dark.addTo(map) }
+  }, [mapTile])
+
   function toggleLayer(name) {
     const lyr = layersRef.current[name]
     if (!lyr || !mapRef.current) return
@@ -259,6 +271,10 @@ const LiveMapCard = memo(function LiveMapCard() {
               {n==='vessels'?'🚢 Vessels':n==='routes'?'〰 Routes':n==='ports'?'⚓ Ports':'⚠ Choke'}
             </button>
           ))}
+          <div className="mapLayerDivider" />
+          <button className={`mapLayerBtn${mapTile==='light'?' on':''}`} onClick={() => setMapTile(t => t==='light'?'dark':'light')}>
+            {mapTile === 'light' ? '☀ Light' : '🌙 Dark'}
+          </button>
         </div>
       </div>
     </div>
