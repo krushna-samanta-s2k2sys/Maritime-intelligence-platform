@@ -1151,19 +1151,30 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 
 /* ── ATTRIBUTE CONTENT PANEL ────────────────────────────── */
 .atContent{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:#fff}
-.atContentHdr{padding:7px 14px;border-bottom:1px solid var(--bd);flex-shrink:0;
-  display:flex;align-items:center;gap:8px;background:var(--bg2)}
-.atContentTitle{font-size:12px;font-weight:700;color:var(--txt)}
+
+/* Panel header */
+.atContentHdr{
+  padding:8px 14px;border-bottom:2px solid var(--bd);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg2)}
+.atContentHdrLeft{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.atContentHdrRight{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.atContentTitle{font-size:13px;font-weight:700;color:var(--txt)}
 .atContentCount{font-size:9px;color:var(--txt3);background:var(--bg3);
-  padding:2px 6px;border-radius:8px;flex-shrink:0}
+  padding:2px 7px;border-radius:10px;flex-shrink:0;font-weight:600}
 .atContentEditBadge{font-size:9px;color:var(--amber);background:#fff8e1;
-  padding:2px 6px;border-radius:8px;flex-shrink:0;font-weight:700}
+  padding:2px 7px;border-radius:10px;flex-shrink:0;font-weight:700}
+
+/* Collapse All / Hide Empty buttons */
+.afCtrlBtn{
+  font-size:10px;font-weight:600;color:var(--txt2);
+  border:1px solid var(--bd);border-radius:5px;
+  background:#fff;padding:3px 9px;cursor:pointer;
+  transition:all .12s;white-space:nowrap;flex-shrink:0}
+.afCtrlBtn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.afCtrlBtnActive{background:#e8f0fe!important;color:var(--blue)!important;border-color:#b0c8f8!important}
+
 .atContentBody{flex:1;overflow-y:auto;min-height:0}
-.atSection{}
-.atSectionHdr{padding:5px 14px 4px;font-size:9px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);
-  background:var(--bg2);border-bottom:1px solid var(--bg3);
-  border-top:1px solid var(--bg3);position:sticky;top:0;z-index:1}
 .atLeafTag{font-size:8px;color:var(--blue);background:#e8f0fe;
   padding:1px 4px;border-radius:3px;font-weight:600}
 
@@ -1220,69 +1231,101 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 .atSbSepTop .atSbSepLbl { color:#a16207; }
 
 /* ── ATTRIBUTE PROPERTY LIST (Fields view) ──────────────── */
-.afSection { border-bottom:1px solid var(--bg3) }
+/* ── SECTION HEADERS ─────────────────────────────────────── */
+.afSection { }
+.afSection + .afSection { border-top:2px solid #e5eaf3 }
+
 .afSectionHdr {
-  padding:8px 16px 7px;
-  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-  color:var(--txt2);background:var(--bg2);
-  border-bottom:1px solid var(--bg3);border-top:1px solid var(--bg3);
-  position:sticky;top:0;z-index:1;
   display:flex;align-items:center;gap:8px;
+  padding:9px 16px 8px;
+  background:#dce8fb;
+  border-left:3px solid #2563eb;
+  border-bottom:1px solid #b9d0f5;
+  border-top:1px solid #b9d0f5;
+  cursor:pointer;user-select:none;
+  position:sticky;top:0;z-index:1;
+  transition:background .12s;
 }
-.afSectionAccent {
-  display:block;width:3px;height:12px;border-radius:2px;
-  background:var(--blue);flex-shrink:0;
+.afSectionHdr:hover { background:#ccdaf8 }
+.afSectionHdrCollapsed { background:#eef3fc; opacity:.9 }
+.afSectionHdrCollapsed:hover { background:#dce8fb; opacity:1 }
+
+.afSectionChevron {
+  font-size:9px;color:#2563eb;flex-shrink:0;width:10px;
 }
-.afSectionCount {
-  margin-left:auto;font-size:8px;color:var(--txt3);
-  background:var(--bg3);padding:1px 5px;border-radius:8px;font-weight:500;
+.afSectionTitle {
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;
+  color:#1a3566;flex:1;min-width:0;
+}
+.afSectionPop {
+  font-size:9px;font-weight:600;color:#64748b;
+  background:#fff;border:1px solid #b9d0f5;
+  padding:1px 8px;border-radius:10px;flex-shrink:0;
+}
+.afSectionPopFull {
+  color:#059669;background:#d1fae5;border-color:#6ee7b7;
 }
 
+/* ── FIELD ROWS ──────────────────────────────────────────── */
 .afList { display:flex;flex-direction:column; }
 
 .afRow {
   display:flex;align-items:baseline;
-  padding:7px 16px;gap:10px;
-  border-bottom:1px solid var(--bg3);
-  cursor:pointer;transition:background .1s;min-height:34px;
+  padding:8px 16px;gap:0;
+  border-bottom:1px solid #f1f4f9;
+  cursor:pointer;transition:background .1s;min-height:36px;
 }
-.afRow:hover { background:var(--bg2); }
-.afRow.afSel { background:#e8f0fe; }
-.afRow.afSel .afLbl { color:var(--blue); }
-.afRow.afChg { background:#fffbf0; }
-.afRow.afChg .afLbl { color:#b45309; }
+.afRow:hover { background:#f5f8ff }
+.afRowAlt   { background:#fafbfd }
+.afRowAlt:hover { background:#f0f4ff }
+.afRow.afSel {
+  background:#eff6ff;
+  border-left:3px solid #3b82f6;
+  padding-left:13px;
+}
+.afRow.afSel .afLbl { color:#1d4ed8 }
+.afRow.afChg { background:#fffbeb }
+.afRow.afChg .afLbl { color:#b45309 }
+.afRow.afRowEmpty { opacity:.6 }
+.afRow.afRowEmpty:hover { opacity:1 }
 
+/* Label column */
 .afLbl {
   flex:0 0 42%;min-width:0;
-  font-size:11px;color:var(--txt3);font-weight:500;
-  line-height:1.5;padding-right:4px;
+  font-size:11px;color:#64748b;font-weight:500;
+  line-height:1.5;padding-right:16px;
   white-space:normal;word-break:break-word;
 }
-.afLblChg { color:#b45309 !important; }
+.afLblChg { color:#b45309 !important }
 
+/* Value column */
 .afVal {
   flex:1;min-width:0;
-  font-size:12px;font-weight:600;color:var(--txt);
+  font-size:12px;font-weight:600;color:#0f172a;
   line-height:1.5;word-break:break-word;
   display:flex;align-items:baseline;flex-wrap:wrap;gap:5px;
 }
-.afEmpty { color:var(--bd2);font-weight:400 }
+.afEmpty { color:#cbd5e1;font-weight:400;font-style:italic }
 
-/* "NOW: value" badge shown next to historical snapshot value */
+/* "NOW: value" badge next to historical snapshot */
 .afNowBadge {
   display:inline-flex;align-items:center;gap:3px;
   font-size:9px;font-weight:700;
-  color:#b45309;background:#fff3cd;
-  border:1px solid #fcd28a;
+  color:#b45309;background:#fff3cd;border:1px solid #fcd28a;
   border-radius:4px;padding:1px 5px;
   white-space:nowrap;flex-shrink:0;line-height:1.4;
 }
-.afNowBadge::before { content:'→ NOW:'; margin-right:2px; }
+.afNowBadge::before { content:'→ NOW:'; margin-right:2px }
 
 .afFilterTag {
   flex-shrink:0;font-size:8px;color:var(--blue);background:#e8f0fe;
-  padding:1px 4px;border-radius:3px;font-weight:600;
-  margin-left:auto;
+  padding:1px 5px;border-radius:10px;font-weight:600;margin-left:auto;
+}
+
+/* Empty-section message when hide-empty is on */
+.afEmptySection {
+  padding:14px 16px;font-size:11px;color:var(--txt3);
+  font-style:italic;text-align:center;
 }
 
 .afInput {
@@ -1305,15 +1348,15 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
 }
 
 /* ── ATTR ROW — edit mode hint ──────────────────────────── */
-.afValEdit{cursor:pointer;position:relative}
-.afEditHint{
+.afValEdit { cursor:pointer;position:relative }
+.afEditHint {
   display:inline-flex;align-items:center;justify-content:center;
   width:16px;height:16px;border-radius:3px;
   font-size:10px;color:var(--blue);background:rgba(21,88,214,.1);
   margin-left:6px;opacity:0;transition:opacity .12s;flex-shrink:0;vertical-align:middle;
 }
-.afRow:hover .afEditHint{opacity:1}
-.afSel .afEditHint{opacity:1;background:rgba(21,88,214,.18)}
+.afRow:hover .afEditHint { opacity:1 }
+.afSel .afEditHint { opacity:1;background:rgba(21,88,214,.18) }
 
 /* ══════════════════════════════════════════════════════════
    FIELD EDIT PANEL  (.ep)

@@ -135,33 +135,73 @@ function CompareTable({ vessel, leaves, activeNode, editMode, selLeafId, onSelec
 }
 
 export default function AttrContentPanel({ vessel, activeNode, editMode, selLeafId, onSelectLeaf, curDate }) {
-  const [viewMode, setViewMode] = useState('fields')
+  const [viewMode,      setViewMode]      = useState('fields')
+  const [collapsedSecs, setCollapsedSecs] = useState(new Set())
+  const [hideEmpty,     setHideEmpty]     = useState(false)
+
+  function toggleSec(id) {
+    setCollapsedSecs(prev => {
+      const s = new Set(prev)
+      s.has(id) ? s.delete(id) : s.add(id)
+      return s
+    })
+  }
 
   if (!vessel) return null
   const inHistMode = curDate && curDate < '2024-01-30'
   const node = (activeNode ? findNode(ATTRIBUTE_TREE, activeNode) : null) || ATTRIBUTE_TREE[0]
   const sections = buildSections(node)
+  const namedSections = sections.filter(s => s.sectionLabel)
   const allLeaves = gatherLeaves(node)
   const totalLeaves = allLeaves.length
 
+  const allCollapsed = namedSections.length > 0 && namedSections.every(s => collapsedSecs.has(s.sectionId))
+
+  function toggleCollapseAll() {
+    if (allCollapsed) {
+      setCollapsedSecs(new Set())
+    } else {
+      setCollapsedSecs(new Set(namedSections.map(s => s.sectionId)))
+    }
+  }
+
   return (
     <div className="atContent">
+      {/* ── Panel header ── */}
       <div className="atContentHdr">
-        <span className="atContentTitle">{node.label}</span>
-        <span className="atContentCount">{totalLeaves} attributes</span>
-        {editMode && <span className="atContentEditBadge">✎ Edit mode</span>}
-        {inHistMode && (
-          <span className="atHistModeBadge">
-            <span className="atHistModeDot" />
-            Viewing {curDate}
-          </span>
-        )}
-        <div className="viewToggle" style={{ marginLeft: 'auto' }}>
-          <button className={'vtBtn' + (viewMode === 'fields'  ? ' on' : '')} onClick={() => setViewMode('fields')}>Fields</button>
-          <button className={'vtBtn' + (viewMode === 'compare' ? ' on' : '')} onClick={() => setViewMode('compare')}>Compare Sources</button>
+        <div className="atContentHdrLeft">
+          <span className="atContentTitle">{node.label}</span>
+          <span className="atContentCount">{totalLeaves} attributes</span>
+          {editMode && <span className="atContentEditBadge">✎ Edit mode</span>}
+          {inHistMode && (
+            <span className="atHistModeBadge">
+              <span className="atHistModeDot" />
+              Viewing {curDate}
+            </span>
+          )}
+        </div>
+
+        <div className="atContentHdrRight">
+          {namedSections.length > 0 && (
+            <button className="afCtrlBtn" onClick={toggleCollapseAll}>
+              {allCollapsed ? '⊞ Expand All' : '⊟ Collapse All'}
+            </button>
+          )}
+          <button
+            className={`afCtrlBtn${hideEmpty ? ' afCtrlBtnActive' : ''}`}
+            onClick={() => setHideEmpty(v => !v)}
+            title="Hide fields with no value"
+          >
+            {hideEmpty ? '👁 Show Empty' : '⊘ Hide Empty'}
+          </button>
+          <div className="viewToggle">
+            <button className={'vtBtn' + (viewMode === 'fields'  ? ' on' : '')} onClick={() => setViewMode('fields')}>Fields</button>
+            <button className={'vtBtn' + (viewMode === 'compare' ? ' on' : '')} onClick={() => setViewMode('compare')}>Compare Sources</button>
+          </div>
         </div>
       </div>
 
+      {/* ── Body ── */}
       <div className="atContentBody">
         {viewMode === 'compare' ? (
           <CompareTable
@@ -173,53 +213,76 @@ export default function AttrContentPanel({ vessel, activeNode, editMode, selLeaf
             onSelectLeaf={onSelectLeaf}
           />
         ) : (
-          sections.map(sec => (
-            <div key={sec.sectionId} className="afSection">
-              {sec.sectionLabel && (
-                <div className="afSectionHdr">
-                  <span className="afSectionAccent" />
-                  {sec.sectionLabel}
-                  <span className="afSectionCount">{sec.leaves.length}</span>
-                </div>
-              )}
-              <div className="afList">
-                {sec.leaves.map(leaf => {
-                  const curVal  = getAttrValue(vessel, leaf.id)
-                  const histVal = inHistMode ? getAttrValueAtDate(vessel, leaf.id, curDate) : curVal
-                  const isEmpty = !curVal || curVal === '—'
-                  const isChg   = inHistMode && histVal !== curVal && histVal !== '' && curVal !== ''
-                  const isSel   = selLeafId === leaf.id
-                  const displayVal = isChg ? histVal : (curVal || '—')
+          sections.map(sec => {
+            const isCollapsed = collapsedSecs.has(sec.sectionId)
+            const populatedCount = sec.leaves.filter(l => {
+              const v = getAttrValue(vessel, l.id)
+              return v && v !== '—'
+            }).length
+            const allPop = populatedCount === sec.leaves.length
+            const visibleLeaves = hideEmpty
+              ? sec.leaves.filter(l => { const v = getAttrValue(vessel, l.id); return v && v !== '—' })
+              : sec.leaves
 
-                  return (
-                    <div
-                      key={leaf.id}
-                      className={`afRow${isSel ? ' afSel' : ''}${isChg ? ' afChg' : ''}`}
-                      onClick={() => onSelectLeaf(leaf.id, leaf.label)}
-                    >
-                      <span className={`afLbl${isChg ? ' afLblChg' : ''}`}>
-                        {leaf.label}
-                      </span>
+            return (
+              <div key={sec.sectionId} className="afSection">
+                {sec.sectionLabel && (
+                  <div
+                    className={`afSectionHdr${isCollapsed ? ' afSectionHdrCollapsed' : ''}`}
+                    onClick={() => toggleSec(sec.sectionId)}
+                  >
+                    <span className="afSectionChevron">{isCollapsed ? '▸' : '▾'}</span>
+                    <span className="afSectionTitle">{sec.sectionLabel}</span>
+                    <span className={`afSectionPop${allPop ? ' afSectionPopFull' : ''}`}>
+                      {populatedCount}/{sec.leaves.length}
+                    </span>
+                  </div>
+                )}
 
-                      <span className={`afVal${isEmpty && !isChg ? ' afEmpty' : ''}${editMode ? ' afValEdit' : ''}`}>
-                        {displayVal}
-                        {isChg && !editMode && (
-                          <span className="afNowBadge" title={`Current value: ${curVal}`}>
-                            NOW {curVal}
+                {!isCollapsed && (
+                  <div className="afList">
+                    {visibleLeaves.map((leaf, ri) => {
+                      const curVal  = getAttrValue(vessel, leaf.id)
+                      const histVal = inHistMode ? getAttrValueAtDate(vessel, leaf.id, curDate) : curVal
+                      const isEmpty = !curVal || curVal === '—'
+                      const isChg   = inHistMode && histVal !== curVal && histVal !== '' && curVal !== ''
+                      const isSel   = selLeafId === leaf.id
+                      const displayVal = isChg ? histVal : (curVal || '—')
+
+                      return (
+                        <div
+                          key={leaf.id}
+                          className={`afRow${isSel ? ' afSel' : ''}${isChg ? ' afChg' : ''}${isEmpty ? ' afRowEmpty' : ''}${ri % 2 === 1 ? ' afRowAlt' : ''}`}
+                          onClick={() => onSelectLeaf(leaf.id, leaf.label)}
+                        >
+                          <span className={`afLbl${isChg ? ' afLblChg' : ''}`}>
+                            {leaf.label}
                           </span>
-                        )}
-                        {editMode && <span className="afEditHint">✎</span>}
-                      </span>
 
-                      {leaf.filterId && (
-                        <span className="afFilterTag">{leaf.filterId}</span>
-                      )}
-                    </div>
-                  )
-                })}
+                          <span className={`afVal${isEmpty && !isChg ? ' afEmpty' : ''}${editMode ? ' afValEdit' : ''}`}>
+                            {displayVal}
+                            {isChg && !editMode && (
+                              <span className="afNowBadge" title={`Current value: ${curVal}`}>
+                                NOW {curVal}
+                              </span>
+                            )}
+                            {editMode && <span className="afEditHint">✎</span>}
+                          </span>
+
+                          {leaf.filterId && (
+                            <span className="afFilterTag">{leaf.filterId}</span>
+                          )}
+                        </div>
+                      )
+                    })}
+                    {hideEmpty && visibleLeaves.length === 0 && (
+                      <div className="afEmptySection">All fields in this section are empty</div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>
