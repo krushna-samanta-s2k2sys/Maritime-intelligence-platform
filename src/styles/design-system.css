@@ -1093,9 +1093,12 @@ body.c-resizing{cursor:nwse-resize!important;user-select:none}
 /* Scrollable content wrapper inside expanded sidebar */
 .atSbContent{flex:1;overflow-y:auto;min-height:0}
 
+/* Header strip containing the collapse button */
+.atSbHeader{display:flex;justify-content:flex-end;align-items:center;
+  padding:3px 6px;flex-shrink:0;border-bottom:1px solid var(--bg3);min-height:24px}
+
 /* Collapse / expand buttons */
-.atSbCollapseBtn{position:absolute;top:6px;right:6px;z-index:10;
-  width:20px;height:20px;border-radius:50%;border:1px solid var(--bd);
+.atSbCollapseBtn{width:20px;height:20px;border-radius:50%;border:1px solid var(--bd);
   background:var(--bg2);color:var(--txt3);font-size:13px;line-height:1;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:all .12s;flex-shrink:0}

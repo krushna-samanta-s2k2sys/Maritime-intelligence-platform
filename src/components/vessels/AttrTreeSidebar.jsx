@@ -172,12 +172,14 @@ export default function AttrTreeSidebar({ vessel, curDate, activeNode, onSelectN
       className="atSidebar"
       style={{ flex: `0 0 ${sbWidth}px`, width: sbWidth, minWidth: sbWidth }}
     >
-      {/* Collapse button */}
-      <button
-        className="atSbCollapseBtn"
-        onClick={() => setCollapsed(true)}
-        title="Collapse navigation"
-      >‹</button>
+      {/* Header strip with collapse button */}
+      <div className="atSbHeader">
+        <button
+          className="atSbCollapseBtn"
+          onClick={() => setCollapsed(true)}
+          title="Collapse navigation"
+        >‹</button>
+      </div>
 
       {/* Nav content */}
       <div className="atSbContent">
