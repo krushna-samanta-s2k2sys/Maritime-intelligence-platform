@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { generateHistory } from '../data/vesselTimeline'
 import { getAttrValue, LEAF_TEMPORAL_MAP } from '../data/attrValueMap'
@@ -52,13 +52,17 @@ export default function Vessels() {
   const { vesselColumns, attrFavorites, toggleAttrFavorite, persona,
           vesselFilters, updateVesselFilters } = usePreferences()
 
-  // Navigation: ?id=N → detail view, no params → list
-  const detailId = searchParams.get('id')
-  const vessel   = detailId ? VS.find(v => String(v.id) === detailId) || null : null
+  // Navigation: ?id=N or ?imo=XXXXXXX → detail view, ?date=YYYY-MM-DD → temporal position
+  const detailId  = searchParams.get('id')
+  const imoParam  = searchParams.get('imo')
+  const dateParam = searchParams.get('date')
+  const vessel = imoParam  ? VS.find(v => v.imo === imoParam)          || null
+               : detailId ? VS.find(v => String(v.id) === detailId) || null : null
 
   const [search,        setSearch]        = useState('')
   const [activeFilters, setActiveFilters] = useState(() => vesselFilters)
   const [showColPicker, setShowColPicker] = useState(false)
+  const [selectedIds,   setSelectedIds]   = useState(new Set())
   const [activeNode,    setActiveNode]    = useState('general')
   const [selLeafId,     setSelLeafId]     = useState(null)
   const [selLeafLabel,  setSelLeafLabel]  = useState(null)
@@ -90,6 +94,11 @@ export default function Vessels() {
   }
 
   const { curDate, setCurDate, dateToPct, jumpToMilestone, events, TL_START_YR, TL_END_YR } = useTemporalDate(vessel)
+
+  // Sync date from URL param (deep link from AIS / Dashboard)
+  useEffect(() => {
+    if (dateParam && vessel) setCurDate(dateParam)
+  }, [vessel?.id, dateParam]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Smart search + filter builder filters combined
   const filtered = useMemo(() => {
@@ -271,13 +280,14 @@ export default function Vessels() {
           />
           {search && <button className="siClear" onClick={() => setSearch('')} title="Clear search">✕</button>}
         </div>
+        <button className="btn btnS btnSm" onClick={() => setSearch(search.trim())}>Search</button>
         <select className="fSel" value={sortKey} onChange={e => setSortKey(e.target.value)}>
           <option value="name">Sort: Name A→Z</option>
           <option value="imo">Sort: IMO ↑</option>
           <option value="built">Sort: Built Year</option>
           <option value="dwt">Sort: DWT</option>
         </select>
-        <button className="btn btnT">+ Add Vessel</button>
+        <button className="btn btnP btnSm">+ Add Vessel</button>
       </div>
 
       {/* Search interpretation hints */}
@@ -302,8 +312,18 @@ export default function Vessels() {
       <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
         <div className="rBar">
           <div>Showing <strong>{filtered.length}</strong> of <strong>847,392</strong> vessels</div>
-          <div style={{fontSize:10,color:'var(--txt3)'}}>
-            {visibleColumns.length} columns · {vesselColumns.length} configured
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            {selectedIds.size > 0 && (
+              <>
+                <span style={{fontSize:11,color:'var(--txt2)'}}><strong>{selectedIds.size}</strong> selected</span>
+                <button className="btn btnSm" style={{background:'var(--red)',color:'#fff',border:'none',padding:'3px 10px'}}
+                  onClick={() => setSelectedIds(new Set())}>
+                  🗑 Delete ({selectedIds.size})
+                </button>
+                <button className="btn btnS btnSm" onClick={() => setSelectedIds(new Set())}>Deselect All</button>
+              </>
+            )}
+            <div style={{fontSize:10,color:'var(--txt3)'}}>{visibleColumns.length} columns · {vesselColumns.length} configured</div>
           </div>
         </div>
 
@@ -312,7 +332,16 @@ export default function Vessels() {
           <table className="vt">
             <thead>
               <tr>
-                <th style={{width:26}}><input type="checkbox"/></th>
+                <th style={{width:26}}>
+                  <input type="checkbox"
+                    checked={filtered.length > 0 && filtered.every(v => selectedIds.has(v.id))}
+                    ref={el => { if (el) el.indeterminate = selectedIds.size > 0 && !filtered.every(v => selectedIds.has(v.id)) }}
+                    onChange={() => {
+                      const allSel = filtered.every(v => selectedIds.has(v.id))
+                      setSelectedIds(allSel ? new Set() : new Set(filtered.map(v => v.id)))
+                    }}
+                  />
+                </th>
                 {visibleColumns.map(col => (
                   <th key={col.id} style={{minWidth:col.width,cursor:'pointer',userSelect:'none'}} onClick={() => {
                     if (sortKey===col.id) setSortDir(d=>d==='asc'?'desc':'asc')
@@ -328,7 +357,10 @@ export default function Vessels() {
                 const sc = STCLS[v.st] || 'stI'
                 return (
                   <tr key={v.id}>
-                    <td><input type="checkbox"/></td>
+                    <td><input type="checkbox" checked={selectedIds.has(v.id)}
+                      onChange={() => setSelectedIds(prev => { const s=new Set(prev); s.has(v.id)?s.delete(v.id):s.add(v.id); return s })}
+                      onClick={e => e.stopPropagation()}
+                    /></td>
                     {visibleColumns.map(col => {
                       const val = getCellValue(col.id, v)
                       if (col.id === 'name') return (

@@ -401,7 +401,7 @@ function PscCard() {
             {PSC_DATA.map((p,i) => (
               <tr key={i}>
                 <td>
-                  <button className="vLnk" style={{background:'none',border:'none',padding:0,cursor:'pointer'}} onClick={() => navigate('/vessels')}>{p.vessel}</button>
+                  <button className="vLnk" style={{background:'none',border:'none',padding:0,cursor:'pointer'}} onClick={() => navigate(`/vessels?imo=${p.imo}&date=${p.date}`)}>{p.vessel}</button>
                   <div style={{fontSize:9,color:'var(--txt3)',fontFamily:'monospace'}}>{p.imo}</div>
                 </td>
                 <td style={{fontSize:11}}>{p.port}</td>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -89,6 +90,7 @@ function hdgToCompass(h) {
 }
 
 export default function GisAis() {
+  const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapInst = useRef(null);
   const layerRefs = useRef({});
@@ -612,7 +614,11 @@ export default function GisAis() {
                   <div style={{ padding: '10px 14px' }}>
                     <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>Quick Links</div>
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                      {['📋 Full Profile', '🚨 Sanctions', '🗺 Voyage'].map(lbl => (
+                      <button
+                        onClick={() => navigate(`/vessels?imo=${v.imo}`)}
+                        style={{ padding: '3px 9px', fontSize: 10, fontWeight: 600, borderRadius: 4, cursor: 'pointer', background: 'rgba(96,165,250,0.2)', color: '#93c5fd', border: '1px solid rgba(96,165,250,0.4)', fontFamily: 'inherit' }}
+                      >📋 Full Profile →</button>
+                      {['🚨 Sanctions', '🗺 Voyage'].map(lbl => (
                         <button key={lbl} style={{ padding: '3px 9px', fontSize: 10, fontWeight: 600, borderRadius: 4, cursor: 'pointer', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.2)', fontFamily: 'inherit' }}>{lbl}</button>
                       ))}
                       {v.status === 'AIS Dark' && (
