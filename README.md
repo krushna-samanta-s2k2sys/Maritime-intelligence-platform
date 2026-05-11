@@ -34,6 +34,8 @@ node .\node_modules\vite\bin\vite.js build
 
 Output is written to `dist\`.
 
+https://www.marinetraffic.com/en/ais/home/centerx:-143.8/centery:17.5/zoom:2
+
 ## Pages
 
 | Route | Page |

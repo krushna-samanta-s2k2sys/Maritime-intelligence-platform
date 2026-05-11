@@ -1606,3 +1606,312 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
   padding:0;font-size:12px;line-height:1;display:flex;align-items:center}
 .feTagX:hover{color:#fff}
 .feTagHint{font-size:9px;color:var(--txt3);padding:0 2px;line-height:1.4}
+
+/* ══════════════════════════════════════════════════════════
+   GIS / AIS PAGE  — full dark-map interface
+   ══════════════════════════════════════════════════════════ */
+
+/* Root — uses flex:1 so it fills AppShell outlet, NOT 100vh */
+.gisRoot{display:flex;flex-direction:column;flex:1;min-height:0;background:#0d1117;overflow:hidden}
+
+/* ── Entity Tabs (Row 1, leftmost) ────────────────────────────────── */
+.gisEntityTabs{display:flex;align-items:stretch;gap:0;flex-shrink:0}
+.gisEntityTab{
+  padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;
+  background:#fff;color:var(--txt3);border:none;font-family:inherit;
+  border-bottom:2px solid transparent;
+  transition:color .12s,border-color .12s;white-space:nowrap;
+  display:flex;align-items:center;gap:4px}
+.gisEntityTab:hover{color:var(--txt)}
+.gisEntityTab.on{color:var(--sp-red);border-bottom-color:var(--sp-red);font-weight:700}
+
+/* ── Control label (small uppercase) ─────────────────────────────── */
+.gisCtrLbl{font-size:9px;font-weight:700;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;white-space:nowrap}
+
+/* ── Status filter chips (Row 2) ─────────────────────────────────── */
+.gisStatusChip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;font-size:10px;font-weight:600;border-radius:14px;cursor:pointer;
+  border:1px solid var(--sc, var(--bd2));
+  color:var(--txt3);background:#fff;
+  font-family:inherit;transition:all .12s;white-space:nowrap;flex-shrink:0}
+.gisStatusChip:hover{color:var(--txt);border-color:var(--sc,var(--bd))}
+.gisStatusChip.on{
+  color:var(--sc,var(--txt));background:color-mix(in srgb, var(--sc,#888) 12%, #fff);
+  border-color:var(--sc,var(--bd2))}
+
+/* ── Live badge ───────────────────────────────────────────────────── */
+@keyframes gisPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.45)}}
+
+/* ── Body wrapper (sidebar + map side-by-side) ────────────────────── */
+.gisBody{display:flex;flex:1;min-height:0;overflow:hidden}
+
+/* ── Map area ─────────────────────────────────────────────────────── */
+.gisMapArea{flex:1;position:relative;overflow:hidden}
+.gisMapCanvas{width:100%;height:100%}
+
+/* ── Layer toggle buttons ─────────────────────────────────────────── */
+.gisLayerBtn{
+  padding:4px 9px;font-size:11px;border-radius:4px;cursor:pointer;
+  border:1px solid var(--bd);background:none;color:var(--txt2);
+  font-family:inherit;transition:all .12s;white-space:nowrap;flex-shrink:0}
+.gisLayerBtn:hover{background:var(--bg2);color:var(--txt)}
+.gisLayerBtn.on{background:var(--bg3);border-color:var(--bd2);color:var(--txt);font-weight:600}
+
+/* ── Left sidebar (light panel, outside map) ──────────────────────── */
+.gisSidebar{
+  width:268px;flex-shrink:0;display:flex;flex-direction:column;
+  background:#fff;border-right:1px solid var(--bd);
+  transition:width .25s ease;overflow:hidden}
+.gisSidebar.closed{width:0}
+
+.gisSideToggle{
+  padding:3px 7px;border:1px solid var(--bd);border-radius:4px;
+  background:none;cursor:pointer;color:var(--txt3);font-size:10px;
+  transition:all .12s;font-family:inherit;flex-shrink:0;line-height:1}
+.gisSideToggle:hover{background:var(--bg2);color:var(--txt)}
+
+.gisSideHead{padding:10px 12px 8px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.gisSideTitleRow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.gisSideTitle{font-size:12px;font-weight:700;color:var(--txt);
+  display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.gisSideCount{font-size:10px;font-weight:400;color:var(--txt3)}
+
+.gisSideSearch{width:100%;background:var(--bg2);
+  border:1px solid var(--bd);color:var(--txt);font-size:11px;
+  padding:6px 8px;border-radius:4px;outline:none;font-family:inherit}
+.gisSideSearch::placeholder{color:var(--txt3)}
+.gisSideSearch:focus{border-color:var(--blue)}
+
+/* Vessel list */
+.gisSideList{flex:1;overflow-y:auto}
+.gisSideList::-webkit-scrollbar{width:3px}
+.gisSideList::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.gisVesRow{
+  padding:8px 12px;border-bottom:1px solid var(--bd);
+  cursor:pointer;display:flex;gap:8px;align-items:flex-start;
+  border-left:3px solid transparent;transition:background .1s,border-color .1s}
+.gisVesRow:hover{background:var(--bg2)}
+.gisVesRow.sel{background:#e8f0fe;border-left-color:var(--blue)}
+
+.gisVesRowDot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.gisVesRowBody{flex:1;min-width:0}
+.gisVesRowName{font-size:11px;font-weight:700;color:var(--txt);
+  display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.gisVesRowNameTxt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.gisVesDarkBadge{font-size:8px;font-weight:800;background:#f87171;color:#fff;
+  padding:1px 5px;border-radius:6px;flex-shrink:0;letter-spacing:.5px}
+.gisVesRowMeta{font-size:9px;color:var(--txt3);
+  display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.gisVesSpd{font-weight:700;font-family:monospace;font-size:10px}
+.gisVesDest{font-size:9px;color:var(--txt3);margin-top:2px}
+.gisSideEmpty{padding:24px;text-align:center;font-size:11px;color:var(--txt3)}
+
+/* ── Right detail panel ───────────────────────────────────────────── */
+.gisDetail{
+  position:absolute;right:0;top:0;bottom:0;width:308px;z-index:900;
+  background:#fff;
+  display:flex;flex-direction:column;
+  border-left:1px solid var(--bd);
+  transform:translateX(100%);transition:transform .25s ease;
+  box-shadow:-4px 0 20px rgba(0,0,0,0.08)}
+.gisDetail.open{transform:translateX(0)}
+
+.gisDetailClose{
+  position:absolute;left:-37px;top:14px;width:33px;height:33px;
+  background:#fff;border:1px solid var(--bd);
+  border-right:none;border-radius:5px 0 0 5px;
+  cursor:pointer;color:var(--txt3);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-family:inherit}
+.gisDetailClose:hover{color:var(--sp-red);background:var(--bg2)}
+
+.gisDetailHead{padding:13px 14px 11px;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--bg2)}
+.gisDetailHdg{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.gisDetailDot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.gisDetailHdgText{flex:1;min-width:0}
+.gisDetailName{font-size:13px;font-weight:700;color:var(--txt);line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gisDetailIds{font-size:10px;color:var(--txt3);margin-top:1px;font-family:monospace}
+
+.gisAisBadge{font-size:10px;font-weight:700;padding:5px 9px;border-radius:4px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.gisAisBadge.ok{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.4);color:#16a34a}
+.gisAisBadge.dark{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.35);color:#dc2626}
+
+.gisDetailBody{flex:1;overflow-y:auto;background:#fff}
+.gisDetailBody::-webkit-scrollbar{width:3px}
+.gisDetailBody::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.gisDetailSect{padding:9px 14px;border-bottom:1px solid var(--bd)}
+.gisDetailSectHd{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--txt3);margin-bottom:7px}
+
+.gisDetailRow{display:flex;gap:8px;padding:3px 0;font-size:11px;align-items:baseline}
+.gisDetailRowLbl{color:var(--txt3);font-weight:600;width:104px;flex-shrink:0;font-size:10px}
+.gisDetailRowVal{color:var(--txt);flex:1;word-break:break-word}
+.gisDetailRowVal.mono{font-family:monospace}
+
+/* ── Path history panel ───────────────────────────────────────────── */
+.gisPathSect{background:var(--bg2)}
+
+.gisPathDateRow{display:flex;gap:7px;margin-bottom:7px}
+.gisPathDateGrp{flex:1}
+.gisPathLbl{display:block;font-size:9px;color:var(--txt3);
+  margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.gisPathDate{width:100%;background:#fff;
+  border:1px solid var(--bd);color:var(--txt);font-size:10px;
+  padding:5px 6px;border-radius:4px;outline:none;font-family:inherit;
+  transition:border-color .15s}
+.gisPathDate:focus{border-color:var(--sp-red)}
+
+.gisPathPresets{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.gisPathPreset{padding:3px 8px;font-size:9px;font-weight:700;border-radius:4px;cursor:pointer;
+  background:var(--bg3);color:var(--txt2);
+  border:1px solid var(--bd);font-family:inherit;
+  text-transform:uppercase;letter-spacing:.3px;transition:all .12s}
+.gisPathPreset:hover{background:var(--bd);color:var(--txt)}
+
+.gisPathActions{display:flex;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.gisPathShowBtn{padding:5px 12px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;
+  background:var(--sp-red);color:#fff;
+  border:1px solid var(--sp-red);font-family:inherit;transition:all .14s}
+.gisPathShowBtn:hover{opacity:.88}
+.gisPathShowBtn.showing{background:var(--bg3);border-color:var(--bd2);color:var(--txt2)}
+
+.gisPathStats{display:flex;margin-top:9px;border-top:1px solid var(--bd);padding-top:9px}
+.gisPathStat{flex:1;text-align:center;padding:3px 0}
+.gisPathStat+.gisPathStat{border-left:1px solid var(--bd)}
+.gisPathStatV{font-size:16px;font-weight:700;color:var(--txt);font-family:monospace;line-height:1}
+.gisPathStatL{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+/* Quick links */
+.gisDetailLinks{display:flex;gap:5px;flex-wrap:wrap}
+.gisDetailLink{padding:4px 10px;font-size:10px;font-weight:600;border-radius:4px;cursor:pointer;
+  background:var(--bg3);color:var(--txt2);
+  border:1px solid var(--bd);font-family:inherit;transition:all .12s}
+.gisDetailLink:hover{background:var(--bd);color:var(--txt)}
+.gisDetailLink.primary{background:#e8f0fe;color:#1a56db;border-color:#93c5fd}
+.gisDetailLink.danger{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+
+/* ── Legend ───────────────────────────────────────────────────────── */
+.gisLegend{
+  position:absolute;top:10px;right:10px;z-index:900;
+  background:#fff;
+  border:1px solid var(--bd);border-radius:6px;
+  padding:10px 12px;min-width:155px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.1);
+  transition:right .25s ease}
+.gisLegend.shifted{right:318px}
+.gisLegendTitle{font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--txt3);margin-bottom:6px}
+.gisLegendRow{display:flex;align-items:center;gap:7px;padding:2px 0;font-size:11px;color:var(--txt)}
+.gisLegendIc{width:14px;text-align:center;font-size:9px;flex-shrink:0;line-height:1}
+.gisLegendDiv{height:1px;background:var(--bd);margin:6px 0}
+
+/* ── Bottom status bar ────────────────────────────────────────────── */
+.gisStatBar{
+  position:absolute;bottom:0;left:0;right:0;z-index:900;
+  background:#fff;
+  border-top:1px solid var(--bd);
+  padding:5px 14px;display:flex;gap:16px;align-items:center;
+  overflow-x:auto;box-shadow:0 -2px 8px rgba(0,0,0,0.06)}
+.gisStatBar::-webkit-scrollbar{height:0}
+
+.gisStatItem{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.gisStatV{font-size:13px;font-weight:700;line-height:1;color:var(--txt)}
+.gisStatL{font-size:8px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Toast notification ───────────────────────────────────────────── */
+.gisToast{
+  position:absolute;top:14px;right:14px;z-index:1000;
+  background:#fff;border:1px solid var(--bd);border-left:3px solid var(--sp-red);
+  color:var(--txt);border-radius:6px;padding:10px 14px;
+  font-size:11px;font-weight:600;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+  max-width:290px;line-height:1.55;
+  opacity:0;transform:translateY(-8px) scale(0.97);
+  transition:opacity .2s,transform .2s;pointer-events:none}
+.gisToast.vis{opacity:1;transform:translateY(0) scale(1)}
+.gisToast.shifted{right:322px}
+
+/* ── Draw mode indicator badge ────────────────────────────────────── */
+.gisDrawMode{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:950;
+  background:#fff;border:1px solid #93c5fd;
+  color:#1a56db;font-size:10px;font-weight:700;
+  padding:5px 14px;border-radius:20px;
+  pointer-events:none;letter-spacing:.3px;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.1)}
+
+/* ── Floating draw toolbar (right-center of map) ─────────────────── */
+.gisDrawTb{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:950;
+  background:#fff;
+  border:1px solid var(--bd);border-radius:8px;
+  padding:10px 8px;
+  display:flex;flex-direction:column;gap:4px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+  min-width:110px}
+
+/* Draw toolbar buttons */
+.gisDrawBtn{
+  padding:5px 10px;font-size:10px;font-weight:600;border-radius:4px;cursor:pointer;
+  background:var(--bg2);color:var(--txt2);
+  border:1px solid var(--bd);font-family:inherit;
+  transition:all .12s;white-space:nowrap;text-align:left;
+  display:flex;align-items:center;gap:5px}
+.gisDrawBtn:hover{background:var(--bg3);color:var(--txt)}
+.gisDrawBtn.on{background:#e8f0fe;color:#1a56db;border-color:#93c5fd;font-weight:700}
+.gisDrawBtn.finish{background:#f0fdf4;color:#16a34a;border-color:#86efac}
+.gisDrawBtn.finish:hover{background:#dcfce7}
+.gisDrawBtn.clear{background:#fef2f2;color:#dc2626;border-color:#fca5a5}
+.gisDrawBtn.clear:hover{background:#fee2e2}
+
+/* ── GeoJSON Analysis Panel ───────────────────────────────────────── */
+.gisAnalysis{
+  position:absolute;bottom:36px;left:280px;z-index:950;
+  width:320px;
+  background:#fff;
+  border:1px solid var(--bd);border-radius:8px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,0.12)}
+
+.gisAnalysisHead{
+  padding:10px 12px;border-bottom:1px solid var(--bd);background:var(--bg2);
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-shrink:0;gap:8px}
+
+.gisAnalysisBody{
+  padding:10px 12px;overflow-y:auto;
+  max-height:340px}
+.gisAnalysisBody::-webkit-scrollbar{width:3px}
+.gisAnalysisBody::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.gisAnalysisStat{font-size:11px;display:flex;align-items:center;gap:0;padding:2px 0;color:var(--txt)}
+
+.gisAnalysisVesList{
+  max-height:110px;overflow-y:auto;
+  margin-top:4px;margin-bottom:4px;
+  border:1px solid var(--bd);border-radius:4px}
+.gisAnalysisVesList::-webkit-scrollbar{width:3px}
+.gisAnalysisVesList::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.gisAnalysisVesRow{
+  padding:5px 8px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  transition:background .1s;color:var(--txt)}
+.gisAnalysisVesRow:hover{background:var(--bg2)}
+.gisAnalysisVesRow:last-child{border-bottom:none}
+
+.gisAnalysisGeoJSON{margin-top:8px}
+
+.gisAnalysisCode{
+  font-size:9px;font-family:'IBM Plex Mono','Courier New',monospace;
+  color:#166534;line-height:1.55;white-space:pre-wrap;word-break:break-all;
+  background:#f0fdf4;border:1px solid #86efac;
+  border-radius:4px;padding:7px 9px;max-height:100px;overflow-y:auto;
+  margin:0}
