@@ -163,10 +163,10 @@ export default function TopNav() {
           <NavLink to="/events"      className={nl}><span className="ntI">⚡</span> Events</NavLink>
           <NavLink to="/imo-core"    className={nl}><span className="ntI">🆔</span> IMO Core</NavLink>
           <NavLink to="/gis-ais"     className={nl}><span className="ntI">🌍</span> GIS / AIS</NavLink>
-          <NavLink to="/vessel-images" className={nl}><span className="ntI">📷</span> Vessel Images</NavLink>
+          <NavLink to="/vessel-images" className={nl}><span className="ntI">📷</span> Images</NavLink>
           <div className="navSep"></div>
-          <NavLink to="/etl"         className={nl}><span className="ntI">⚙️</span> ETL Pipelines</NavLink>
-          <NavLink to="/bigquery"    className={nl}><span className="ntI">🔬</span> BigQuery</NavLink>
+          <NavLink to="/etl"         className={nl}><span className="ntI">⚙️</span> ETL</NavLink>
+          <NavLink to="/bigquery"    className={nl}><span className="ntI">🔬</span> DM</NavLink>
         </div>
       </nav>
 

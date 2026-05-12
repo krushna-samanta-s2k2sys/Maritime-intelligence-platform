@@ -12,7 +12,10 @@ import Events from './pages/Events'
 import ImoCore from './pages/ImoCore'
 import GisAis from './pages/GisAis'
 import VesselImages from './pages/VesselImages'
-import Etl from './pages/Etl'
+import Etl from './pages/ETL'
+import ETLRuns from './pages/ETLRuns'
+import ETLReview from './pages/ETLReview'
+import ETLRaw from './pages/ETLRaw'
 import Bigquery from './pages/Bigquery'
 
 export default function App() {
@@ -33,6 +36,9 @@ export default function App() {
         <Route path="imo-core" element={<ImoCore />} />
         <Route path="gis-ais" element={<GisAis />} />
         <Route path="etl" element={<Etl />} />
+        <Route path="etl-runs" element={<ETLRuns />} />
+        <Route path="etl-review" element={<ETLReview />} />
+        <Route path="etl-raw" element={<ETLRaw />} />
         <Route path="bigquery" element={<Bigquery />} />
       </Route>
     </Routes>

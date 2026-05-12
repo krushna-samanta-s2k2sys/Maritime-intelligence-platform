@@ -1,577 +1,1031 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import ETLSubNav from '../components/etl/ETLSubNav'
 
-const CAT_LABELS = { flag: 'Flag', class: 'Class', ais: 'AIS', comp: 'Compl.', market: 'Market', pni: 'P&I' };
-const CAT_CATS = ['all', 'flag', 'class', 'ais', 'comp', 'market', 'pni'];
+/* ─── Static reference data ──────────────────────────────────────────────── */
+const ENTITY_OPTS = ['Vessel', 'Port', 'Company', 'Market', 'Compliance']
+const CONN_TYPES  = ['BigQuery', 'S3', 'PubSub', 'PostgreSQL', 'Kafka', 'SFTP', 'REST']
+const QC_TYPES    = ['Format', 'Range', 'Completeness', 'Reference', 'Cross-field']
+const XFM_TYPES   = ['Function', 'Lookup', 'Regex', 'Conversion', 'Combine', 'Split', 'SQL']
+const SEVERITY    = ['error', 'warn', 'info']
+const WRITE_MODES = ['MERGE (upsert)', 'APPEND', 'REPLACE partition']
+const LOAD_MODES  = ['Delta', 'Full Reload', 'Streaming']
+const MATCH_TYPES = ['exact', 'fuzzy', 'fuzzy+exact', 'phonetic']
+const MATCH_ACTIONS = ['Update', 'Review', 'Skip']
 
-const FEEDS = [
-  {id:'f01',name:'Liberia Registry',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'SFTP',host:'ftp.liscr.com',user:'sp_extract',pattern:'vessels_*.csv',encoding:'UTF-8'},sched:{cron:'0 2 * * *',freq:'Daily',mode:'Delta',timeout:'120s',retry:3},qc:[{id:'QC-F01',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-F02',field:'vessel_name',sev:'warn',expr:'len>1 && len<100'},{id:'QC-F03',field:'gross_tonnage',sev:'warn',expr:'val>0 && val<500000'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'VESSEL_NAME',tgt:'vessel.name',xfm:'titlecase'},{src:'GT',tgt:'vessel.gross_tonnage',xfm:'to_int'},{src:'FLAG',tgt:'vessel.flag_code',xfm:'iso3166'}]},
-  {id:'f02',name:'Panama Registry',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.segumar.com',user:'sp_api',pattern:'N/A',encoding:'JSON'},sched:{cron:'0 3 * * *',freq:'Daily',mode:'Full',timeout:'180s',retry:2},qc:[{id:'QC-F04',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-F05',field:'registration_date',sev:'warn',expr:'isdate && not_future'}],map:[{src:'imoNo',tgt:'vessel.imo_number',xfm:'trim'},{src:'vesselName',tgt:'vessel.name',xfm:'titlecase'},{src:'flagState',tgt:'vessel.flag_code',xfm:'iso3166'}]},
-  {id:'f03',name:'Marshall Islands',cat:'flag',freq:'Daily',status:'amber',enabled:true,conn:{type:'SFTP',host:'ftp.register.marshallislands-mahi.com',user:'sp_mahi',pattern:'MI_vessels_*.csv',encoding:'UTF-8'},sched:{cron:'0 4 * * *',freq:'Daily',mode:'Delta',timeout:'90s',retry:3},qc:[{id:'QC-F06',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Name',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f04',name:'Bahamas Registry',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'EMAIL',host:'mail.bahamasmaritimeauthority.com',user:'extracts@',pattern:'BMA_*.xlsx',encoding:'UTF-8'},sched:{cron:'0 6 * * *',freq:'Daily',mode:'Full',timeout:'60s',retry:2},qc:[{id:'QC-F07',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO Number',tgt:'vessel.imo_number',xfm:'trim'},{src:'Vessel Name',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f05',name:'Singapore MPA',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.mpa.gov.sg',user:'sp_mpa',pattern:'N/A',encoding:'JSON'},sched:{cron:'30 1 * * *',freq:'Daily',mode:'Delta',timeout:'120s',retry:3},qc:[{id:'QC-F08',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-F09',field:'port_of_registry',sev:'info',expr:'not_empty'}],map:[{src:'imoNumber',tgt:'vessel.imo_number',xfm:'trim'},{src:'vesselName',tgt:'vessel.name',xfm:'titlecase'},{src:'portOfRegistry',tgt:'vessel.port_of_registry',xfm:'trim'}]},
-  {id:'f06',name:'Malta Maritime Authority',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'SFTP',host:'ftp.transport.gov.mt',user:'sp_mma',pattern:'MMA_*.csv',encoding:'ISO-8859-1'},sched:{cron:'0 5 * * *',freq:'Daily',mode:'Delta',timeout:'90s',retry:2},qc:[{id:'QC-F10',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'NAME',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f07',name:'Cyprus Shipping Deputy',cat:'flag',freq:'Weekly',status:'green',enabled:true,conn:{type:'EMAIL',host:'mail.shipping.gov.cy',user:'extracts@',pattern:'CY_*.xlsx',encoding:'UTF-8'},sched:{cron:'0 8 * * 1',freq:'Weekly',mode:'Full',timeout:'60s',retry:2},qc:[{id:'QC-F11',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Vessel',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f08',name:'Greek Flag Register',cat:'flag',freq:'Daily',status:'amber',enabled:false,conn:{type:'SFTP',host:'ftp.yen.gr',user:'sp_yen',pattern:'GR_*.csv',encoding:'UTF-8'},sched:{cron:'0 7 * * *',freq:'Daily',mode:'Full',timeout:'120s',retry:3},qc:[{id:'QC-F12',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Name',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f09',name:'Hong Kong Shipping Registry',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.mardep.gov.hk',user:'sp_hkmard',pattern:'N/A',encoding:'JSON'},sched:{cron:'30 2 * * *',freq:'Daily',mode:'Delta',timeout:'90s',retry:2},qc:[{id:'QC-F13',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'imo',tgt:'vessel.imo_number',xfm:'trim'},{src:'name',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'f10',name:'UK Ship Register',cat:'flag',freq:'Daily',status:'green',enabled:true,conn:{type:'SFTP',host:'ftp.ukshipregister.co.uk',user:'sp_uksr',pattern:'UKSR_*.csv',encoding:'UTF-8'},sched:{cron:'0 6 * * *',freq:'Daily',mode:'Delta',timeout:'120s',retry:3},qc:[{id:'QC-F14',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-F15',field:'official_number',sev:'info',expr:'not_empty'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'ShipName',tgt:'vessel.name',xfm:'titlecase'},{src:'OfficialNo',tgt:'vessel.official_number',xfm:'trim'}]},
-  {id:'f11',name:'Norway NIS/NOR Register',cat:'flag',freq:'Daily',status:'grey',enabled:false,conn:{type:'SFTP',host:'ftp.sdir.no',user:'sp_sdir',pattern:'NOR_*.csv',encoding:'UTF-8'},sched:{cron:'0 5 * * *',freq:'Daily',mode:'Full',timeout:'90s',retry:2},qc:[{id:'QC-F16',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Name',tgt:'vessel.name',xfm:'titlecase'}]},
-  {id:'c01',name:'DNV GL',cat:'class',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.dnv.com',user:'sp_dnv',pattern:'N/A',encoding:'JSON'},sched:{cron:'0 1 * * *',freq:'Daily',mode:'Delta',timeout:'300s',retry:3},qc:[{id:'QC-C01',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-C02',field:'class_notation',sev:'warn',expr:'not_empty'},{id:'QC-C03',field:'survey_due',sev:'warn',expr:'isdate'}],map:[{src:'imoNumber',tgt:'vessel.imo_number',xfm:'trim'},{src:'classNotation',tgt:'classification.class_notation',xfm:'trim'},{src:'surveyDue',tgt:'classification.survey_due',xfm:'to_date'},{src:'classStatus',tgt:'classification.status',xfm:'enum_map'}]},
-  {id:'c02',name:"Lloyd's Register",cat:'class',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.lr.org',user:'sp_lr',pattern:'N/A',encoding:'JSON'},sched:{cron:'30 1 * * *',freq:'Daily',mode:'Delta',timeout:'240s',retry:3},qc:[{id:'QC-C04',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-C05',field:'class_status',sev:'warn',expr:'in_enum'}],map:[{src:'imo',tgt:'vessel.imo_number',xfm:'trim'},{src:'className',tgt:'classification.class_notation',xfm:'trim'},{src:'status',tgt:'classification.status',xfm:'enum_map'}]},
-  {id:'c03',name:'Bureau Veritas',cat:'class',freq:'Daily',status:'amber',enabled:true,conn:{type:'SFTP',host:'ftp.bureauveritas.com',user:'sp_bv',pattern:'BV_fleet_*.csv',encoding:'UTF-8'},sched:{cron:'0 2 * * *',freq:'Daily',mode:'Full',timeout:'180s',retry:2},qc:[{id:'QC-C06',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Class',tgt:'classification.class_notation',xfm:'trim'}]},
-  {id:'c04',name:'ClassNK',cat:'class',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.classnk.or.jp',user:'sp_nk',pattern:'N/A',encoding:'JSON'},sched:{cron:'0 3 * * *',freq:'Daily',mode:'Delta',timeout:'180s',retry:3},qc:[{id:'QC-C07',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'imoNo',tgt:'vessel.imo_number',xfm:'trim'},{src:'classNotation',tgt:'classification.class_notation',xfm:'trim'}]},
-  {id:'a01',name:'ExactEarth',cat:'ais',freq:'Real-time',status:'green',enabled:true,conn:{type:'REST',host:'api.exactearth.com',user:'sp_ee',pattern:'N/A',encoding:'JSON'},sched:{cron:'*/5 * * * *',freq:'Real-time',mode:'Delta',timeout:'30s',retry:5},qc:[{id:'QC-A01',field:'mmsi',sev:'error',expr:'len==9 && isdigit'},{id:'QC-A02',field:'latitude',sev:'error',expr:'val>=-90 && val<=90'},{id:'QC-A03',field:'longitude',sev:'error',expr:'val>=-180 && val<=180'},{id:'QC-A04',field:'sog',sev:'warn',expr:'val>=0 && val<=50'}],map:[{src:'mmsi',tgt:'position.mmsi',xfm:'trim'},{src:'lat',tgt:'position.latitude',xfm:'to_float'},{src:'lon',tgt:'position.longitude',xfm:'to_float'},{src:'sog',tgt:'position.speed_over_ground',xfm:'to_float'},{src:'cog',tgt:'position.course_over_ground',xfm:'to_float'}]},
-  {id:'a02',name:'Spire Maritime',cat:'ais',freq:'Real-time',status:'green',enabled:true,conn:{type:'REST',host:'api.spire.com',user:'sp_spire',pattern:'N/A',encoding:'JSON'},sched:{cron:'*/5 * * * *',freq:'Real-time',mode:'Delta',timeout:'30s',retry:5},qc:[{id:'QC-A05',field:'mmsi',sev:'error',expr:'len==9 && isdigit'},{id:'QC-A06',field:'latitude',sev:'error',expr:'val>=-90 && val<=90'}],map:[{src:'mmsi',tgt:'position.mmsi',xfm:'trim'},{src:'latitude',tgt:'position.latitude',xfm:'to_float'},{src:'longitude',tgt:'position.longitude',xfm:'to_float'}]},
-  {id:'a03',name:'MarineTraffic',cat:'ais',freq:'Real-time',status:'amber',enabled:true,conn:{type:'REST',host:'api.marinetraffic.com',user:'sp_mt',pattern:'N/A',encoding:'JSON'},sched:{cron:'*/10 * * * *',freq:'Real-time',mode:'Delta',timeout:'45s',retry:3},qc:[{id:'QC-A07',field:'mmsi',sev:'error',expr:'len==9 && isdigit'},{id:'QC-A08',field:'speed',sev:'warn',expr:'val>=0 && val<=50'}],map:[{src:'MMSI',tgt:'position.mmsi',xfm:'trim'},{src:'LAT',tgt:'position.latitude',xfm:'to_float'},{src:'LON',tgt:'position.longitude',xfm:'to_float'}]},
-  {id:'co01',name:'OFAC Sanctions List',cat:'comp',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'ofac.treasury.gov',user:'public',pattern:'N/A',encoding:'XML'},sched:{cron:'30 0 * * *',freq:'Daily',mode:'Full',timeout:'120s',retry:3},qc:[{id:'QC-CO01',field:'imo_number',sev:'warn',expr:'len==7 || empty'},{id:'QC-CO02',field:'program',sev:'error',expr:'not_empty'},{id:'QC-CO03',field:'list_type',sev:'error',expr:'in_enum'}],map:[{src:'ID_VALUE',tgt:'sanction.imo_number',xfm:'extract_imo'},{src:'PROGRAMS',tgt:'sanction.programs',xfm:'split_pipe'},{src:'SDN_TYPE',tgt:'sanction.entity_type',xfm:'enum_map'}]},
-  {id:'co02',name:'EU Consolidated List',cat:'comp',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'webgate.ec.europa.eu',user:'public',pattern:'N/A',encoding:'XML'},sched:{cron:'0 1 * * *',freq:'Daily',mode:'Full',timeout:'90s',retry:3},qc:[{id:'QC-CO04',field:'entity_id',sev:'error',expr:'not_empty'},{id:'QC-CO05',field:'regulation',sev:'warn',expr:'not_empty'}],map:[{src:'euReferenceNumber',tgt:'sanction.eu_ref',xfm:'trim'},{src:'subjectType',tgt:'sanction.entity_type',xfm:'enum_map'}]},
-  {id:'co03',name:'UN Sanctions List',cat:'comp',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'scsanctions.un.org',user:'public',pattern:'N/A',encoding:'XML'},sched:{cron:'0 2 * * *',freq:'Daily',mode:'Full',timeout:'60s',retry:3},qc:[{id:'QC-CO06',field:'reference_number',sev:'error',expr:'not_empty'}],map:[{src:'REFERENCE_NUMBER',tgt:'sanction.un_ref',xfm:'trim'},{src:'FIRST_NAME',tgt:'sanction.name',xfm:'titlecase'}]},
-  {id:'co04',name:'Equasis PSC',cat:'comp',freq:'Weekly',status:'green',enabled:true,conn:{type:'SFTP',host:'ftp.equasis.org',user:'sp_equasis',pattern:'PSC_*.csv',encoding:'UTF-8'},sched:{cron:'0 3 * * 1',freq:'Weekly',mode:'Full',timeout:'180s',retry:2},qc:[{id:'QC-CO07',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-CO08',field:'deficiency_code',sev:'warn',expr:'not_empty'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'DefCode',tgt:'psc_deficiency.code',xfm:'trim'},{src:'DetainDate',tgt:'psc_detention.date',xfm:'to_date'}]},
-  {id:'m01',name:'Baltic Exchange',cat:'market',freq:'Daily',status:'green',enabled:true,conn:{type:'REST',host:'api.balticexchange.com',user:'sp_baltic',pattern:'N/A',encoding:'JSON'},sched:{cron:'30 16 * * 1-5',freq:'Daily',mode:'Full',timeout:'60s',retry:3},qc:[{id:'QC-M01',field:'index_value',sev:'error',expr:'val>0'},{id:'QC-M02',field:'trade_date',sev:'error',expr:'isdate && is_business_day'}],map:[{src:'indexCode',tgt:'market_index.code',xfm:'trim'},{src:'value',tgt:'market_index.value',xfm:'to_float'},{src:'date',tgt:'market_index.trade_date',xfm:'to_date'}]},
-  {id:'m02',name:'Platts Shipping',cat:'market',freq:'Daily',status:'amber',enabled:true,conn:{type:'REST',host:'api.spglobal.com',user:'sp_platts',pattern:'N/A',encoding:'JSON'},sched:{cron:'0 17 * * 1-5',freq:'Daily',mode:'Full',timeout:'90s',retry:2},qc:[{id:'QC-M03',field:'assessment_value',sev:'error',expr:'val>0'},{id:'QC-M04',field:'currency',sev:'warn',expr:'in_iso4217'}],map:[{src:'assessmentCode',tgt:'freight_rate.code',xfm:'trim'},{src:'value',tgt:'freight_rate.value',xfm:'to_float'},{src:'currency',tgt:'freight_rate.currency',xfm:'upper'}]},
-  {id:'p01',name:'Gard P&I Club',cat:'pni',freq:'Weekly',status:'green',enabled:true,conn:{type:'EMAIL',host:'mail.gard.no',user:'extracts@',pattern:'Gard_*.xlsx',encoding:'UTF-8'},sched:{cron:'0 8 * * 1',freq:'Weekly',mode:'Full',timeout:'60s',retry:2},qc:[{id:'QC-P01',field:'imo_number',sev:'error',expr:'len==7 && isdigit'},{id:'QC-P02',field:'certificate_expiry',sev:'warn',expr:'isdate && not_past'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'ExpiryDate',tgt:'certificate.expiry',xfm:'to_date'},{src:'CertType',tgt:'certificate.type',xfm:'trim'}]},
-  {id:'p02',name:'UK P&I Club',cat:'pni',freq:'Weekly',status:'grey',enabled:false,conn:{type:'SFTP',host:'ftp.ukpandi.com',user:'sp_ukpi',pattern:'UKPI_*.csv',encoding:'UTF-8'},sched:{cron:'0 9 * * 1',freq:'Weekly',mode:'Full',timeout:'60s',retry:2},qc:[{id:'QC-P03',field:'imo_number',sev:'error',expr:'len==7 && isdigit'}],map:[{src:'IMO',tgt:'vessel.imo_number',xfm:'trim'},{src:'Expiry',tgt:'certificate.expiry',xfm:'to_date'}]},
-];
+const INIT_PROFILES = [
+  { id:'cp1', name:'BigQuery — Raw Landing',  type:'BigQuery',    project:'sp-maritime-prod',    dataset:'raw_landing',        location:'EU' },
+  { id:'cp2', name:'BigQuery — Master',        type:'BigQuery',    project:'sp-maritime-prod',    dataset:'vessel_master',      location:'EU' },
+  { id:'cp3', name:'BigQuery — Staging',       type:'BigQuery',    project:'sp-maritime-staging', dataset:'staging',            location:'EU' },
+  { id:'cp4', name:'AWS S3 — Raw Zone',        type:'S3',          bucket:'sp-maritime-raw',      region:'us-east-1',           prefix:'landing/' },
+  { id:'cp5', name:'GCP PubSub — AIS Stream',  type:'PubSub',      project:'sp-maritime-prod',    topic:'ais-position-stream',  subscription:'etl-consumer' },
+  { id:'cp6', name:'PostgreSQL — Master DB',   type:'PostgreSQL',  host:'pg-master.sp-internal',  port:'5432',                  db:'maritime_master' },
+  { id:'cp7', name:'Kafka — Events',           type:'Kafka',       brokers:'kafka-01:9092',       topic:'maritime-events',      group:'etl-group' },
+]
 
-const STAGES = ['Connect','Download','Parse','QC','Transform','Match','Promote'];
+const INIT_QC = [
+  { id:'GQ01', entity:'Vessel',  field:'imo_number',    rule:'Format',       severity:'error', expr:'REGEXP_MATCH(imo_number, r"^\\d{7}$")',                           desc:'IMO must be exactly 7 digits', enabled:true },
+  { id:'GQ02', entity:'Vessel',  field:'mmsi',          rule:'Format',       severity:'error', expr:'REGEXP_MATCH(mmsi, r"^\\d{9}$")',                                 desc:'MMSI must be exactly 9 digits', enabled:true },
+  { id:'GQ03', entity:'Vessel',  field:'vessel_name',   rule:'Completeness', severity:'error', expr:'vessel_name IS NOT NULL AND LENGTH(vessel_name) > 1',             desc:'Vessel name required', enabled:true },
+  { id:'GQ04', entity:'Vessel',  field:'gross_tonnage', rule:'Range',        severity:'warn',  expr:'gross_tonnage > 0 AND gross_tonnage < 600000',                    desc:'GT must be 0–600,000', enabled:true },
+  { id:'GQ05', entity:'Vessel',  field:'dwt',           rule:'Range',        severity:'warn',  expr:'dwt >= 0 AND dwt < 650000',                                       desc:'DWT must be 0–650,000', enabled:true },
+  { id:'GQ06', entity:'Vessel',  field:'year_built',    rule:'Range',        severity:'warn',  expr:'year_built >= 1900 AND year_built <= EXTRACT(YEAR FROM NOW())+2', desc:'Built year in valid range', enabled:true },
+  { id:'GQ07', entity:'Vessel',  field:'flag_code',     rule:'Reference',    severity:'error', expr:'flag_code IN (SELECT code FROM ref.iso3166)',                     desc:'Flag must be valid ISO 3166-1 alpha-2', enabled:true },
+  { id:'GQ08', entity:'Port',    field:'unlocode',      rule:'Format',       severity:'error', expr:'REGEXP_MATCH(unlocode, r"^[A-Z]{2}[A-Z0-9]{3}$")',               desc:'UN/LOCODE: 2-letter country + 3 alphanum', enabled:true },
+  { id:'GQ09', entity:'Company', field:'lei',           rule:'Format',       severity:'warn',  expr:'lei IS NULL OR REGEXP_MATCH(lei, r"^[A-Z0-9]{20}$")',             desc:'LEI must be 20 alphanumeric chars', enabled:true },
+]
 
-const SEED_RUNS = [
-  {id:'run-7741',feed:'DNV GL',status:'running',stage:4,rec:142880,pass:141230,promo:133470,hil:1024,rej:136,dur:'02:14',trigger:'SCHEDULER'},
-  {id:'run-7740',feed:'ExactEarth',status:'running',stage:5,rec:890400,pass:886200,promo:840210,hil:3200,rej:1790,dur:'01:48',trigger:'SCHEDULER'},
-  {id:'run-7739',feed:'Liberia Registry',status:'success',stage:7,rec:38420,pass:38200,promo:37800,hil:280,rej:120,dur:'01:12',trigger:'SCHEDULER'},
-  {id:'run-7738',feed:'OFAC Sanctions List',status:'success',stage:7,rec:12041,pass:12041,promo:11980,hil:41,rej:0,dur:'00:34',trigger:'SCHEDULER'},
-  {id:'run-7737',feed:"Lloyd's Register",status:'warning',stage:6,rec:95600,pass:92400,promo:87300,hil:4200,rej:900,dur:'02:55',trigger:'SCHEDULER'},
-  {id:'run-7736',feed:'Baltic Exchange',status:'success',stage:7,rec:2480,pass:2480,promo:2480,hil:0,rej:0,dur:'00:18',trigger:'MANUAL'},
-  {id:'run-7735',feed:'MarineTraffic',status:'failed',stage:2,rec:0,pass:0,promo:0,hil:0,rej:0,dur:'00:08',trigger:'SCHEDULER'},
-  {id:'run-7734',feed:'Panama Registry',status:'success',stage:7,rec:29010,pass:28880,promo:28600,hil:190,rej:90,dur:'01:44',trigger:'SCHEDULER'},
-  {id:'run-7733',feed:'Bureau Veritas',status:'success',stage:7,rec:51200,pass:50900,promo:49800,hil:720,rej:380,dur:'02:01',trigger:'SCHEDULER'},
-  {id:'run-7732',feed:'Spire Maritime',status:'running',stage:3,rec:622000,pass:619800,promo:0,hil:0,rej:0,dur:'00:52',trigger:'SCHEDULER'},
-];
+const INIT_TRANSFORMS = [
+  { id:'GT01', entity:'Vessel',  field:'vessel_name',  type:'Function',   rule:'UPPER(TRIM(vessel_name))',                       desc:'Trim and uppercase vessel name', enabled:true },
+  { id:'GT02', entity:'Vessel',  field:'imo_number',   type:'Function',   rule:'LPAD(CAST(imo AS STRING), 7, "0")',              desc:'Zero-pad IMO to 7 digits', enabled:true },
+  { id:'GT03', entity:'Vessel',  field:'flag_code',    type:'Lookup',     rule:'MAP(flag_code, ref.flag_iso_map)',               desc:'Normalise flag to ISO 3166-1 alpha-2', enabled:true },
+  { id:'GT04', entity:'Vessel',  field:'vessel_type',  type:'Lookup',     rule:'MAP(vessel_type, ref.vessel_type_map)',          desc:'Normalise vessel type to master taxonomy', enabled:true },
+  { id:'GT05', entity:'Vessel',  field:'call_sign',    type:'Regex',      rule:'REGEXP_REPLACE(call_sign, r"[^A-Z0-9]", "")',    desc:'Strip non-alphanumeric from call sign', enabled:true },
+  { id:'GT06', entity:'Vessel',  field:'loa',          type:'Conversion', rule:'CAST(loa_raw AS FLOAT64) * loa_unit_factor',    desc:'Convert LOA to metres', enabled:true },
+  { id:'GT07', entity:'Port',    field:'port_name',    type:'Function',   rule:'INITCAP(TRIM(port_name))',                      desc:'Title-case port names', enabled:true },
+  { id:'GT08', entity:'Company', field:'company_name', type:'Function',   rule:'REGEXP_REPLACE(UPPER(TRIM(name)), r"\\s+", " ")',desc:'Normalise company name whitespace', enabled:true },
+]
 
-const INIT_HIL = [
-  {id:'h01',vessel:'Maersk Edinburg',imo:'9632179',entity:'identity',severity:'high',attr:'Vessel Name',master:'MAERSK EDINBURG',incoming:'MAERSK EDINBURGH',score:0.72,vendor:"Lloyd's Register",reason:'Possible spelling discrepancy in vessel name — differs by 1 character'},
-  {id:'h02',vessel:'Nord Tiger',imo:'9814203',entity:'ownership',severity:'high',attr:'Registered Owner',master:'Nordic Tankers AS',incoming:'Nordic Tankers A/S',score:0.88,vendor:'DNV GL',reason:'Legal name formatting difference — may be same entity with abbreviated suffix'},
-  {id:'h03',vessel:'Pacific Pearl',imo:'9445821',entity:'class',severity:'medium',attr:'Class Notation',master:'★ 1A1 Tanker',incoming:'1A1 TANKER ESP',score:0.79,vendor:'Bureau Veritas',reason:'Notation includes additional ESP suffix not present in master record'},
-  {id:'h04',vessel:'Atlantic Condor',imo:'9201447',entity:'dimensions',severity:'medium',attr:'Gross Tonnage',master:'42,800',incoming:'42,819',score:0.94,vendor:'Panama Registry',reason:'Minor GT discrepancy of 19 tonnes — possibly due to measurement rounding convention'},
-  {id:'h05',vessel:'Golden Horizon',imo:'9562834',entity:'certificates',severity:'high',attr:'SOLAS Certificate Expiry',master:'2025-09-14',incoming:'2025-03-14',score:0.61,vendor:'Malta Maritime Authority',reason:'Certificate expiry date differs by 6 months — potential data entry transposition'},
-  {id:'h06',vessel:'Olympia Spirit',imo:'9388201',entity:'identity',severity:'medium',attr:'Call Sign',master:'SVBB8',incoming:'SVBB 8',score:0.91,vendor:'Greek Flag Register',reason:'Call sign formatting difference — space character present in incoming data'},
-  {id:'h07',vessel:'Seabreeze Trader',imo:'9731045',entity:'ownership',severity:'high',attr:'Technical Manager',master:'Bernhard Schulte Shipmanagement',incoming:'BSM GmbH',score:0.64,vendor:'ClassNK',reason:'Technical manager recorded as abbreviated trading name — entity matching inconclusive'},
-  {id:'h08',vessel:'Cape Valiant',imo:'9120389',entity:'dimensions',severity:'low',attr:'Net Tonnage',master:'24,100',incoming:'24,086',score:0.97,vendor:'Liberia Registry',reason:'NT discrepancy of 14 tonnes within acceptable variance threshold'},
-  {id:'h09',vessel:'Star Polaris',imo:'9681234',entity:'class',severity:'high',attr:'Survey Due Date',master:'2025-06-30',incoming:'2025-12-31',score:0.58,vendor:'Korean Register',reason:'Survey due date differs significantly — possible periodic vs. annual survey date confusion'},
-  {id:'h10',vessel:'Emerald Sea',imo:'9294551',entity:'certificates',severity:'medium',attr:'ISM Certificate Status',master:'Valid',incoming:'CONDITIONAL',score:0.55,vendor:'Bureau Veritas',reason:'Conditional ISM status from class feed — does not match flag state record; requires review'},
-  {id:'h11',vessel:'Nordic Breeze',imo:'9502871',entity:'identity',severity:'low',attr:'IMO Number (cross-check)',master:'9502871',incoming:'9502817',score:0.68,vendor:'Spire Maritime',reason:'Possible digit transposition in IMO cross-reference field within AIS feed'},
-  {id:'h12',vessel:'Horizon Pioneer',imo:'9447110',entity:'ownership',severity:'medium',attr:'Disponent Owner',master:'Tsakos Columbia Shipmanagement',incoming:'TCM S.A.',score:0.71,vendor:'Platts Shipping',reason:'Abbreviated entity name — may be same legal person; manual confirmation required'},
-  {id:'h13',vessel:'Southern Cross',imo:'9316740',entity:'dimensions',severity:'low',attr:'LOA (metres)',master:'228.60',incoming:'228.6',score:0.99,vendor:'Singapore MPA',reason:'Formatting difference only — same numeric value, no decimal padding'},
-  {id:'h14',vessel:'Phoenix Arrow',imo:'9598034',entity:'class',severity:'high',attr:'Class Status',master:'In Class',incoming:'SUSPENDED',score:0.42,vendor:"Lloyd's Register",reason:'Class suspension flag received — critical conflict requiring immediate human review'},
-  {id:'h15',vessel:'Baltic Dawn',imo:'9712603',entity:'certificates',severity:'medium',attr:'MARPOL Annex I Certificate',master:'Valid to 2026-01-15',incoming:'Valid to 2025-10-15',score:0.73,vendor:'UK Ship Register',reason:'Certificate expiry 3 months earlier in incoming data — possible renewal not yet reflected in registry'},
-  {id:'h16',vessel:'Iron Empress',imo:'9385492',entity:'ownership',severity:'high',attr:'Registered Owner',master:'Iron Ore Shipping Ltd',incoming:'Iron Ore Shipping Pte Ltd',score:0.85,vendor:'Hong Kong Shipping Registry',reason:'Jurisdictional suffix differs (Ltd vs Pte Ltd) — may indicate re-registration to Singapore'},
-  {id:'h17',vessel:'Crystal Harmony',imo:'9094103',entity:'identity',severity:'low',attr:'Port of Registry',master:'NASSAU',incoming:'Nassau, Bahamas',score:0.96,vendor:'Bahamas Registry',reason:'Port of registry format includes country name — normalisation difference only'},
-  {id:'h18',vessel:'Arctic Thunder',imo:'9654219',entity:'certificates',severity:'high',attr:'DOC Company',master:'Stena Teknik AB',incoming:'Stena Line AB',score:0.66,vendor:'DNV GL',reason:'DOC company name appears to be sibling entity within Stena Group — ownership structure may have changed'},
-  {id:'h19',vessel:'Mount Everest',imo:'9470388',entity:'class',severity:'medium',attr:'Class Notation',master:'BV I ✠ BULK CARRIER',incoming:'BV HULL MACH BULK CARRIER ESP',score:0.78,vendor:'Bureau Veritas',reason:'Class notation includes ESP program suffix and expanded format — verify against original class certificate'},
-  {id:'h20',vessel:'Rio Sunrise',imo:'9541672',entity:'ownership',severity:'low',attr:'Group Beneficial Owner',master:'Maran Ventures Inc',incoming:'Maran Ventures',score:0.94,vendor:'Baltic Exchange',reason:'Minor name truncation — "Inc" suffix absent from market data feed; likely same entity'},
-];
+const INIT_PIPELINES = [
+  { id:'pl01', name:'IHS Fairplay — Vessel Registry',    entity:'Vessel',  vendor:'IHS Fairplay',      freq:'Daily',     cron:'0 2 * * *',   mode:'Delta',        status:'success', enabled:true,  records:847392,  failed:312,  review:89,  lastRun:'2026-05-11 02:58', bqTable:'raw_landing.ihs_vessel_registry',  srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl02', name:'DNV GL — Class & Surveys',          entity:'Vessel',  vendor:'DNV GL',            freq:'Daily',     cron:'0 3 * * *',   mode:'Delta',        status:'success', enabled:true,  records:241800,  failed:54,   review:23,  lastRun:'2026-05-11 03:41', bqTable:'raw_landing.dnv_class_surveys',    srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl03', name:"Lloyd's Register — Class Notation", entity:'Vessel',  vendor:"Lloyd's Register",  freq:'Daily',     cron:'0 3 * * *',   mode:'Delta',        status:'warn',    enabled:true,  records:198200,  failed:1240, review:441, lastRun:'2026-05-11 04:12', bqTable:'raw_landing.lr_class_notation',    srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl04', name:'Bureau Veritas — Certificates',     entity:'Vessel',  vendor:'Bureau Veritas',    freq:'Weekly',    cron:'0 4 * * 1',   mode:'Full Reload',  status:'success', enabled:true,  records:167400,  failed:88,   review:31,  lastRun:'2026-05-10 04:44', bqTable:'raw_landing.bv_certificates',      srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl05', name:'Equasis — Ownership & Finance',     entity:'Vessel',  vendor:'Equasis',           freq:'Daily',     cron:'0 5 * * *',   mode:'Delta',        status:'error',   enabled:true,  records:0,       failed:0,    review:0,   lastRun:'2026-05-11 05:13', bqTable:'raw_landing.equasis_ownership',    srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl06', name:'MarineTraffic — AIS Positions',     entity:'Vessel',  vendor:'MarineTraffic',     freq:'Streaming', cron:'@stream',     mode:'Streaming',    status:'success', enabled:true,  records:9241000, failed:1820, review:0,   lastRun:'2026-05-11 09:58', bqTable:'raw_landing.mt_ais_positions',     srcConn:'cp5', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl07', name:'Refinitiv — Sanctions Screening',   entity:'Vessel',  vendor:'Refinitiv',         freq:'Daily',     cron:'0 1 * * *',   mode:'Full Reload',  status:'success', enabled:true,  records:55000,   failed:12,   review:38,  lastRun:'2026-05-11 01:22', bqTable:'raw_landing.refinitiv_sanctions',  srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl08', name:'Paris MOU — PSC Inspections',       entity:'Vessel',  vendor:'Paris MOU',         freq:'Weekly',    cron:'0 6 * * 5',   mode:'Delta',        status:'success', enabled:true,  records:42100,   failed:6,    review:14,  lastRun:'2026-05-09 06:48', bqTable:'raw_landing.paris_mou_psc',        srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl09', name:'World Ports — Port Directory',      entity:'Port',    vendor:'World Ports',       freq:'Monthly',   cron:'0 8 1 * *',   mode:'Full Reload',  status:'success', enabled:true,  records:12400,   failed:22,   review:9,   lastRun:'2026-05-01 08:29', bqTable:'raw_landing.worldports_directory', srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl10', name:'Dun & Bradstreet — Companies',      entity:'Company', vendor:'Dun & Bradstreet',  freq:'Monthly',   cron:'0 10 1 * *',  mode:'Full Reload',  status:'success', enabled:true,  records:284000,  failed:512,  review:188, lastRun:'2026-05-01 11:42', bqTable:'raw_landing.dnb_companies',        srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl11', name:'Veson IMOS — Fixtures',             entity:'Market',  vendor:'Veson IMOS',        freq:'Daily',     cron:'0 7 * * *',   mode:'Delta',        status:'success', enabled:false, records:28400,   failed:9,    review:5,   lastRun:'2026-05-10 07:28', bqTable:'raw_landing.veson_fixtures',       srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+  { id:'pl12', name:'Baltic Exchange — Freight Rates',   entity:'Market',  vendor:'Baltic Exchange',   freq:'Daily',     cron:'0 8 * * *',   mode:'Delta',        status:'success', enabled:true,  records:1200,    failed:0,    review:0,   lastRun:'2026-05-11 08:04', bqTable:'raw_landing.baltic_rates',         srcConn:'cp1', tgtConn:'cp2', alert:'etl-alerts@sp-maritime.com' },
+]
 
-const FEED_NAMES_CYCLE = ['ClassNK','Singapore MPA','UK Ship Register','EU Consolidated List','Gard P&I Club','Platts Shipping','Bahamas Registry','Malta Maritime Authority'];
+const STATUS_META = {
+  success: { cls:'stA', label:'Success',  icon:'✓' },
+  warn:    { cls:'stD', label:'Warning',  icon:'⚠' },
+  error:   { cls:'stR', label:'Failed',   icon:'✕' },
+  running: { cls:'stB', label:'Running',  icon:'⏳' },
+  disabled:{ cls:'stI', label:'Disabled', icon:'—'  },
+}
+const ENTITY_CLS = { Vessel:'tN', Port:'tB', Company:'tP', Market:'tS' }
 
-function fmtNum(n) {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
-  return String(n);
+/* ─── Shared atoms ───────────────────────────────────────────────────────── */
+function Badge({ st }) {
+  const m = STATUS_META[st] || STATUS_META.disabled
+  return <span className={`stBadge ${m.cls}`}><span className="stDot"/>{m.label}</span>
 }
 
-function statusDot(s) {
-  const colors = { green: '#137333', amber: '#b45309', grey: '#bbb' };
-  return <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors[s] || '#bbb', flexShrink: 0, display: 'inline-block' }} />;
-}
-
-function CfgSection({ title, open: initOpen, children }) {
-  const [open, setOpen] = useState(initOpen !== false);
+function Toggle({ on, onChange }) {
   return (
-    <div style={{ background: '#fff', border: '1px solid var(--bdr)', borderRadius: 6, overflow: 'hidden' }}>
-      <div
-        onClick={() => setOpen(p => !p)}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', cursor: 'pointer', userSelect: 'none' }}
-      >
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--txt)', flex: 1 }}>{title}</span>
-        <span style={{ fontSize: 10, color: 'var(--muted)', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none' }}>▶</span>
+    <button className={`etlToggle${on ? ' on' : ''}`} onClick={() => onChange(!on)}>
+      <span className="etlToggleKnob" />
+    </button>
+  )
+}
+
+function ModalShell({ title, subtitle, onClose, onSave, saveLabel = '💾 Save', width = 560, children }) {
+  return (
+    <div className="etlModalBg" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="etlModal" style={{ width }}>
+        <div className="etlModalHdr">
+          <div>
+            <div className="etlModalTitle">{title}</div>
+            {subtitle && <div className="etlModalSub">{subtitle}</div>}
+          </div>
+          <button className="etlModalClose" onClick={onClose}>✕</button>
+        </div>
+        <div className="etlModalBody">{children}</div>
+        <div className="etlModalFoot">
+          <button className="btn btnS" onClick={onClose}>Cancel</button>
+          <button className="btn btnP" onClick={onSave}>{saveLabel}</button>
+        </div>
       </div>
-      {open && (
-        <div style={{ padding: 12, borderTop: '1px solid var(--bdr)' }}>{children}</div>
-      )}
     </div>
-  );
+  )
 }
 
-export default function Etl() {
-  const [cat, setCat] = useState('all');
-  const [feedSrch, setFeedSrch] = useState('');
-  const [selFeedId, setSelFeedId] = useState(null);
-  const [feeds, setFeeds] = useState(FEEDS.map(f => ({ ...f })));
-  const [rTab, setRTab] = useState('liveRuns');
-  const [runs, setRuns] = useState(SEED_RUNS.map((r, i) => ({ ...r, _ts: Date.now() - i * 90000 })));
-  const [openRunId, setOpenRunId] = useState(null);
-  const [hil, setHil] = useState(INIT_HIL);
-  const [hilPending, setHilPending] = useState(347);
-  const [entityFil, setEntityFil] = useState('all');
-  const [sevFil, setSevFil] = useState('all');
-  const [overrideOpen, setOverrideOpen] = useState(null);
-  const cycleIdx = useRef(0);
-  const runCounter = useRef(7742);
+function FG({ label, children }) {
+  return <div className="etlFG"><label>{label}</label>{children}</div>
+}
 
-  // Auto-refresh runs
-  useEffect(() => {
-    const id = setInterval(() => {
-      const newRun = {
-        id: 'run-' + runCounter.current++,
-        feed: FEED_NAMES_CYCLE[cycleIdx.current % FEED_NAMES_CYCLE.length],
-        status: 'running', stage: 1, rec: 0, pass: 0, promo: 0, hil: 0, rej: 0, dur: '00:00',
-        trigger: 'SCHEDULER', _ts: Date.now(),
-      };
-      cycleIdx.current++;
-      setRuns(prev => {
-        const next = [newRun, ...prev].slice(0, 14).map(r => {
-          if (r.status !== 'running' || r.stage >= 7) return r;
-          const stage = Math.min(r.stage + 1, 7);
-          const e = Math.floor((Date.now() - r._ts) / 1000);
-          const dur = Math.floor(e / 60).toString().padStart(2, '0') + ':' + (e % 60).toString().padStart(2, '0');
-          let rec = r.rec, pass = r.pass, promo = r.promo, hilC = r.hil, rej = r.rej;
-          if (stage > 1) rec += Math.floor(Math.random() * 12000 + 5000);
-          if (stage > 3) pass = Math.floor(rec * 0.987);
-          if (stage > 5) { promo = Math.floor(pass * 0.942); hilC = Math.floor(pass * 0.047); rej = rec - pass; }
-          const status = stage === 7 ? 'success' : 'running';
-          return { ...r, stage, dur, rec, pass, promo, hil: hilC, rej, status };
-        });
-        return next;
-      });
-    }, 8000);
-    return () => clearInterval(id);
-  }, []);
+/* ─── Pipeline Configure (full-page view) ───────────────────────────────── */
+const PL_SRC_TABLES_INIT = {
+  pl01: [
+    { id:'t1', table:'ihs_vessel_main',      rows:'847,392',   pk:'imo_number', desc:'Core vessel particulars' },
+    { id:'t2', table:'ihs_vessel_ownership', rows:'1,024,881', pk:'imo_number', desc:'Ownership history' },
+    { id:'t3', table:'ihs_vessel_certs',     rows:'2,180,000', pk:'cert_id',    desc:'Statutory certificates' },
+  ],
+  pl03: [
+    { id:'t4', table:'lr_vessel_registry',   rows:'198,200',   pk:'imo_number', desc:'LR vessel register' },
+    { id:'t5', table:'lr_class_notations',   rows:'512,000',   pk:'notation_id',desc:'Class notations' },
+  ],
+}
+const PL_FIELD_MAP_INIT = {
+  pl01: [
+    { id:'m1', src:'IMO_NUMBER',    tgt:'vessel.imo_number',  xfm:'GT01,GT02', status:'mapped'  },
+    { id:'m2', src:'VESSEL_NAME',   tgt:'vessel.vessel_name', xfm:'GT01',      status:'mapped'  },
+    { id:'m3', src:'FLAG_CODE',     tgt:'vessel.flag_code',   xfm:'GT03',      status:'mapped'  },
+    { id:'m4', src:'GROSS_TONNAGE', tgt:'vessel.gt',          xfm:'—',         status:'mapped'  },
+    { id:'m5', src:'DWT',           tgt:'vessel.dwt',         xfm:'—',         status:'mapped'  },
+    { id:'m6', src:'LOA',           tgt:'vessel.loa',         xfm:'GT06',      status:'mapped'  },
+    { id:'m7', src:'YEAR_BUILT',    tgt:'vessel.year_built',  xfm:'—',         status:'mapped'  },
+    { id:'m8', src:'IHS_OWNER_ID',  tgt:'',                   xfm:'—',         status:'ignored' },
+    { id:'m9', src:'LEGACY_CODE',   tgt:'',                   xfm:'—',         status:'unmapped'},
+  ],
+}
+const BLANK_TABLE   = { table:'', rows:'', pk:'', desc:'' }
+const BLANK_MAPPING = { src:'', tgt:'', xfm:'—', status:'mapped' }
+const BLANK_MATCH   = { field:'', match:'exact', confidence:'90', action:'Update' }
+const BLANK_SQL     = { type:'QC', name:'', severity:'warn', sql:'' }
 
-  const filteredFeeds = useMemo(() => {
-    return feeds.filter(f => {
-      if (cat !== 'all' && f.cat !== cat) return false;
-      if (feedSrch && !f.name.toLowerCase().includes(feedSrch.toLowerCase())) return false;
-      return true;
-    });
-  }, [feeds, cat, feedSrch]);
+function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
+  const [tab,        setTab]        = useState('general')
+  const [form,       setForm]       = useState({ ...pl })
+  const [srcTables,  setSrcTables]  = useState(PL_SRC_TABLES_INIT[pl.id] || [])
+  const [fieldMaps,  setFieldMaps]  = useState(PL_FIELD_MAP_INIT[pl.id]  || [])
+  const [matchRules, setMatchRules] = useState([
+    { id:'r1', field:'imo_number',            match:'exact',       confidence:'100', action:'Update' },
+    { id:'r2', field:'vessel_name+flag_code', match:'fuzzy+exact', confidence:'90',  action:'Review' },
+  ])
+  const [sqlRules, setSqlRules] = useState([
+    { id:'s1', type:'QC',        name:'GT vs DWT sanity check', severity:'warn', sql:"SELECT imo_number,'GT_DWT_MISMATCH' AS rule_id FROM source_table WHERE gross_tonnage > dwt * 3" },
+    { id:'s2', type:'Transform', name:'Derive age category',    severity:'info', sql:"SELECT *, CASE WHEN yr < 2010 THEN 'Aged' ELSE 'Modern' END AS age_cat FROM source_table" },
+  ])
+  const [editTable,   setEditTable]   = useState(null)
+  const [editMapping, setEditMapping] = useState(null)
+  const [editMatch,   setEditMatch]   = useState(null)
+  const [editSql,     setEditSql]     = useState(null)
 
-  const filteredHil = useMemo(() => {
-    return hil.filter(h => {
-      if (entityFil !== 'all' && h.entity !== entityFil) return false;
-      if (sevFil !== 'all' && h.severity !== sevFil) return false;
-      return true;
-    });
-  }, [hil, entityFil, sevFil]);
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
 
-  const selFeed = feeds.find(f => f.id === selFeedId);
+  const TABS = [
+    ['general',   '① General'],
+    ['source',    '② Source'],
+    ['src-tables','③ Src Tables'],
+    ['qc',        '④ QC Rules'],
+    ['transforms','⑤ Transforms'],
+    ['match',     '⑥ Match / Dedup'],
+    ['field-map', '⑦ Field Mapping'],
+    ['sql',       '⑧ SQL Rules'],
+    ['target',    '⑨ Target'],
+  ]
 
-  function toggleFeedEnabled(id, val) {
-    setFeeds(prev => prev.map(f => f.id === id ? { ...f, enabled: val } : f));
+  function saveTable(t) {
+    if (editTable?.id) setSrcTables(p => p.map(x => x.id === t.id ? t : x))
+    else setSrcTables(p => [...p, { ...t, id: `t${Date.now()}` }])
+    setEditTable(null)
+  }
+  function saveMapping(m) {
+    if (editMapping?.id) setFieldMaps(p => p.map(x => x.id === m.id ? m : x))
+    else setFieldMaps(p => [...p, { ...m, id: `m${Date.now()}` }])
+    setEditMapping(null)
+  }
+  function saveMatch(r) {
+    if (editMatch?.id) setMatchRules(p => p.map(x => x.id === r.id ? r : x))
+    else setMatchRules(p => [...p, { ...r, id: `r${Date.now()}` }])
+    setEditMatch(null)
+  }
+  function saveSql(s) {
+    if (editSql?.id) setSqlRules(p => p.map(x => x.id === s.id ? s : x))
+    else setSqlRules(p => [...p, { ...s, id: `s${Date.now()}` }])
+    setEditSql(null)
   }
 
-  function hilAction(id) {
-    setHil(prev => prev.filter(h => h.id !== id));
-    setHilPending(prev => Math.max(0, prev - 1));
-    setOverrideOpen(null);
-  }
-
-  const catBgColor = { flag: '#e8f0fe', class: '#e6f4ea', ais: '#fce8e6', comp: '#fff3e0', market: '#f3e8fd', pni: '#e0f7f9' };
-  const catTxtColor = { flag: '#1558d6', class: '#137333', ais: '#c8102e', comp: '#b45309', market: '#6200ea', pni: '#0094b3' };
-
-  function RunCard({ r }) {
-    const isOpen = openRunId === r.id;
-    const stageColors = { running: '#1558d6', success: '#137333', warning: '#b45309', failed: '#c8102e' };
-
-    function makeLog() {
-      const lines = [];
-      const ts = (off) => new Date(r._ts + off).toTimeString().slice(0, 8);
-      lines.push({ ts: ts(0), cls: 'ok', msg: `Pipeline ${r.id} started — trigger: ${r.trigger}` });
-      if (r.stage > 0) lines.push({ ts: ts(4000), cls: 'ok', msg: `Connection established to ${r.feed} endpoint` });
-      if (r.stage > 1) lines.push({ ts: ts(12000), cls: 'ok', msg: `Downloaded ${fmtNum(r.rec)} raw records` });
-      if (r.stage > 2) lines.push({ ts: ts(28000), cls: 'ok', msg: 'Parse complete — schema validation passed' });
-      if (r.stage > 3) lines.push({ ts: ts(42000), cls: r.status === 'warning' ? 'warn' : 'ok', msg: `QC applied — ${fmtNum(r.pass)}/${fmtNum(r.rec)} passed${r.rej > 0 ? ' (' + fmtNum(r.rej) + ' rejected)' : ''}` });
-      if (r.stage > 4) lines.push({ ts: ts(58000), cls: 'ok', msg: 'Transform complete — field mappings applied' });
-      if (r.stage > 5) lines.push({ ts: ts(74000), cls: 'ok', msg: `Entity match complete — ${fmtNum(r.promo)} auto-promoted, ${fmtNum(r.hil)} queued for HIL` });
-      if (r.stage > 6) lines.push({ ts: ts(90000), cls: 'ok', msg: 'Pipeline complete — golden record updated' });
-      if (r.status === 'failed') {
-        lines.push({ ts: ts(8000), cls: 'err', msg: 'Connection timeout after 30s — retrying (1/5)…' });
-        lines.push({ ts: ts(38000), cls: 'err', msg: 'Max retries exceeded — pipeline aborted' });
-      }
-      return lines;
-    }
-
-    const stCl = { ok: '#137333', warn: '#b45309', err: '#c8102e' };
-
-    return (
-      <div style={{ background: '#fff', border: '1px solid var(--bdr)', borderRadius: 6, marginBottom: 6, overflow: 'hidden' }}>
-        <div style={{ padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--txt)' }}>{r.feed}</div>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--muted)' }}>{r.id}</div>
-          </div>
-          <span style={{
-            display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-            padding: '2px 8px', borderRadius: 10,
-            background: r.status === 'running' ? '#e8f0fe' : r.status === 'success' ? '#e6f4ea' : r.status === 'warning' ? '#fff3e0' : '#fce8e6',
-            color: stageColors[r.status] || '#333',
-          }}>
-            {r.status === 'running' && <span style={{ width: 7, height: 7, borderRadius: '50%', border: '2px solid #1558d6', borderTopColor: 'transparent', display: 'inline-block', animation: 'etl-spin 0.7s linear infinite' }} />}
-            {r.status === 'running' ? 'Running' : r.status === 'success' ? '✓ Success' : r.status === 'warning' ? '⚠ Warning' : '✕ Failed'}
-          </span>
-        </div>
-        {r.status === 'running' && (
-          <div style={{ height: 3, background: 'var(--bdr)', margin: '0 12px 6px', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: 'linear-gradient(90deg,#1558d6,#4285f4)', borderRadius: 2, animation: 'etl-progress 2s ease-in-out infinite alternate' }} />
-          </div>
-        )}
-        {/* Stage timeline */}
-        <div style={{ padding: '4px 12px 6px', display: 'flex', alignItems: 'center', gap: 0 }}>
-          {STAGES.map((s, i) => {
-            let dotBg = 'var(--bdr)';
-            if (i < r.stage) dotBg = '#137333';
-            else if (i === r.stage && r.status === 'running') dotBg = '#1558d6';
-            else if (r.status === 'failed' && i === r.stage) dotBg = '#c8102e';
-            return (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: i < STAGES.length - 1 ? 1 : 'none' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: dotBg }} />
-                  <div style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>{s}</div>
-                </div>
-                {i < STAGES.length - 1 && (
-                  <div style={{ flex: 1, height: 2, background: i < r.stage ? '#137333' : 'var(--bdr)', marginBottom: 12, marginLeft: 2, marginRight: 2 }} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {/* Stats */}
-        <div style={{ padding: '4px 12px 8px', display: 'flex', gap: 12 }}>
-          {[['Received', fmtNum(r.rec), '#1a1d1f'], ['QC Pass', fmtNum(r.pass), '#1a1d1f'], ['Promoted', fmtNum(r.promo), '#1a1d1f'], ['HIL', fmtNum(r.hil), '#b45309'], ['Rejected', fmtNum(r.rej), '#c8102e']].map(([l, v, c]) => (
-            <div key={l}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: c }}>{v}</div>
-              <div style={{ fontSize: 9, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.3 }}>{l}</div>
-            </div>
-          ))}
-        </div>
-        {/* Footer */}
-        <div
-          onClick={() => setOpenRunId(p => p === r.id ? null : r.id)}
-          style={{ padding: '4px 12px 7px', display: 'flex', alignItems: 'center', gap: 10, borderTop: '1px solid var(--bdr)', cursor: 'pointer' }}
-        >
-          <span style={{ fontSize: 10, color: 'var(--muted)' }}>⏱ {r.dur}</span>
-          <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 3, background: r.trigger === 'MANUAL' ? '#fce8e6' : 'var(--bg)', color: r.trigger === 'MANUAL' ? '#c8102e' : 'var(--muted)' }}>{r.trigger}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--muted)' }}>{isOpen ? '▲' : '▼'} View log</span>
-        </div>
-        {/* Log */}
-        {isOpen && (
-          <div style={{ borderTop: '1px solid var(--bdr)', background: 'var(--bg)', padding: '8px 12px', maxHeight: 120, overflowY: 'auto' }}>
-            {makeLog().map((l, i) => (
-              <div key={i} style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--txt)', lineHeight: 1.7 }}>
-                <span style={{ color: 'var(--muted)', marginRight: 6 }}>{l.ts}</span>
-                <span style={{ color: stCl[l.cls], marginRight: 6 }}>[{l.cls.toUpperCase()}]</span>
-                {l.msg}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  function connName(id) { return profiles.find(p => p.id === id)?.name || id }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)', overflow: 'hidden' }}>
-      <style>{`
-        @keyframes etl-spin{to{transform:rotate(360deg)}}
-        @keyframes etl-progress{0%{width:30%}100%{width:85%}}
-        @keyframes etl-dot{0%,100%{box-shadow:0 0 0 2px rgba(19,115,51,.2)}50%{box-shadow:0 0 0 5px rgba(19,115,51,.05)}}
-      `}</style>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden', minHeight:0 }}>
 
-      {/* Stats Strip */}
-      <div style={{ background: '#fff', borderBottom: '1px solid var(--bdr)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0, overflowX: 'auto' }}>
-        {[
-          { v: '114', sub: '42 live / 72 planned', l: 'Total Feeds' },
-          { v: '2.4M', l: 'Records Today' },
-          { v: '98.7%', l: 'QC Pass Rate', c: '#137333' },
-          { v: '94.2%', l: 'Auto-Promoted', c: '#137333' },
-          { v: String(hilPending), l: 'HIL Pending', c: '#b45309' },
-          { v: '4m ago', l: 'Last Run' },
-        ].map((s, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-            {i > 0 && <div style={{ width: 1, height: 32, background: 'var(--bdr)', flexShrink: 0, margin: '0 20px' }} />}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: s.c || 'var(--txt)', lineHeight: 1.1 }}>
-                {s.v}{s.sub && <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--muted)', marginLeft: 4 }}>{s.sub}</span>}
-              </div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
-            </div>
-          </div>
+      {/* Header */}
+      <div className="dHead" style={{ padding:'0 20px', gap:10, flexWrap:'wrap' }}>
+        <button className="backBtn" onClick={onBack}>← Pipelines</button>
+        <div className="dHeadDiv"/>
+        <div>
+          <span style={{ fontWeight:700, fontSize:14 }}>⚙ Configure Pipeline</span>
+          <span style={{ fontSize:11, color:'var(--txt3)', marginLeft:10 }}>{pl.name}</span>
+        </div>
+        <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
+          <button className="btn btnT" onClick={onBack}>Cancel</button>
+          <button className="btn btnP" onClick={() => onSave(form)}>💾 Save Pipeline</button>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div className="etlCfgTabs">
+        {TABS.map(([t, l]) => (
+          <button key={t} className={`etlCfgTab${tab === t ? ' on' : ''}`} onClick={() => setTab(t)}>{l}</button>
         ))}
       </div>
 
-      {/* Workspace */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      {/* Tab body */}
+      <div className="etlCfgBody">
 
-        {/* LEFT PANEL: Pipeline Config Manager */}
-        <div style={{ width: '55%', flexShrink: 0, display: 'flex', borderRight: '1px solid var(--bdr)', overflow: 'hidden' }}>
+        {/* ── General ── */}
+        {tab === 'general' && (
+          <div className="etlForm" style={{ maxWidth:680 }}>
+            <div className="etlFormRow2">
+              <FG label="Pipeline Name"><input className="etlInput" value={form.name} onChange={e=>set('name',e.target.value)}/></FG>
+              <FG label="Vendor / Source"><input className="etlInput" value={form.vendor} onChange={e=>set('vendor',e.target.value)}/></FG>
+            </div>
+            <div className="etlFormRow3">
+              <FG label="Entity Type">
+                <select className="etlInput" value={form.entity} onChange={e=>set('entity',e.target.value)}>
+                  {ENTITY_OPTS.map(o=><option key={o}>{o}</option>)}
+                </select>
+              </FG>
+              <FG label="Load Mode">
+                <select className="etlInput" value={form.mode} onChange={e=>set('mode',e.target.value)}>
+                  {LOAD_MODES.map(o=><option key={o}>{o}</option>)}
+                </select>
+              </FG>
+              <FG label="Schedule (cron)"><input className="etlInput" value={form.cron} onChange={e=>set('cron',e.target.value)}/></FG>
+            </div>
+            <div className="etlFormRow2">
+              <FG label="Timeout (seconds)"><input className="etlInput" type="number" defaultValue={120}/></FG>
+              <FG label="Max Retries"><input className="etlInput" type="number" defaultValue={3}/></FG>
+            </div>
+            <FG label="BigQuery Landing Table">
+              <input className="etlInput etlInputMono" value={form.bqTable} onChange={e=>set('bqTable',e.target.value)}/>
+            </FG>
+            <FG label="Alert Email(s)">
+              <input className="etlInput" value={form.alert} onChange={e=>set('alert',e.target.value)}/>
+            </FG>
+            <FG label="Description / Notes">
+              <textarea className="etlInput" rows={3} defaultValue={`Daily delta load from ${pl.vendor} for ${pl.entity} master data.`}/>
+            </FG>
+          </div>
+        )}
 
-          {/* Feed list */}
-          <div style={{ width: 280, flexShrink: 0, background: '#fff', borderRight: '1px solid var(--bdr)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--bdr)', flexShrink: 0 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--muted)', marginBottom: 8 }}>Pipeline Config Manager</div>
-              <input
-                className="sBar"
-                placeholder="Search feeds…"
-                value={feedSrch}
-                onChange={e => setFeedSrch(e.target.value)}
-                style={{ width: '100%', marginBottom: 7 }}
-              />
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                {CAT_CATS.map(c => (
-                  <button key={c} onClick={() => setCat(c)} style={{
-                    padding: '2px 7px', fontSize: 10, fontWeight: 600, borderRadius: 3, cursor: 'pointer',
-                    border: '1px solid var(--bdr)',
-                    background: cat === c ? '#1558d6' : 'transparent',
-                    color: cat === c ? '#fff' : 'var(--muted)',
-                    fontFamily: 'inherit',
-                  }}>
-                    {c === 'all' ? 'All' : CAT_LABELS[c]}
-                  </button>
+        {/* ── Source Connection ── */}
+        {tab === 'source' && (
+          <div className="etlForm" style={{ maxWidth:680 }}>
+            <FG label="Source Connection Profile">
+              <select className="etlInput" value={form.srcConn} onChange={e=>set('srcConn',e.target.value)}>
+                {profiles.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </FG>
+            <div className="etlInfoCard">
+              <div className="etlInfoCardTitle">Selected: {connName(form.srcConn)}</div>
+              {(() => {
+                const p = profiles.find(x=>x.id===form.srcConn)
+                if (!p) return null
+                return (
+                  <div className="etlFormRow2" style={{marginTop:8}}>
+                    {p.project && <FG label="Project"><input className="etlInput etlInputMono" value={p.project} readOnly/></FG>}
+                    {p.dataset && <FG label="Dataset"><input className="etlInput etlInputMono" value={p.dataset} readOnly/></FG>}
+                    {p.bucket  && <FG label="Bucket"><input  className="etlInput etlInputMono" value={p.bucket}  readOnly/></FG>}
+                    {p.host    && <FG label="Host"><input    className="etlInput etlInputMono" value={p.host}    readOnly/></FG>}
+                    {p.topic   && <FG label="Topic"><input   className="etlInput etlInputMono" value={p.topic}   readOnly/></FG>}
+                  </div>
+                )
+              })()}
+            </div>
+            <div className="etlFormRow2">
+              <FG label="Partition Filter Column"><input className="etlInput" defaultValue="_ingestion_ts"/></FG>
+              <FG label="Watermark Column (for delta)"><input className="etlInput" defaultValue="_ingestion_ts"/></FG>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button className="btn btnS btnSm">🔗 Test Connection</button>
+              <button className="btn btnS btnSm">📋 Browse Tables</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Source Tables ── */}
+        {tab === 'src-tables' && (
+          <div>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">Source Tables</div>
+                <div className="etlTabHeadSub">Tables in the landing dataset that this pipeline reads from.</div>
+              </div>
+              <button className="btn btnP btnSm" onClick={() => setEditTable({ ...BLANK_TABLE })}>+ Add Table</button>
+            </div>
+            {srcTables.length === 0
+              ? <div className="etlEmptyState"><div className="etlEmptyIcon">📋</div><div>No source tables configured yet.</div><button className="btn btnP btnSm" onClick={() => setEditTable({ ...BLANK_TABLE })}>+ Add First Table</button></div>
+              : <table className="etlTable">
+                  <thead><tr><th>Table Name</th><th>Approx. Rows</th><th>Primary Key</th><th>Description</th><th style={{width:80}}>Actions</th></tr></thead>
+                  <tbody>
+                    {srcTables.map(t => (
+                      <tr key={t.id}>
+                        <td><code className="etlCode">{t.table}</code></td>
+                        <td>{t.rows}</td>
+                        <td><code className="etlCode">{t.pk}</code></td>
+                        <td style={{color:'var(--txt2)'}}>{t.desc}</td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditTable({...t})}>✎</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setSrcTables(p=>p.filter(x=>x.id!==t.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+            }
+          </div>
+        )}
+
+        {/* ── QC Rules ── */}
+        {tab === 'qc' && (
+          <div>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">QC Rules</div>
+                <div className="etlTabHeadSub">Global rules are inherited automatically. Add pipeline-specific rules here.</div>
+              </div>
+              <button className="btn btnP btnSm">+ Add Rule</button>
+            </div>
+            <table className="etlTable">
+              <thead><tr><th>Rule ID</th><th>Field</th><th>Type</th><th>Severity</th><th>Expression</th><th>On</th></tr></thead>
+              <tbody>
+                {qcRules.filter(r => r.entity === form.entity || r.entity === 'All').map(r => (
+                  <tr key={r.id}>
+                    <td><code className="etlCode etlCodeSm">{r.id}</code></td>
+                    <td><code className="etlCode">{r.field}</code></td>
+                    <td><span className="tag tN etlTag">{r.rule}</span></td>
+                    <td><span className={`stBadge ${r.severity==='error'?'stR':'stD'} etlBadgeSm`}><span className="stDot"/>{r.severity}</span></td>
+                    <td className="etlCodeCell" title={r.expr}><code className="etlCode etlCodeSm">{r.expr}</code></td>
+                    <td><input type="checkbox" defaultChecked={r.enabled}/></td>
+                  </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Transformations ── */}
+        {tab === 'transforms' && (
+          <div>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">Transformation Rules</div>
+                <div className="etlTabHeadSub">Global transforms are inherited. Add pipeline-specific overrides here.</div>
+              </div>
+              <button className="btn btnP btnSm">+ Add Rule</button>
+            </div>
+            <table className="etlTable">
+              <thead><tr><th>Rule ID</th><th>Field</th><th>Type</th><th>Rule Expression</th><th>Description</th><th>On</th></tr></thead>
+              <tbody>
+                {transforms.filter(r => r.entity === form.entity || r.entity === 'All').map(r => (
+                  <tr key={r.id}>
+                    <td><code className="etlCode etlCodeSm">{r.id}</code></td>
+                    <td><code className="etlCode">{r.field}</code></td>
+                    <td><span className="tag tB etlTag">{r.type}</span></td>
+                    <td className="etlCodeCell" title={r.rule}><code className="etlCode etlCodeSm">{r.rule}</code></td>
+                    <td style={{color:'var(--txt2)'}}>{r.desc}</td>
+                    <td><input type="checkbox" defaultChecked={r.enabled}/></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Match & Dedup ── */}
+        {tab === 'match' && (
+          <div style={{maxWidth:800}}>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">Match & Deduplication</div>
+                <div className="etlTabHeadSub">Rules evaluated in priority order to identify existing master records.</div>
+              </div>
+              <button className="btn btnP btnSm" onClick={() => setEditMatch({ ...BLANK_MATCH })}>+ Add Rule</button>
+            </div>
+            <table className="etlTable">
+              <thead><tr><th>#</th><th>Match Field(s)</th><th>Match Type</th><th>Min Confidence %</th><th>On Match</th><th style={{width:80}}>Actions</th></tr></thead>
+              <tbody>
+                {matchRules.map((r, i) => (
+                  <tr key={r.id}>
+                    <td style={{fontWeight:700,color:'var(--blue)'}}>{i+1}</td>
+                    <td><code className="etlCode">{r.field}</code></td>
+                    <td><span className="tag tN etlTag">{r.match}</span></td>
+                    <td>{r.confidence}%</td>
+                    <td><span className={`stBadge ${r.action==='Update'?'stA':'stD'} etlBadgeSm`}><span className="stDot"/>{r.action}</span></td>
+                    <td>
+                      <div style={{display:'flex',gap:4}}>
+                        <button className="btn btnS btnSm" onClick={() => setEditMatch({...r})}>✎</button>
+                        <button className="btn btnS btnSm etlDanger" onClick={() => setMatchRules(p=>p.filter(x=>x.id!==r.id))}>🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="etlInfoCard" style={{marginTop:16}}>
+              <div className="etlInfoCardTitle">Deduplication Strategy</div>
+              <div className="etlFormRow2" style={{marginTop:10}}>
+                <FG label="Dedup Key"><input className="etlInput etlInputMono" defaultValue="imo_number"/></FG>
+                <FG label="On Conflict">
+                  <select className="etlInput"><option>Latest wins (by _ingestion_ts)</option><option>Highest confidence wins</option><option>Route to review queue</option></select>
+                </FG>
               </div>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {filteredFeeds.map(f => (
-                <div
-                  key={f.id}
-                  onClick={() => setSelFeedId(f.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-                    cursor: 'pointer', borderBottom: '1px solid var(--bdr)',
-                    background: f.id === selFeedId ? '#e8f0fe' : 'transparent',
-                    transition: 'background 0.1s',
-                  }}
-                >
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: f.status === 'green' ? '#137333' : f.status === 'amber' ? '#b45309' : '#bbb', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--txt)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--muted)' }}>{f.freq}</div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3, textTransform: 'uppercase', letterSpacing: 0.3, background: catBgColor[f.cat], color: catTxtColor[f.cat] }}>{CAT_LABELS[f.cat]}</span>
-                    <div
-                      onClick={e => { e.stopPropagation(); toggleFeedEnabled(f.id, !f.enabled); }}
-                      style={{ position: 'relative', width: 28, height: 15, flexShrink: 0, cursor: 'pointer' }}
-                    >
-                      <div style={{ position: 'absolute', inset: 0, borderRadius: 15, background: f.enabled ? '#137333' : '#ccc', transition: 'background 0.15s' }} />
-                      <div style={{ position: 'absolute', width: 11, height: 11, background: '#fff', borderRadius: '50%', top: 2, left: f.enabled ? 15 : 2, transition: 'left 0.15s' }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
+        )}
 
-          {/* Feed config */}
-          <div style={{ flex: 1, background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {!selFeed ? (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8, color: 'var(--muted)' }}>
-                <div style={{ fontSize: 36, opacity: 0.3 }}>⚙️</div>
-                <div style={{ fontSize: 12, fontWeight: 600 }}>Select a feed to view configuration</div>
+        {/* ── Field Mapping ── */}
+        {tab === 'field-map' && (
+          <div>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">Field Mapping — {form.vendor} → Master</div>
+                <div className="etlTabHeadSub">Map source fields to master schema. Unmapped fields are ignored unless flagged.</div>
               </div>
-            ) : (
-              <>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--bdr)', background: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--txt)', flex: 1 }}>{selFeed.name}</div>
-                  <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: selFeed.status === 'green' ? '#e6f4ea' : selFeed.status === 'amber' ? '#fff3e0' : 'var(--bg)', color: selFeed.status === 'green' ? '#137333' : selFeed.status === 'amber' ? '#b45309' : 'var(--muted)' }}>
-                    {selFeed.status === 'green' ? 'Live' : selFeed.status === 'amber' ? 'Delayed' : 'Idle'}
-                  </span>
-                  <button style={{ marginLeft: 'auto', padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 4, background: '#1558d6', color: '#fff', border: 'none', cursor: 'pointer' }}>Run Now</button>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <CfgSection title="Source Connection" open>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      {[['Connection Type', selFeed.conn.type], ['Host / Endpoint', selFeed.conn.host], ['Credentials', selFeed.conn.user + '  ••••••••'], ['File Pattern', selFeed.conn.pattern], ['Encoding', selFeed.conn.encoding]].map(([l, v]) => (
-                        <div key={l} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>{l}</div>
-                          <div style={{ fontSize: 12, color: 'var(--txt)', fontFamily: 'monospace', background: 'var(--bg)', border: '1px solid var(--bdr)', borderRadius: 3, padding: '4px 7px', wordBreak: 'break-all' }}>{v}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </CfgSection>
-                  <CfgSection title="Schedule & Mode" open>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                      {[['Cron Expression', selFeed.sched.cron], ['Frequency', selFeed.sched.freq], ['Ingest Mode', selFeed.sched.mode], ['Timeout', selFeed.sched.timeout], ['Retry Count', String(selFeed.sched.retry)]].map(([l, v]) => (
-                        <div key={l} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>{l}</div>
-                          <div style={{ fontSize: 12, color: 'var(--txt)', fontFamily: 'monospace', background: 'var(--bg)', border: '1px solid var(--bdr)', borderRadius: 3, padding: '4px 7px' }}>{v}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </CfgSection>
-                  <CfgSection title={`QC Rules (${selFeed.qc.length} active)`}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                      <thead>
-                        <tr>{['Rule ID', 'Field', 'Severity', 'Expression'].map(h => <th key={h} style={{ background: 'var(--bg)', padding: '5px 8px', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--muted)', textAlign: 'left', borderBottom: '1px solid var(--bdr)' }}>{h}</th>)}</tr>
-                      </thead>
-                      <tbody>
-                        {selFeed.qc.map(r => (
-                          <tr key={r.id}>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace' }}>{r.id}</td>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace' }}>{r.field}</td>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)' }}>
-                              <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3, background: r.sev === 'error' ? '#fce8e6' : r.sev === 'warn' ? '#fff3e0' : '#e8f0fe', color: r.sev === 'error' ? '#c8102e' : r.sev === 'warn' ? '#b45309' : '#1558d6' }}>{r.sev.toUpperCase()}</span>
-                            </td>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace', fontSize: 10 }}>{r.expr}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CfgSection>
-                  <CfgSection title={`Field Mappings (${selFeed.map.length} mappings)`}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                      <thead>
-                        <tr>{['Source Field', 'Target Entity.Attribute', 'Transform'].map(h => <th key={h} style={{ background: 'var(--bg)', padding: '5px 8px', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--muted)', textAlign: 'left', borderBottom: '1px solid var(--bdr)' }}>{h}</th>)}</tr>
-                      </thead>
-                      <tbody>
-                        {selFeed.map.map((m, i) => (
-                          <tr key={i}>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace' }}>{m.src}</td>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace', color: '#1558d6' }}>{m.tgt}</td>
-                            <td style={{ padding: '5px 8px', borderBottom: '1px solid var(--bdr)', fontFamily: 'monospace', color: '#6200ea' }}>{m.xfm}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CfgSection>
-                </div>
-              </>
-            )}
+              <div style={{display:'flex',gap:6}}>
+                <button className="btn btnS btnSm">🔍 Auto-detect</button>
+                <button className="btn btnP btnSm" onClick={() => setEditMapping({ ...BLANK_MAPPING })}>+ Add Mapping</button>
+              </div>
+            </div>
+            <table className="etlTable">
+              <thead><tr><th>Source Field</th><th>→</th><th>Master Field</th><th>Transforms</th><th>Status</th><th style={{width:80}}>Actions</th></tr></thead>
+              <tbody>
+                {fieldMaps.map(m => (
+                  <tr key={m.id}>
+                    <td><code className="etlCode">{m.src}</code></td>
+                    <td style={{color:'var(--txt3)',fontWeight:700}}>→</td>
+                    <td><code className="etlCode" style={{color:m.tgt?undefined:'var(--txt3)'}}>{m.tgt||'(not mapped)'}</code></td>
+                    <td>{m.xfm !== '—' && m.xfm.split(',').map(x=><span key={x} className="tag tB etlTag" style={{marginRight:2}}>{x}</span>)}</td>
+                    <td><span className={`stBadge ${m.status==='mapped'?'stA':m.status==='ignored'?'stI':'stR'} etlBadgeSm`}><span className="stDot"/>{m.status}</span></td>
+                    <td>
+                      <div style={{display:'flex',gap:4}}>
+                        <button className="btn btnS btnSm" onClick={() => setEditMapping({...m})}>✎</button>
+                        <button className="btn btnS btnSm etlDanger" onClick={() => setFieldMaps(p=>p.filter(x=>x.id!==m.id))}>🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
 
-        {/* RIGHT PANEL: Run Monitor + HIL Queue */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--bdr)', background: '#fff', flexShrink: 0 }}>
-            {[
-              { id: 'liveRuns', label: '● Live Runs', badge: null },
-              { id: 'hilQueue', label: 'HIL Queue', badge: hilPending },
-            ].map(t => (
-              <div key={t.id} onClick={() => setRTab(t.id)} style={{
-                padding: '10px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                color: rTab === t.id ? '#1558d6' : 'var(--muted)',
-                borderBottom: rTab === t.id ? '2px solid #1558d6' : '2px solid transparent',
-                background: rTab === t.id ? '#fff' : 'transparent',
-                display: 'flex', alignItems: 'center', gap: 6,
-                transition: 'all 0.12s',
-              }}>
-                {t.label}
-                {t.badge != null && <span style={{ background: '#c8102e', color: '#fff', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 10 }}>{t.badge}</span>}
+        {/* ── SQL Rules ── */}
+        {tab === 'sql' && (
+          <div>
+            <div className="etlTabHead">
+              <div>
+                <div className="etlTabHeadTitle">SQL-based Rules</div>
+                <div className="etlTabHeadSub">BigQuery SQL executed at table level after field mapping. Can be QC checks or transformations.</div>
+              </div>
+              <button className="btn btnP btnSm" onClick={() => setEditSql({ ...BLANK_SQL })}>+ Add SQL Rule</button>
+            </div>
+            {sqlRules.map(s => (
+              <div key={s.id} className="etlSqlBlock">
+                <div className="etlSqlBlockHdr">
+                  <span className={`tag ${s.type==='QC'?'tR':'tB'} etlTag`}>{s.type}</span>
+                  <span style={{fontWeight:600,fontSize:12}}>{s.name}</span>
+                  {s.severity && <span className={`stBadge ${s.severity==='warn'?'stD':'stA'} etlBadgeSm`} style={{marginLeft:4}}><span className="stDot"/>{s.severity}</span>}
+                  <div style={{marginLeft:'auto',display:'flex',gap:4}}>
+                    <button className="btn btnS btnSm" onClick={() => setEditSql({...s})}>✎ Edit</button>
+                    <button className="btn btnS btnSm etlDanger" onClick={() => setSqlRules(p=>p.filter(x=>x.id!==s.id))}>🗑</button>
+                  </div>
+                </div>
+                <pre className="etlSqlPre">{s.sql}</pre>
               </div>
             ))}
           </div>
+        )}
 
-          {/* Live Runs Panel */}
-          {rTab === 'liveRuns' && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--bdr)', background: '#fff', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#137333', animation: 'etl-dot 1.5s infinite' }} />
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 }}>Live Pipeline Runs</div>
-                <span style={{ fontSize: 10, color: 'var(--muted)' }}>{runs.filter(r => r.status === 'running').length} active</span>
+        {/* ── Target ── */}
+        {tab === 'target' && (
+          <div className="etlForm" style={{maxWidth:680}}>
+            <div className="etlInfoCard">
+              <div className="etlInfoCardTitle">Primary Target — Master Table</div>
+              <div className="etlFormRow2" style={{marginTop:10}}>
+                <FG label="Connection Profile">
+                  <select className="etlInput" value={form.tgtConn} onChange={e=>set('tgtConn',e.target.value)}>
+                    {profiles.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </FG>
+                <FG label="Target Table"><input className="etlInput etlInputMono" defaultValue="vessel_master.vessel_particulars"/></FG>
               </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
-                {runs.map(r => <RunCard key={r.id} r={r} />)}
+              <div className="etlFormRow3" style={{marginTop:8}}>
+                <FG label="Write Mode">
+                  <select className="etlInput">{WRITE_MODES.map(o=><option key={o}>{o}</option>)}</select>
+                </FG>
+                <FG label="Merge / Partition Key"><input className="etlInput etlInputMono" defaultValue="imo_number"/></FG>
+                <FG label="Partition Column"><input className="etlInput etlInputMono" defaultValue="_updated_date"/></FG>
               </div>
             </div>
-          )}
-
-          {/* HIL Queue Panel */}
-          {rTab === 'hilQueue' && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--bdr)', background: '#fff', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>Filter:</span>
-                <select value={entityFil} onChange={e => setEntityFil(e.target.value)} style={{ padding: '4px 9px', fontSize: 11, border: '1px solid var(--bdr)', borderRadius: 4, background: 'var(--bg)', color: 'var(--txt)', outline: 'none', cursor: 'pointer' }}>
-                  <option value="all">All Entities</option>
-                  <option value="identity">Identity</option>
-                  <option value="ownership">Ownership</option>
-                  <option value="class">Classification</option>
-                  <option value="dimensions">Dimensions</option>
-                  <option value="certificates">Certificates</option>
-                </select>
-                <select value={sevFil} onChange={e => setSevFil(e.target.value)} style={{ padding: '4px 9px', fontSize: 11, border: '1px solid var(--bdr)', borderRadius: 4, background: 'var(--bg)', color: 'var(--txt)', outline: 'none', cursor: 'pointer' }}>
-                  <option value="all">All Severities</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
-                {filteredHil.map(h => {
-                  const scoreW = Math.round(h.score * 100);
-                  const scoreFill = h.score < 0.7 ? '#c8102e' : h.score < 0.95 ? '#b45309' : '#137333';
-                  const sevBg = h.severity === 'high' ? '#fff3e0' : h.severity === 'medium' ? '#f3e8fd' : '#e8f0fe';
-                  const sevC = h.severity === 'high' ? '#b45309' : h.severity === 'medium' ? '#6200ea' : '#1558d6';
-                  const isOvOpen = overrideOpen === h.id;
-                  return (
-                    <div key={h.id} style={{ background: '#fff', border: '1px solid var(--bdr)', borderRadius: 6, marginBottom: 7, overflow: 'hidden' }}>
-                      <div style={{ padding: '9px 12px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#1558d6', cursor: 'pointer' }}>{h.vessel}</span>
-                            <span style={{ fontSize: 10, color: 'var(--muted)', marginLeft: 4 }}>IMO {h.imo}</span>
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--txt)', marginTop: 2 }}>
-                            <strong>{h.attr}</strong> · {h.entity.charAt(0).toUpperCase() + h.entity.slice(1)} conflict
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10, background: sevBg, color: sevC }}>{h.severity.toUpperCase()}</span>
-                          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10, background: 'var(--bg)', color: 'var(--muted)' }}>{h.vendor}</span>
-                        </div>
-                      </div>
-                      {/* Values */}
-                      <div style={{ padding: '0 12px 8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                        <div style={{ border: '1px solid var(--bdr)', borderRadius: 4, padding: '7px 9px' }}>
-                          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, color: 'var(--muted)', marginBottom: 3 }}>Master (Golden Record)</div>
-                          <div style={{ fontSize: 11, color: 'var(--txt)', fontWeight: 600 }}>{h.master}</div>
-                        </div>
-                        <div style={{ border: '1px solid #1558d6', borderRadius: 4, padding: '7px 9px' }}>
-                          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, color: '#1558d6', marginBottom: 3 }}>Incoming ({h.vendor})</div>
-                          <div style={{ fontSize: 11, color: '#1558d6', fontWeight: 600 }}>{h.incoming}</div>
-                        </div>
-                      </div>
-                      {/* Score */}
-                      <div style={{ padding: '0 12px 6px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ fontSize: 10, color: 'var(--muted)', fontWeight: 600, width: 80, flexShrink: 0 }}>Match Score</div>
-                        <div style={{ flex: 1, height: 6, background: 'var(--bdr)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 3, background: scoreFill, width: scoreW + '%', transition: 'width 0.4s' }} />
-                        </div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: scoreFill, width: 36, textAlign: 'right', flexShrink: 0 }}>{scoreW}%</div>
-                      </div>
-                      <div style={{ padding: '0 12px 8px', fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>"{h.reason}"</div>
-                      {/* Actions */}
-                      <div style={{ padding: '6px 12px 9px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid var(--bdr)', background: 'var(--bg)' }}>
-                        <button onClick={() => hilAction(h.id)} style={{ padding: '5px 10px', fontSize: 11, fontWeight: 600, borderRadius: 4, cursor: 'pointer', border: '1px solid var(--bdr)', background: '#fff', color: 'var(--muted)' }}>Keep Master</button>
-                        <button onClick={() => hilAction(h.id)} style={{ padding: '5px 10px', fontSize: 11, fontWeight: 600, borderRadius: 4, cursor: 'pointer', border: '1px solid #137333', background: '#e6f4ea', color: '#137333' }}>Promote Feed Value</button>
-                        <button
-                          onClick={() => setOverrideOpen(p => p === h.id ? null : h.id)}
-                          style={{ padding: '5px 10px', fontSize: 11, fontWeight: 600, borderRadius: 4, cursor: 'pointer', border: '1px solid #1558d6', background: isOvOpen ? '#1558d6' : '#e8f0fe', color: isOvOpen ? '#fff' : '#1558d6' }}
-                        >Manual Override</button>
-                      </div>
-                      {isOvOpen && (
-                        <div style={{ padding: '6px 12px 10px', borderTop: '1px solid var(--bdr)', background: '#fff' }}>
-                          <input placeholder="Enter override value…" style={{ width: '100%', padding: '5px 8px', border: '1px solid var(--bdr)', borderRadius: 4, fontSize: 12, marginBottom: 5, outline: 'none' }} />
-                          <input placeholder="Comment / reason for override…" style={{ width: '100%', padding: '5px 8px', border: '1px solid var(--bdr)', borderRadius: 4, fontSize: 12, marginBottom: 5, outline: 'none' }} />
-                          <button onClick={() => hilAction(h.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: 700, borderRadius: 4, background: '#1558d6', color: '#fff', border: 'none', cursor: 'pointer' }}>Save Override</button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+            <div className="etlInfoCard">
+              <div className="etlInfoCardTitle">Review Queue Target</div>
+              <div className="etlFormRow2" style={{marginTop:10}}>
+                <FG label="Table"><input className="etlInput etlInputMono" defaultValue="etl_ops.review_queue"/></FG>
+                <FG label="Route records when">
+                  <select className="etlInput"><option>Confidence &lt; 90%</option><option>Any QC warning</option><option>New key not in master</option></select>
+                </FG>
               </div>
             </div>
-          )}
+            <div className="etlInfoCard">
+              <div className="etlInfoCardTitle">QC Failure Table</div>
+              <div style={{marginTop:10}}>
+                <FG label="Table"><input className="etlInput etlInputMono" defaultValue="etl_ops.qc_failures"/></FG>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Save bar always visible at bottom */}
+      <div className="etlSaveBar">
+        <button className="btn btnS" onClick={onBack}>Cancel</button>
+        <button className="btn btnP" onClick={() => onSave(form)}>💾 Save Pipeline</button>
+      </div>
+
+      {/* Modals */}
+      {editTable && (
+        <ModalShell title={editTable.id ? 'Edit Source Table' : 'Add Source Table'} onClose={() => setEditTable(null)} onSave={() => saveTable(editTable)}>
+          <FG label="Table Name"><input className="etlInput etlInputMono" value={editTable.table} onChange={e=>setEditTable(t=>({...t,table:e.target.value}))}/></FG>
+          <FG label="Primary Key"><input className="etlInput etlInputMono" value={editTable.pk} onChange={e=>setEditTable(t=>({...t,pk:e.target.value}))}/></FG>
+          <FG label="Approx Row Count"><input className="etlInput" value={editTable.rows} onChange={e=>setEditTable(t=>({...t,rows:e.target.value}))}/></FG>
+          <FG label="Description"><input className="etlInput" value={editTable.desc} onChange={e=>setEditTable(t=>({...t,desc:e.target.value}))}/></FG>
+        </ModalShell>
+      )}
+      {editMapping && (
+        <ModalShell title={editMapping.id ? 'Edit Field Mapping' : 'Add Field Mapping'} onClose={() => setEditMapping(null)} onSave={() => saveMapping(editMapping)}>
+          <FG label="Source Field (as in landing table)"><input className="etlInput etlInputMono" value={editMapping.src} onChange={e=>setEditMapping(m=>({...m,src:e.target.value}))}/></FG>
+          <FG label="Master Field (dot-notation)"><input className="etlInput etlInputMono" value={editMapping.tgt} onChange={e=>setEditMapping(m=>({...m,tgt:e.target.value}))}/></FG>
+          <FG label="Transform Rule IDs (comma-separated)"><input className="etlInput" value={editMapping.xfm} onChange={e=>setEditMapping(m=>({...m,xfm:e.target.value}))}/></FG>
+          <FG label="Status">
+            <select className="etlInput" value={editMapping.status} onChange={e=>setEditMapping(m=>({...m,status:e.target.value}))}>
+              {['mapped','ignored','unmapped'].map(o=><option key={o}>{o}</option>)}
+            </select>
+          </FG>
+        </ModalShell>
+      )}
+      {editMatch && (
+        <ModalShell title={editMatch.id ? 'Edit Match Rule' : 'Add Match Rule'} onClose={() => setEditMatch(null)} onSave={() => saveMatch(editMatch)}>
+          <FG label="Match Field(s) (e.g. imo_number or name+flag)"><input className="etlInput etlInputMono" value={editMatch.field} onChange={e=>setEditMatch(r=>({...r,field:e.target.value}))}/></FG>
+          <FG label="Match Type">
+            <select className="etlInput" value={editMatch.match} onChange={e=>setEditMatch(r=>({...r,match:e.target.value}))}>
+              {MATCH_TYPES.map(o=><option key={o}>{o}</option>)}
+            </select>
+          </FG>
+          <FG label="Minimum Confidence %"><input className="etlInput" type="number" min={0} max={100} value={editMatch.confidence} onChange={e=>setEditMatch(r=>({...r,confidence:e.target.value}))}/></FG>
+          <FG label="On Match Action">
+            <select className="etlInput" value={editMatch.action} onChange={e=>setEditMatch(r=>({...r,action:e.target.value}))}>
+              {MATCH_ACTIONS.map(o=><option key={o}>{o}</option>)}
+            </select>
+          </FG>
+        </ModalShell>
+      )}
+      {editSql && (
+        <ModalShell title={editSql.id ? 'Edit SQL Rule' : 'Add SQL Rule'} onClose={() => setEditSql(null)} onSave={() => saveSql(editSql)} width={700}>
+          <div className="etlFormRow2">
+            <FG label="Rule Type">
+              <select className="etlInput" value={editSql.type} onChange={e=>setEditSql(s=>({...s,type:e.target.value}))}>
+                <option>QC</option><option>Transform</option>
+              </select>
+            </FG>
+            <FG label="Severity">
+              <select className="etlInput" value={editSql.severity} onChange={e=>setEditSql(s=>({...s,severity:e.target.value}))}>
+                {SEVERITY.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+          </div>
+          <FG label="Rule Name"><input className="etlInput" value={editSql.name} onChange={e=>setEditSql(s=>({...s,name:e.target.value}))}/></FG>
+          <FG label="SQL Expression">
+            <textarea className="etlInput etlInputMono" rows={7} value={editSql.sql} onChange={e=>setEditSql(s=>({...s,sql:e.target.value}))} style={{fontSize:11,lineHeight:1.6}}/>
+          </FG>
+        </ModalShell>
+      )}
+    </div>
+  )
+}
+
+/* ─── Global Settings (full-page) ────────────────────────────────────────── */
+const BLANK_PROFILE = { name:'', type:'BigQuery', project:'', dataset:'', location:'EU', bucket:'', region:'', prefix:'', host:'', port:'5432', db:'', topic:'', subscription:'', brokers:'', group:'' }
+const BLANK_QC      = { entity:'Vessel', field:'', rule:'Format', severity:'error', expr:'', desc:'', enabled:true }
+const BLANK_XFM     = { entity:'Vessel', field:'', type:'Function', rule:'', desc:'', enabled:true }
+
+function GlobalSettingsPage({ profiles, setProfiles, qcRules, setQcRules, transforms, setTransforms, onBack }) {
+  const [section,  setSection]  = useState('alerts')
+  const [alert1,   setAlert1]   = useState('etl-alerts@sp-maritime.com')
+  const [alert2,   setAlert2]   = useState('data-ops@sp-maritime.com')
+  const [failAct,  setFailAct]  = useState('Email + PagerDuty')
+  const [warnAct,  setWarnAct]  = useState('Email only')
+  const [summary,  setSummary]  = useState('08:00 UTC')
+  const [editProf, setEditProf] = useState(null)
+  const [editQc,   setEditQc]   = useState(null)
+  const [editXfm,  setEditXfm]  = useState(null)
+  const [saved,    setSaved]    = useState(false)
+
+  function saveAll() { setSaved(true); setTimeout(() => setSaved(false), 2500) }
+
+  function saveProfile(p) {
+    setProfiles(prev => prev.find(x=>x.id===p.id) ? prev.map(x=>x.id===p.id?p:x) : [...prev, {...p, id:`cp${Date.now()}`}])
+    setEditProf(null)
+  }
+  function saveQc(r) {
+    setQcRules(prev => prev.find(x=>x.id===r.id) ? prev.map(x=>x.id===r.id?r:x) : [...prev, {...r, id:`GQ${Date.now()}`}])
+    setEditQc(null)
+  }
+  function saveXfm(r) {
+    setTransforms(prev => prev.find(x=>x.id===r.id) ? prev.map(x=>x.id===r.id?r:x) : [...prev, {...r, id:`GT${Date.now()}`}])
+    setEditXfm(null)
+  }
+
+  const SECTIONS = [['alerts','🔔 Alert Settings'],['connections','🔗 Connections'],['qc','✅ QC Rules'],['transforms','⚡ Transforms']]
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+      <div className="dHead" style={{padding:'0 20px',gap:10}}>
+        <span style={{fontWeight:700,fontSize:14}}>⚙ Global Settings</span>
+        <div style={{marginLeft:'auto',display:'flex',gap:8,alignItems:'center'}}>
+          {saved && <span style={{color:'#16a34a',fontWeight:600,fontSize:12}}>✓ Saved</span>}
+          <button className="btn btnP" onClick={saveAll}>💾 Save All</button>
         </div>
       </div>
+
+      <div style={{display:'flex',flex:1,overflow:'hidden',minHeight:0}}>
+        {/* Sidebar */}
+        <div className="etlGsNav">
+          {SECTIONS.map(([k,l]) => (
+            <button key={k} className={`etlGsNavItem${section===k?' on':''}`} onClick={() => setSection(k)}>{l}</button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{flex:1,overflowY:'auto',padding:28}}>
+          <div style={{maxWidth:860}}>
+
+            {section==='alerts' && (
+              <>
+                <div className="etlGsGroupTitle">Alert Recipients</div>
+                <div className="etlInfoCard" style={{marginBottom:16}}>
+                  <div className="etlFormRow2">
+                    <FG label="Primary Email"><input className="etlInput" value={alert1} onChange={e=>setAlert1(e.target.value)}/></FG>
+                    <FG label="Secondary Email"><input className="etlInput" value={alert2} onChange={e=>setAlert2(e.target.value)}/></FG>
+                  </div>
+                </div>
+                <div className="etlGsGroupTitle">Trigger Rules</div>
+                <div className="etlInfoCard">
+                  <div className="etlFormRow3">
+                    <FG label="On Pipeline Failure">
+                      <select className="etlInput" value={failAct} onChange={e=>setFailAct(e.target.value)}>
+                        <option>Email + PagerDuty</option><option>Email only</option><option>None</option>
+                      </select>
+                    </FG>
+                    <FG label="On QC Warning">
+                      <select className="etlInput" value={warnAct} onChange={e=>setWarnAct(e.target.value)}>
+                        <option>Email only</option><option>Slack</option><option>None</option>
+                      </select>
+                    </FG>
+                    <FG label="Daily Summary">
+                      <select className="etlInput" value={summary} onChange={e=>setSummary(e.target.value)}>
+                        <option>08:00 UTC</option><option>06:00 UTC</option><option>None</option>
+                      </select>
+                    </FG>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {section==='connections' && (
+              <>
+                <div style={{display:'flex',alignItems:'center',marginBottom:16}}>
+                  <div className="etlGsGroupTitle" style={{margin:0}}>Connection Profiles</div>
+                  <button className="btn btnP btnSm" style={{marginLeft:'auto'}} onClick={() => setEditProf({...BLANK_PROFILE, id:`cp${Date.now()}`})}>+ New Profile</button>
+                </div>
+                <table className="etlTable">
+                  <thead><tr><th>Profile Name</th><th>Type</th><th>Host / Project / Bucket</th><th>Dataset / DB / Topic</th><th>Status</th><th style={{width:120}}>Actions</th></tr></thead>
+                  <tbody>
+                    {profiles.map(c => (
+                      <tr key={c.id}>
+                        <td style={{fontWeight:600}}>{c.name}</td>
+                        <td><span className="tag tN etlTag">{c.type}</span></td>
+                        <td><code className="etlCode etlCodeSm">{c.project||c.bucket||c.host||c.brokers||'—'}</code></td>
+                        <td><code className="etlCode etlCodeSm">{c.dataset||c.db||c.topic||c.region||'—'}</code></td>
+                        <td><span className="stBadge stA etlBadgeSm"><span className="stDot"/>Connected</span></td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditProf({...c})}>✎ Edit</button>
+                            <button className="btn btnS btnSm">🔗 Test</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setProfiles(p=>p.filter(x=>x.id!==c.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+            {section==='qc' && (
+              <>
+                <div style={{display:'flex',alignItems:'center',marginBottom:16}}>
+                  <div className="etlGsGroupTitle" style={{margin:0}}>Global QC Rules</div>
+                  <div style={{fontSize:11,color:'var(--txt3)',marginLeft:12}}>Inherited by all pipelines</div>
+                  <button className="btn btnP btnSm" style={{marginLeft:'auto'}} onClick={() => setEditQc({...BLANK_QC, id:''})}>+ New Rule</button>
+                </div>
+                <table className="etlTable">
+                  <thead><tr><th>ID</th><th>Entity</th><th>Field</th><th>Type</th><th>Severity</th><th>Description</th><th>On</th><th style={{width:80}}>Actions</th></tr></thead>
+                  <tbody>
+                    {qcRules.map(r => (
+                      <tr key={r.id}>
+                        <td><code className="etlCode etlCodeSm">{r.id}</code></td>
+                        <td><span className={`tag ${ENTITY_CLS[r.entity]||'tN'} etlTag`}>{r.entity}</span></td>
+                        <td><code className="etlCode">{r.field}</code></td>
+                        <td><span className="tag tN etlTag">{r.rule}</span></td>
+                        <td><span className={`stBadge ${r.severity==='error'?'stR':'stD'} etlBadgeSm`}><span className="stDot"/>{r.severity}</span></td>
+                        <td style={{color:'var(--txt2)'}}>{r.desc}</td>
+                        <td><input type="checkbox" checked={r.enabled} onChange={e=>setQcRules(p=>p.map(x=>x.id===r.id?{...x,enabled:e.target.checked}:x))}/></td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditQc({...r})}>✎</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setQcRules(p=>p.filter(x=>x.id!==r.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+            {section==='transforms' && (
+              <>
+                <div style={{display:'flex',alignItems:'center',marginBottom:16}}>
+                  <div className="etlGsGroupTitle" style={{margin:0}}>Global Transformation Rules</div>
+                  <div style={{fontSize:11,color:'var(--txt3)',marginLeft:12}}>Applied across all pipelines after field mapping</div>
+                  <button className="btn btnP btnSm" style={{marginLeft:'auto'}} onClick={() => setEditXfm({...BLANK_XFM, id:''})}>+ New Rule</button>
+                </div>
+                <table className="etlTable">
+                  <thead><tr><th>ID</th><th>Entity</th><th>Field</th><th>Type</th><th>Rule</th><th>Description</th><th>On</th><th style={{width:80}}>Actions</th></tr></thead>
+                  <tbody>
+                    {transforms.map(r => (
+                      <tr key={r.id}>
+                        <td><code className="etlCode etlCodeSm">{r.id}</code></td>
+                        <td><span className={`tag ${ENTITY_CLS[r.entity]||'tN'} etlTag`}>{r.entity}</span></td>
+                        <td><code className="etlCode">{r.field}</code></td>
+                        <td><span className="tag tB etlTag">{r.type}</span></td>
+                        <td className="etlCodeCell"><code className="etlCode etlCodeSm">{r.rule}</code></td>
+                        <td style={{color:'var(--txt2)'}}>{r.desc}</td>
+                        <td><input type="checkbox" checked={r.enabled} onChange={e=>setTransforms(p=>p.map(x=>x.id===r.id?{...x,enabled:e.target.checked}:x))}/></td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditXfm({...r})}>✎</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setTransforms(p=>p.filter(x=>x.id!==r.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {editProf && (
+        <ModalShell title={editProf.name ? `Edit: ${editProf.name}` : 'New Connection Profile'} onClose={() => setEditProf(null)} onSave={() => saveProfile(editProf)} width={620}>
+          <div className="etlFormRow2">
+            <FG label="Profile Name"><input className="etlInput" value={editProf.name} onChange={e=>setEditProf(p=>({...p,name:e.target.value}))}/></FG>
+            <FG label="Connection Type">
+              <select className="etlInput" value={editProf.type} onChange={e=>setEditProf(p=>({...p,type:e.target.value}))}>
+                {CONN_TYPES.map(t=><option key={t}>{t}</option>)}
+              </select>
+            </FG>
+          </div>
+          {editProf.type === 'BigQuery' && (
+            <div className="etlFormRow3">
+              <FG label="Project ID"><input className="etlInput etlInputMono" value={editProf.project} onChange={e=>setEditProf(p=>({...p,project:e.target.value}))}/></FG>
+              <FG label="Dataset"><input className="etlInput etlInputMono" value={editProf.dataset} onChange={e=>setEditProf(p=>({...p,dataset:e.target.value}))}/></FG>
+              <FG label="Location"><input className="etlInput" value={editProf.location} onChange={e=>setEditProf(p=>({...p,location:e.target.value}))}/></FG>
+            </div>
+          )}
+          {editProf.type === 'S3' && (
+            <div className="etlFormRow3">
+              <FG label="Bucket"><input className="etlInput etlInputMono" value={editProf.bucket} onChange={e=>setEditProf(p=>({...p,bucket:e.target.value}))}/></FG>
+              <FG label="Region"><input className="etlInput" value={editProf.region} onChange={e=>setEditProf(p=>({...p,region:e.target.value}))}/></FG>
+              <FG label="Prefix"><input className="etlInput etlInputMono" value={editProf.prefix} onChange={e=>setEditProf(p=>({...p,prefix:e.target.value}))}/></FG>
+            </div>
+          )}
+          {editProf.type === 'PostgreSQL' && (
+            <div className="etlFormRow3">
+              <FG label="Host"><input className="etlInput etlInputMono" value={editProf.host} onChange={e=>setEditProf(p=>({...p,host:e.target.value}))}/></FG>
+              <FG label="Port"><input className="etlInput" value={editProf.port} onChange={e=>setEditProf(p=>({...p,port:e.target.value}))}/></FG>
+              <FG label="Database"><input className="etlInput etlInputMono" value={editProf.db} onChange={e=>setEditProf(p=>({...p,db:e.target.value}))}/></FG>
+            </div>
+          )}
+          {(editProf.type === 'PubSub') && (
+            <div className="etlFormRow2">
+              <FG label="Project"><input className="etlInput etlInputMono" value={editProf.project} onChange={e=>setEditProf(p=>({...p,project:e.target.value}))}/></FG>
+              <FG label="Topic"><input className="etlInput etlInputMono" value={editProf.topic} onChange={e=>setEditProf(p=>({...p,topic:e.target.value}))}/></FG>
+            </div>
+          )}
+          {editProf.type === 'Kafka' && (
+            <div className="etlFormRow2">
+              <FG label="Brokers (comma-separated)"><input className="etlInput etlInputMono" value={editProf.brokers} onChange={e=>setEditProf(p=>({...p,brokers:e.target.value}))}/></FG>
+              <FG label="Topic"><input className="etlInput etlInputMono" value={editProf.topic} onChange={e=>setEditProf(p=>({...p,topic:e.target.value}))}/></FG>
+            </div>
+          )}
+          {(editProf.type === 'SFTP' || editProf.type === 'REST') && (
+            <div className="etlFormRow2">
+              <FG label="Host / URL"><input className="etlInput etlInputMono" value={editProf.host} onChange={e=>setEditProf(p=>({...p,host:e.target.value}))}/></FG>
+              <FG label="Username / API Key"><input className="etlInput" placeholder="Stored in Secret Manager"/></FG>
+            </div>
+          )}
+        </ModalShell>
+      )}
+      {editQc && (
+        <ModalShell title={editQc.id ? 'Edit QC Rule' : 'New Global QC Rule'} onClose={() => setEditQc(null)} onSave={() => saveQc(editQc)} width={620}>
+          <div className="etlFormRow2">
+            <FG label="Entity">
+              <select className="etlInput" value={editQc.entity} onChange={e=>setEditQc(r=>({...r,entity:e.target.value}))}>
+                {ENTITY_OPTS.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+            <FG label="Field Name"><input className="etlInput etlInputMono" value={editQc.field} onChange={e=>setEditQc(r=>({...r,field:e.target.value}))}/></FG>
+          </div>
+          <div className="etlFormRow2">
+            <FG label="Rule Type">
+              <select className="etlInput" value={editQc.rule} onChange={e=>setEditQc(r=>({...r,rule:e.target.value}))}>
+                {QC_TYPES.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+            <FG label="Severity">
+              <select className="etlInput" value={editQc.severity} onChange={e=>setEditQc(r=>({...r,severity:e.target.value}))}>
+                {SEVERITY.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+          </div>
+          <FG label="Expression / SQL condition"><textarea className="etlInput etlInputMono" rows={3} value={editQc.expr} onChange={e=>setEditQc(r=>({...r,expr:e.target.value}))}/></FG>
+          <FG label="Description"><input className="etlInput" value={editQc.desc} onChange={e=>setEditQc(r=>({...r,desc:e.target.value}))}/></FG>
+        </ModalShell>
+      )}
+      {editXfm && (
+        <ModalShell title={editXfm.id ? 'Edit Transform Rule' : 'New Global Transform'} onClose={() => setEditXfm(null)} onSave={() => saveXfm(editXfm)} width={620}>
+          <div className="etlFormRow2">
+            <FG label="Entity">
+              <select className="etlInput" value={editXfm.entity} onChange={e=>setEditXfm(r=>({...r,entity:e.target.value}))}>
+                {ENTITY_OPTS.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+            <FG label="Field Name"><input className="etlInput etlInputMono" value={editXfm.field} onChange={e=>setEditXfm(r=>({...r,field:e.target.value}))}/></FG>
+          </div>
+          <FG label="Transform Type">
+            <select className="etlInput" value={editXfm.type} onChange={e=>setEditXfm(r=>({...r,type:e.target.value}))}>
+              {XFM_TYPES.map(o=><option key={o}>{o}</option>)}
+            </select>
+          </FG>
+          <FG label="Rule Expression"><textarea className="etlInput etlInputMono" rows={3} value={editXfm.rule} onChange={e=>setEditXfm(r=>({...r,rule:e.target.value}))}/></FG>
+          <FG label="Description"><input className="etlInput" value={editXfm.desc} onChange={e=>setEditXfm(r=>({...r,desc:e.target.value}))}/></FG>
+        </ModalShell>
+      )}
     </div>
-  );
+  )
+}
+
+/* ─── Main ETL page (pipeline list) ─────────────────────────────────────── */
+export default function ETL() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [view,         setView]         = useState(location.state?.view || 'list')    // 'list' | 'configure' | 'global'
+  const [pipelines,    setPipelines]    = useState(INIT_PIPELINES)
+  const [profiles,     setProfiles]     = useState(INIT_PROFILES)
+  const [qcRules,      setQcRules]      = useState(INIT_QC)
+  const [transforms,   setTransforms]   = useState(INIT_TRANSFORMS)
+  const [selectedPl,   setSelectedPl]   = useState(null)
+  const [entityFilter, setEntityFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState('All')
+  const [searchQ,      setSearchQ]      = useState('')
+
+  const filtered = useMemo(() => pipelines.filter(p => {
+    if (entityFilter !== 'All' && p.entity !== entityFilter) return false
+    if (statusFilter !== 'All' && p.status !== statusFilter) return false
+    if (searchQ && !p.name.toLowerCase().includes(searchQ.toLowerCase()) &&
+        !p.vendor.toLowerCase().includes(searchQ.toLowerCase())) return false
+    return true
+  }), [pipelines, entityFilter, statusFilter, searchQ])
+
+  const totalReview = pipelines.reduce((s,p) => s+p.review, 0)
+  const totalFailed = pipelines.reduce((s,p) => s+p.failed, 0)
+  const errorCount  = pipelines.filter(p => p.status==='error').length
+
+  function openConfigure(pl) { setSelectedPl(pl); setView('configure') }
+  function savePipeline(updated) {
+    setPipelines(prev => prev.map(p => p.id===updated.id ? {...p,...updated} : p))
+    setView('list')
+  }
+  function toggleEnabled(id, val) {
+    setPipelines(prev => prev.map(p => p.id===id ? {...p, enabled:val} : p))
+  }
+
+  // ── Sub-views ──
+  if (view === 'configure' && selectedPl) {
+    return <ConfigurePage pl={selectedPl} profiles={profiles} qcRules={qcRules} transforms={transforms}
+             onBack={() => setView('list')} onSave={savePipeline}/>
+  }
+  if (view === 'global') {
+    return (
+      <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+        <ETLSubNav view={view} onViewChange={setView}
+          metrics={{ pipelines:pipelines.length, errors:errorCount, qcFailed:totalFailed, review:totalReview, active:pipelines.filter(p=>p.enabled).length }}/>
+        <GlobalSettingsPage profiles={profiles} setProfiles={setProfiles}
+          qcRules={qcRules} setQcRules={setQcRules}
+          transforms={transforms} setTransforms={setTransforms}
+          onBack={() => setView('list')}/>
+      </div>
+    )
+  }
+
+  // ── Pipeline list ──
+  return (
+    <div style={{display:'flex',flexDirection:'column',flex:1,overflow:'hidden',minHeight:0}}>
+
+      {/* Sub-nav + metrics */}
+      <ETLSubNav
+        view={view}
+        onViewChange={setView}
+        metrics={{ pipelines:pipelines.length, errors:errorCount, qcFailed:totalFailed, review:totalReview, active:pipelines.filter(p=>p.enabled).length }}
+      />
+
+      {/* Filter bar */}
+      <div className="sBar" style={{flexWrap:'wrap',rowGap:4}}>
+        <div className="siWrap" style={{flex:'1 1 220px',minWidth:180}}>
+          <span className="siIc">🔍</span>
+          <input className="si" placeholder="Search pipeline name or vendor…" value={searchQ} onChange={e=>setSearchQ(e.target.value)}/>
+          {searchQ && <button className="siClear" onClick={() => setSearchQ('')}>✕</button>}
+        </div>
+        <select className="fSel" value={entityFilter} onChange={e=>setEntityFilter(e.target.value)}>
+          <option value="All">All Entities</option>
+          {ENTITY_OPTS.map(o=><option key={o}>{o}</option>)}
+        </select>
+        <select className="fSel" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+          <option value="All">All Status</option>
+          {['success','warn','error'].map(o=><option key={o} value={o}>{STATUS_META[o].label}</option>)}
+        </select>
+        <div style={{marginLeft:'auto',fontSize:11,color:'var(--txt3)',alignSelf:'center',whiteSpace:'nowrap'}}>
+          <strong style={{color:'var(--txt)'}}>{filtered.length}</strong> / {pipelines.length} pipelines
+        </div>
+      </div>
+
+      {/* Pipeline table */}
+      <div className="tWrap">
+        <table className="vt" style={{minWidth:1020}}>
+          <thead>
+            <tr>
+              <th style={{minWidth:260}}>Pipeline</th>
+              <th>Entity</th>
+              <th>Schedule</th>
+              <th style={{whiteSpace:'nowrap'}}>Last Run</th>
+              <th>Status</th>
+              <th className="mn">Processed</th>
+              <th className="mn">QC Failed</th>
+              <th className="mn">Review</th>
+              <th style={{textAlign:'center'}}>Enabled</th>
+              <th style={{minWidth:160,whiteSpace:'nowrap'}}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(p => {
+              const st = p.enabled ? p.status : 'disabled'
+              return (
+                <tr key={p.id} style={{opacity:p.enabled ? 1 : .6}}>
+                  <td>
+                    <button className="etlLinkBtn" style={{fontWeight:700,fontSize:12,color:'var(--blue)',display:'block',marginBottom:2,textAlign:'left'}}
+                      onClick={() => navigate('/etl-runs', { state: { pipeline: p.name } })}>{p.name}</button>
+                    <code style={{fontSize:9,color:'var(--txt3)',fontFamily:'monospace'}}>{p.bqTable}</code>
+                  </td>
+                  <td><span className={`tag ${ENTITY_CLS[p.entity]||'tN'}`} style={{fontSize:9}}>{p.entity}</span></td>
+                  <td style={{fontSize:11,color:'var(--txt2)',whiteSpace:'nowrap'}}>{p.freq}</td>
+                  <td style={{fontSize:10,fontFamily:'monospace',color:'var(--txt3)',whiteSpace:'nowrap'}}>
+                    {p.status==='error' ? <span style={{color:'var(--red)',fontWeight:600}}>Failed</span> : p.lastRun || '—'}
+                  </td>
+                  <td><Badge st={st}/></td>
+                  <td className="mn" style={{fontWeight:p.records>0?600:400}}>{p.records.toLocaleString()}</td>
+                  <td className="mn">
+                    {p.failed > 0
+                      ? <button className="etlLinkBtn etlRed" onClick={() => navigate('/etl-runs', { state: { pipeline: p.name } })}>{p.failed.toLocaleString()}</button>
+                      : <span style={{color:'var(--txt3)'}}>—</span>}
+                  </td>
+                  <td className="mn">
+                    {p.review > 0
+                      ? <button className="etlLinkBtn etlAmber" onClick={() => navigate('/etl-review', { state: { pipeline: p.name } })}>{p.review.toLocaleString()}</button>
+                      : <span style={{color:'var(--txt3)'}}>—</span>}
+                  </td>
+                  <td style={{textAlign:'center'}}>
+                    <Toggle on={p.enabled} onChange={v => toggleEnabled(p.id, v)}/>
+                  </td>
+                  <td>
+                    <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'nowrap'}}>
+                      <button className="btn btnP btnSm" onClick={() => openConfigure(p)}>⚙ Configure</button>
+                      <button className="btn btnS btnSm" title="Trigger manual run">▶ Run</button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }

@@ -1994,3 +1994,256 @@ body.ew-resizing{cursor:ew-resize!important;user-select:none!important}
   background:#f0fdf4;border:1px solid #86efac;
   border-radius:4px;padding:7px 9px;max-height:100px;overflow-y:auto;
   margin:0}
+
+/* ═══════════════════════════════════════════════════
+   ETL PIPELINES — Main, Runs, Review
+   ═══════════════════════════════════════════════════ */
+
+/* KPI bar in page header */
+.etlKpiBar{display:flex;gap:2px;align-items:stretch}
+.etlKpi{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px 12px;border-radius:6px;background:var(--bg2);border:1px solid var(--bd);gap:1px}
+.etlKpiVal{font-size:16px;font-weight:800;line-height:1;color:var(--txt)}
+.etlKpiLbl{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3)}
+.etlKpiErr .etlKpiVal{color:var(--red)}
+.etlKpiWarn .etlKpiVal{color:#d97706}
+.etlKpiRev .etlKpiVal{color:#7c3aed}
+
+/* Sub-nav tabs below the page header */
+.etlNavTabs{display:flex;gap:0;border-bottom:2px solid var(--bd);background:var(--bg);padding:0 12px;flex-shrink:0}
+.etlNavTab{padding:8px 16px;font-size:12px;font-weight:600;font-family:inherit;
+  background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;
+  color:var(--txt3);margin-bottom:-2px;transition:all .12s;white-space:nowrap}
+.etlNavTab:hover{color:var(--txt)}
+.etlNavTab.on{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* Notification badge inside button */
+.etlBadge{display:inline-flex;align-items:center;justify-content:center;
+  background:#dc2626;color:#fff;border-radius:10px;font-size:9px;font-weight:700;
+  padding:0 5px;min-width:16px;height:16px;margin-left:5px;line-height:1}
+
+/* Toggle switch */
+.etlToggle{width:32px;height:18px;border-radius:9px;background:#cbd5e1;border:none;
+  cursor:pointer;position:relative;transition:background .15s;padding:0;flex-shrink:0}
+.etlToggle.on{background:var(--green)}
+.etlToggleKnob{position:absolute;top:2px;left:2px;width:14px;height:14px;
+  border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.etlToggle.on .etlToggleKnob{left:16px}
+
+/* Clickable number links */
+.etlLinkBtn{background:none;border:none;cursor:pointer;font-family:'IBM Plex Mono','Courier New',monospace;
+  font-size:11px;font-weight:700;padding:0;text-decoration:underline;text-underline-offset:2px}
+.etlRed{color:var(--red)}
+.etlAmber{color:#d97706}
+
+/* Configure overlay — must be above topNav (z-index:1100) */
+.etlCfgOverlay{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.5);
+  display:flex;align-items:stretch;justify-content:flex-end}
+.etlCfgPanel{width:min(940px,92vw);background:#fff;display:flex;flex-direction:column;
+  overflow:hidden;box-shadow:-8px 0 40px rgba(0,0,0,.28)}
+.etlCfgHdr{padding:14px 20px;border-bottom:1px solid var(--bd);background:var(--bg2);
+  display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.etlCfgHdrTitle{font-size:13px;font-weight:700;color:var(--txt)}
+.etlCfgHdrSub{font-size:11px;color:var(--txt3);margin-top:2px}
+.etlCfgTabs{display:flex;border-bottom:1px solid var(--bd);background:var(--bg);
+  padding:0 12px;overflow-x:auto;flex-shrink:0}
+.etlCfgTab{padding:8px 13px;font-size:11px;font-weight:600;font-family:inherit;
+  background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;
+  color:var(--txt3);margin-bottom:-1px;transition:all .12s;white-space:nowrap}
+.etlCfgTab:hover{color:var(--txt)}
+.etlCfgTab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.etlCfgBody{flex:1;overflow-y:auto;padding:20px}
+
+/* Section header inside config panels */
+.etlSecHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.etlSecTitle{font-size:13px;font-weight:700;color:var(--txt)}
+
+/* Form layout helpers */
+.etlForm{display:flex;flex-direction:column;gap:12px}
+.etlFormRow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.etlFormRow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.etlFG{display:flex;flex-direction:column;gap:4px}
+.etlFG label{font-size:10px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.3px}
+.etlInput{padding:6px 9px;border:1px solid var(--bd);border-radius:5px;font-size:12px;
+  font-family:inherit;color:var(--txt);background:#fff;width:100%;box-sizing:border-box;
+  outline:none;transition:border-color .12s}
+.etlInput:focus{border-color:var(--blue)}
+textarea.etlInput{resize:vertical;min-height:54px}
+
+/* Card inside config */
+.etlCfgCard{border:1px solid var(--bd);border-radius:7px;padding:14px;background:var(--bg2)}
+.etlCfgCardTitle{font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:.3px}
+
+/* ETL data table */
+.etlTable{width:100%;border-collapse:collapse;font-size:11px}
+.etlTable th{padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--bd);
+  text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.4px;color:var(--txt3);white-space:nowrap}
+.etlTable td{padding:6px 10px;border-bottom:1px solid var(--bg3);vertical-align:middle}
+.etlTable tr:hover td{background:var(--bg2)}
+.etlTable tr:last-child td{border-bottom:none}
+
+/* Inline code snippets */
+.etlCode{font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;
+  background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--txt)}
+
+/* SQL rule block */
+.etlSqlRule{border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.etlSqlRuleHd{padding:8px 12px;background:var(--bg2);display:flex;align-items:center;
+  gap:8px;border-bottom:1px solid var(--bd)}
+.etlSqlPre{margin:0;padding:12px 14px;font-family:'IBM Plex Mono','Courier New',monospace;
+  font-size:11px;line-height:1.6;background:#f8fafc;color:#1e293b;overflow-x:auto}
+
+/* Empty state */
+.etlEmpty{padding:32px 16px;text-align:center;color:var(--txt3);font-size:11px;
+  border:1px dashed var(--bd);border-radius:6px;margin:8px 0}
+
+/* Run detail panel */
+.etlRunDetailHdr{padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--bg2);
+  display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.etlRunKpis{display:flex;gap:1px;flex-shrink:0}
+.etlRunKpi{flex:1;padding:10px 8px;text-align:center;background:var(--bg2);
+  border-bottom:1px solid var(--bd)}
+.etlRunKpi .etlKpiVal{font-size:18px}
+
+/* Log lines */
+.etlLogLine{font-size:11px;font-family:'IBM Plex Mono','Courier New',monospace;
+  padding:3px 0;line-height:1.6;border-bottom:1px dotted var(--bg3)}
+.etlLogOk{color:#166534}
+.etlLogWarn{color:#92400e}
+.etlLogErr{color:#991b1b}
+
+/* Review queue */
+.etlRevQueue{width:280px;flex-shrink:0;border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.etlRevVesselRow{padding:10px 12px;border-bottom:1px solid var(--bg3);cursor:pointer;
+  transition:background .1s}
+.etlRevVesselRow:hover{background:var(--bg2)}
+.etlRevVesselRow.on{background:#e8f0fe;border-left:3px solid var(--blue)}
+.etlRevVesselRow.resolved{opacity:.5}
+
+/* Review vessel bar */
+.etlRevVesselBar{padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--bg2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px}
+
+/* Field comparison card */
+.etlRevFieldCard{border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.etlRevFieldHdr{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between}
+.etlRevIssueBanner{padding:7px 14px;background:#fffbeb;border-bottom:1px solid #fde68a;
+  font-size:11px;color:#92400e;line-height:1.4}
+.etlRevCompGrid{display:flex;gap:0;border-bottom:1px solid var(--bd)}
+.etlRevCompCol{flex:1;padding:12px 14px;border-right:1px solid var(--bd);min-width:0}
+.etlRevCompCol:last-child{border-right:none}
+.etlRevCompMaster{background:#f8fafc}
+.etlRevCompAgree{background:#f0fdf4}
+.etlRevCompClose{background:#fffbeb}
+.etlRevCompIncoming{background:#fef2f2}
+.etlRevCompColHd{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+  color:var(--txt3);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.etlRevCompVal{font-size:14px;font-weight:700;color:var(--txt);word-break:break-word;line-height:1.3}
+.etlRevCompConf{font-size:9px;font-weight:700;margin-top:4px}
+.etlRevOverrideRow{display:flex;gap:6px;padding:10px 14px;background:var(--bg);align-items:center}
+.etlRevSaveBar{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-top:1px solid var(--bd);margin-top:4px}
+.etlDecActive{border-color:var(--red)!important;color:var(--red)!important}
+
+/* Global Settings sidebar layout */
+.etlGsNav{width:160px;flex-shrink:0;border-right:1px solid var(--bd);background:var(--bg2);
+  display:flex;flex-direction:column;padding:12px 0}
+.etlGsNavItem{padding:9px 18px;font-size:12px;font-weight:500;font-family:inherit;
+  background:none;border:none;border-left:3px solid transparent;cursor:pointer;
+  color:var(--txt2);text-align:left;transition:all .1s}
+.etlGsNavItem:hover{background:var(--bg3);color:var(--txt)}
+.etlGsNavItem.on{border-left-color:var(--blue);color:var(--blue);background:#eef3ff;font-weight:700}
+.etlGsSection{margin-bottom:28px}
+.etlGsSectionTitle{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:14px;
+  padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.etlGsProfileEditor{border:1px solid var(--blue);border-radius:7px;padding:16px;
+  background:#f0f6ff;margin-bottom:16px}
+
+/* Airflow-style run ID link */
+.etlRunIdLink{background:none;border:none;cursor:pointer;font-family:inherit;
+  font-size:11px;font-weight:600;color:var(--blue);padding:0;text-decoration:underline;
+  text-underline-offset:2px;text-align:left}
+.etlRunIdLink:hover{color:#0d3fa6}
+
+/* ── ETL Modal ─────────────────────────────────────────────────────────── */
+.etlModalBg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1300;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.etlModal{background:var(--bg);border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.22);
+  display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+.etlModalHdr{display:flex;align-items:flex-start;justify-content:space-between;
+  padding:18px 20px 14px;border-bottom:1px solid var(--bd);flex-shrink:0;gap:12px}
+.etlModalTitle{font-size:15px;font-weight:700;color:var(--txt);line-height:1.3}
+.etlModalSub{font-size:11px;color:var(--txt3);margin-top:3px;line-height:1.4}
+.etlModalClose{background:none;border:none;cursor:pointer;font-size:16px;color:var(--txt3);
+  padding:2px 6px;border-radius:4px;transition:background .1s;flex-shrink:0}
+.etlModalClose:hover{background:var(--bg3);color:var(--txt)}
+.etlModalBody{flex:1;overflow-y:auto;padding:20px}
+.etlModalFoot{display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:12px 20px;border-top:1px solid var(--bd);flex-shrink:0;background:var(--bg2)}
+
+/* ── ETL Configure tab head ─────────────────────────────────────────────── */
+.etlTabHead{display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 0 14px;margin-bottom:14px;border-bottom:1px solid var(--bd);gap:12px}
+.etlTabHeadTitle{font-size:14px;font-weight:700;color:var(--txt)}
+.etlTabHeadSub{font-size:11px;color:var(--txt3);margin-top:3px;line-height:1.4}
+
+/* ── ETL Info card ──────────────────────────────────────────────────────── */
+.etlInfoCard{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;
+  padding:16px;margin-bottom:16px}
+.etlInfoCardTitle{font-size:12px;font-weight:700;color:var(--txt);
+  padding-bottom:10px;border-bottom:1px solid var(--bd);margin-bottom:4px}
+
+/* ── ETL Save bar (sticky bottom) ───────────────────────────────────────── */
+.etlSaveBar{display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:12px 20px;border-top:1px solid var(--bd);background:var(--bg2);flex-shrink:0}
+
+/* ── ETL Empty state ─────────────────────────────────────────────────────── */
+.etlEmptyState{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:48px 20px;text-align:center;color:var(--txt3);font-size:13px}
+.etlEmptyIcon{font-size:32px;opacity:.5}
+
+/* ── ETL SQL block ───────────────────────────────────────────────────────── */
+.etlSqlBlock{border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.etlSqlBlockHdr{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--bg2);border-bottom:1px solid var(--bd);flex-wrap:wrap}
+
+/* ── ETL Code cells & badges ────────────────────────────────────────────── */
+.etlCodeCell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.etlCodeSm{font-size:10px!important;padding:1px 5px!important;line-height:1.5}
+.etlTag{font-size:10px!important;padding:2px 7px!important;line-height:1.5;letter-spacing:.2px}
+.etlBadgeSm{font-size:10px!important;padding:2px 7px!important;gap:4px!important}
+.etlBadgeSm .stDot{width:5px!important;height:5px!important}
+
+/* ── ETL Danger button modifier ─────────────────────────────────────────── */
+.etlDanger{color:var(--red)!important}
+.etlDanger:hover{background:#fef2f2!important;border-color:var(--red)!important}
+
+/* ── ETL Global settings group title ───────────────────────────────────── */
+.etlGsGroupTitle{font-size:13px;font-weight:700;color:var(--txt);
+  margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--bd)}
+
+/* ── ETL Monospace input ─────────────────────────────────────────────────── */
+.etlInputMono{font-family:'IBM Plex Mono','Courier New',monospace!important;font-size:12px!important}
+
+/* ── ETL Sub-navigation bar ─────────────────────────────────────────────── */
+.etlSubNavWrap{background:var(--bg);border-bottom:2px solid var(--bd);flex-shrink:0}
+.etlSubNavRow{display:flex;align-items:stretch;min-height:40px}
+.etlSubNavTabs{display:flex;align-items:stretch}
+.etlSubNavTab{padding:0 18px;font-size:12px;font-weight:600;font-family:inherit;
+  background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;
+  cursor:pointer;color:var(--txt3);transition:all .12s;white-space:nowrap}
+.etlSubNavTab:hover{color:var(--txt);background:var(--bg2)}
+.etlSubNavTab.on{color:var(--blue);border-bottom-color:var(--blue);background:var(--bg)}
+
+/* ── ETL Sub-nav metrics strip ──────────────────────────────────────────── */
+.etlSubMetrics{display:flex;align-items:center;gap:0;margin-left:auto;
+  padding:0 16px;border-left:1px solid var(--bd)}
+.etlSubMetric{display:flex;flex-direction:column;align-items:center;
+  padding:6px 14px;gap:1px}
+.etlSubMetricVal{font-size:15px;font-weight:800;line-height:1;color:var(--txt)}
+.etlSubMetricLbl{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3)}
+.etlSubMetricDiv{width:1px;height:24px;background:var(--bd)}
