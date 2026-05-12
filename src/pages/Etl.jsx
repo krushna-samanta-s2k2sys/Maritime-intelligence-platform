@@ -138,6 +138,27 @@ const BLANK_TABLE   = { table:'', rows:'', pk:'', desc:'' }
 const BLANK_MAPPING = { src:'', tgt:'', xfm:'—', status:'mapped' }
 const BLANK_MATCH   = { field:'', match:'exact', confidence:'90', action:'Update' }
 const BLANK_SQL     = { type:'QC', name:'', severity:'warn', sql:'' }
+const BLANK_PQC     = { field:'', rule:'Format', severity:'warn', expr:'', desc:'', enabled:true }
+const BLANK_PXM     = { field:'', type:'Function', rule:'', desc:'', enabled:true }
+
+const PL_QC_INIT = {
+  pl01: [
+    { id:'pq1', field:'GROSS_TONNAGE', rule:'Cross-field', severity:'warn',  expr:'GROSS_TONNAGE > DWT * 0.6',                        desc:'GT/DWT ratio check — IHS-specific',        enabled:true },
+    { id:'pq2', field:'IHS_OWNER_ID',  rule:'Completeness',severity:'info',  expr:'IHS_OWNER_ID IS NOT NULL',                         desc:'Ownership link present',                   enabled:true },
+  ],
+  pl03: [
+    { id:'pq3', field:'CLASS_CODE',    rule:'Reference',   severity:'error', expr:'CLASS_CODE IN (SELECT code FROM ref.lr_class_map)', desc:'Class code in LR reference table',         enabled:true },
+  ],
+}
+const PL_XFM_INIT = {
+  pl01: [
+    { id:'px1', field:'VESSEL_NAME',   type:'Regex',    rule:'REGEXP_REPLACE(VESSEL_NAME, r"^(MT|MV|MS|SS)\\s+", "")', desc:'Strip vessel name prefix (IHS format)',      enabled:true },
+    { id:'px2', field:'DWT',           type:'Conversion',rule:'CAST(DWT_RAW AS FLOAT64) * COALESCE(DWT_UNIT_FACTOR,1)', desc:'Normalise DWT to metric tonnes',             enabled:true },
+  ],
+  pl03: [
+    { id:'px3', field:'LOA',           type:'Conversion',rule:'ROUND(CAST(LOA_FT AS FLOAT64) * 0.3048, 2)',            desc:'Convert LOA from feet to metres (LR source)',enabled:true },
+  ],
+}
 
 function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
   const [tab,        setTab]        = useState('general')
@@ -152,10 +173,14 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
     { id:'s1', type:'QC',        name:'GT vs DWT sanity check', severity:'warn', sql:"SELECT imo_number,'GT_DWT_MISMATCH' AS rule_id FROM source_table WHERE gross_tonnage > dwt * 3" },
     { id:'s2', type:'Transform', name:'Derive age category',    severity:'info', sql:"SELECT *, CASE WHEN yr < 2010 THEN 'Aged' ELSE 'Modern' END AS age_cat FROM source_table" },
   ])
+  const [pipelineQc,  setPipelineQc]  = useState(PL_QC_INIT[pl.id]  || [])
+  const [pipelineXfm, setPipelineXfm] = useState(PL_XFM_INIT[pl.id] || [])
   const [editTable,   setEditTable]   = useState(null)
   const [editMapping, setEditMapping] = useState(null)
   const [editMatch,   setEditMatch]   = useState(null)
   const [editSql,     setEditSql]     = useState(null)
+  const [editPQc,     setEditPQc]     = useState(null)
+  const [editPXm,     setEditPXm]     = useState(null)
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -190,6 +215,16 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
     if (editSql?.id) setSqlRules(p => p.map(x => x.id === s.id ? s : x))
     else setSqlRules(p => [...p, { ...s, id: `s${Date.now()}` }])
     setEditSql(null)
+  }
+  function savePQc(r) {
+    if (editPQc?.id) setPipelineQc(p => p.map(x => x.id === r.id ? r : x))
+    else setPipelineQc(p => [...p, { ...r, id: `pq${Date.now()}` }])
+    setEditPQc(null)
+  }
+  function savePXm(r) {
+    if (editPXm?.id) setPipelineXfm(p => p.map(x => x.id === r.id ? r : x))
+    else setPipelineXfm(p => [...p, { ...r, id: `px${Date.now()}` }])
+    setEditPXm(null)
   }
 
   function connName(id) { return profiles.find(p => p.id === id)?.name || id }
@@ -330,26 +365,65 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
         {/* ── QC Rules ── */}
         {tab === 'qc' && (
           <div>
+            {/* Pipeline-specific rules */}
             <div className="etlTabHead">
               <div>
-                <div className="etlTabHeadTitle">QC Rules</div>
-                <div className="etlTabHeadSub">Global rules are inherited automatically. Add pipeline-specific rules here.</div>
+                <div className="etlTabHeadTitle">Pipeline QC Rules</div>
+                <div className="etlTabHeadSub">Rules specific to this pipeline — extend or override the global baseline.</div>
               </div>
-              <button className="btn btnP btnSm">+ Add Rule</button>
+              <button className="btn btnP btnSm" onClick={() => setEditPQc({ ...BLANK_PQC })}>+ Add Rule</button>
+            </div>
+            {pipelineQc.length === 0
+              ? <div style={{padding:'10px 0 18px',color:'var(--txt3)',fontSize:12}}>No pipeline-specific rules yet. Global rules below are inherited automatically.</div>
+              : <table className="etlTable" style={{marginBottom:0}}>
+                  <thead><tr><th>Source Field</th><th>Type</th><th>Severity</th><th>Expression</th><th>Description</th><th>On</th><th style={{width:80}}>Actions</th></tr></thead>
+                  <tbody>
+                    {pipelineQc.map(r => (
+                      <tr key={r.id}>
+                        <td><code className="etlCode">{r.field}</code></td>
+                        <td><span className="tag tN etlTag">{r.rule}</span></td>
+                        <td><span className={`stBadge ${r.severity==='error'?'stR':'stD'} etlBadgeSm`}><span className="stDot"/>{r.severity}</span></td>
+                        <td className="etlCodeCell"><code className="etlCode etlCodeSm">{r.expr}</code></td>
+                        <td style={{color:'var(--txt2)'}}>{r.desc}</td>
+                        <td><input type="checkbox" checked={r.enabled} onChange={e=>setPipelineQc(p=>p.map(x=>x.id===r.id?{...x,enabled:e.target.checked}:x))}/></td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditPQc({...r})}>✎</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setPipelineQc(p=>p.filter(x=>x.id!==r.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+            }
+
+            {/* Inherited global rules */}
+            <div style={{marginTop:22,marginBottom:8,display:'flex',alignItems:'center',gap:8,borderTop:'1px solid var(--bd)',paddingTop:16}}>
+              <span style={{fontWeight:700,fontSize:12}}>Inherited Global Rules</span>
+              <span style={{fontSize:11,color:'var(--txt3)'}}>matching {form.entity} entity — source field resolved from field mappings</span>
             </div>
             <table className="etlTable">
-              <thead><tr><th>Rule ID</th><th>Field</th><th>Type</th><th>Severity</th><th>Expression</th><th>On</th></tr></thead>
+              <thead><tr><th>Rule ID</th><th>Master Field</th><th>Source Field</th><th>Type</th><th>Severity</th><th>Expression</th><th>Description</th><th>On</th></tr></thead>
               <tbody>
-                {qcRules.filter(r => r.entity === form.entity || r.entity === 'All').map(r => (
-                  <tr key={r.id}>
-                    <td><code className="etlCode etlCodeSm">{r.id}</code></td>
-                    <td><code className="etlCode">{r.field}</code></td>
-                    <td><span className="tag tN etlTag">{r.rule}</span></td>
-                    <td><span className={`stBadge ${r.severity==='error'?'stR':'stD'} etlBadgeSm`}><span className="stDot"/>{r.severity}</span></td>
-                    <td className="etlCodeCell" title={r.expr}><code className="etlCode etlCodeSm">{r.expr}</code></td>
-                    <td><input type="checkbox" defaultChecked={r.enabled}/></td>
-                  </tr>
-                ))}
+                {qcRules.filter(r => r.entity === form.entity || r.entity === 'All').map(r => {
+                  const mapping = fieldMaps.find(m => m.tgt && m.tgt.split('.').pop() === r.field)
+                  return (
+                    <tr key={r.id} style={{background:'var(--bg2)'}}>
+                      <td><code className="etlCode etlCodeSm">{r.id}</code><span style={{fontSize:9,color:'var(--txt3)',marginLeft:4}}>global</span></td>
+                      <td><code className="etlCode">{r.field}</code></td>
+                      <td>{mapping
+                        ? <code className="etlCode" style={{color:'var(--blue)'}}>{mapping.src}</code>
+                        : <span style={{color:'var(--txt3)',fontSize:11}}>not mapped</span>}
+                      </td>
+                      <td><span className="tag tN etlTag">{r.rule}</span></td>
+                      <td><span className={`stBadge ${r.severity==='error'?'stR':'stD'} etlBadgeSm`}><span className="stDot"/>{r.severity}</span></td>
+                      <td className="etlCodeCell" title={r.expr}><code className="etlCode etlCodeSm">{r.expr}</code></td>
+                      <td style={{color:'var(--txt2)',fontSize:11}}>{r.desc}</td>
+                      <td><input type="checkbox" defaultChecked={r.enabled}/></td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -358,26 +432,63 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
         {/* ── Transformations ── */}
         {tab === 'transforms' && (
           <div>
+            {/* Pipeline-specific transforms */}
             <div className="etlTabHead">
               <div>
-                <div className="etlTabHeadTitle">Transformation Rules</div>
-                <div className="etlTabHeadSub">Global transforms are inherited. Add pipeline-specific overrides here.</div>
+                <div className="etlTabHeadTitle">Pipeline Transform Rules</div>
+                <div className="etlTabHeadSub">Source-field transforms specific to this pipeline — applied before global transforms.</div>
               </div>
-              <button className="btn btnP btnSm">+ Add Rule</button>
+              <button className="btn btnP btnSm" onClick={() => setEditPXm({ ...BLANK_PXM })}>+ Add Rule</button>
+            </div>
+            {pipelineXfm.length === 0
+              ? <div style={{padding:'10px 0 18px',color:'var(--txt3)',fontSize:12}}>No pipeline-specific transforms. Global transforms below are inherited automatically.</div>
+              : <table className="etlTable" style={{marginBottom:0}}>
+                  <thead><tr><th>Source Field</th><th>Type</th><th>Rule Expression</th><th>Description</th><th>On</th><th style={{width:80}}>Actions</th></tr></thead>
+                  <tbody>
+                    {pipelineXfm.map(r => (
+                      <tr key={r.id}>
+                        <td><code className="etlCode">{r.field}</code></td>
+                        <td><span className="tag tB etlTag">{r.type}</span></td>
+                        <td className="etlCodeCell"><code className="etlCode etlCodeSm">{r.rule}</code></td>
+                        <td style={{color:'var(--txt2)'}}>{r.desc}</td>
+                        <td><input type="checkbox" checked={r.enabled} onChange={e=>setPipelineXfm(p=>p.map(x=>x.id===r.id?{...x,enabled:e.target.checked}:x))}/></td>
+                        <td>
+                          <div style={{display:'flex',gap:4}}>
+                            <button className="btn btnS btnSm" onClick={() => setEditPXm({...r})}>✎</button>
+                            <button className="btn btnS btnSm etlDanger" onClick={() => setPipelineXfm(p=>p.filter(x=>x.id!==r.id))}>🗑</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+            }
+
+            {/* Inherited global transforms */}
+            <div style={{marginTop:22,marginBottom:8,display:'flex',alignItems:'center',gap:8,borderTop:'1px solid var(--bd)',paddingTop:16}}>
+              <span style={{fontWeight:700,fontSize:12}}>Inherited Global Transforms</span>
+              <span style={{fontSize:11,color:'var(--txt3)'}}>matching {form.entity} entity — source field resolved from field mappings</span>
             </div>
             <table className="etlTable">
-              <thead><tr><th>Rule ID</th><th>Field</th><th>Type</th><th>Rule Expression</th><th>Description</th><th>On</th></tr></thead>
+              <thead><tr><th>Rule ID</th><th>Master Field</th><th>Source Field</th><th>Type</th><th>Rule Expression</th><th>Description</th><th>On</th></tr></thead>
               <tbody>
-                {transforms.filter(r => r.entity === form.entity || r.entity === 'All').map(r => (
-                  <tr key={r.id}>
-                    <td><code className="etlCode etlCodeSm">{r.id}</code></td>
-                    <td><code className="etlCode">{r.field}</code></td>
-                    <td><span className="tag tB etlTag">{r.type}</span></td>
-                    <td className="etlCodeCell" title={r.rule}><code className="etlCode etlCodeSm">{r.rule}</code></td>
-                    <td style={{color:'var(--txt2)'}}>{r.desc}</td>
-                    <td><input type="checkbox" defaultChecked={r.enabled}/></td>
-                  </tr>
-                ))}
+                {transforms.filter(r => r.entity === form.entity || r.entity === 'All').map(r => {
+                  const mapping = fieldMaps.find(m => m.tgt && m.tgt.split('.').pop() === r.field)
+                  return (
+                    <tr key={r.id} style={{background:'var(--bg2)'}}>
+                      <td><code className="etlCode etlCodeSm">{r.id}</code><span style={{fontSize:9,color:'var(--txt3)',marginLeft:4}}>global</span></td>
+                      <td><code className="etlCode">{r.field}</code></td>
+                      <td>{mapping
+                        ? <code className="etlCode" style={{color:'var(--blue)'}}>{mapping.src}</code>
+                        : <span style={{color:'var(--txt3)',fontSize:11}}>not mapped</span>}
+                      </td>
+                      <td><span className="tag tB etlTag">{r.type}</span></td>
+                      <td className="etlCodeCell" title={r.rule}><code className="etlCode etlCodeSm">{r.rule}</code></td>
+                      <td style={{color:'var(--txt2)',fontSize:11}}>{r.desc}</td>
+                      <td><input type="checkbox" defaultChecked={r.enabled}/></td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -439,23 +550,36 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
               </div>
             </div>
             <table className="etlTable">
-              <thead><tr><th>Source Field</th><th>→</th><th>Master Field</th><th>Transforms</th><th>Status</th><th style={{width:80}}>Actions</th></tr></thead>
+              <thead><tr><th>Source Field</th><th>→</th><th>Master Field</th><th>Pipeline Transforms</th><th>Global QC</th><th>Global Transforms</th><th>Status</th><th style={{width:80}}>Actions</th></tr></thead>
               <tbody>
-                {fieldMaps.map(m => (
-                  <tr key={m.id}>
-                    <td><code className="etlCode">{m.src}</code></td>
-                    <td style={{color:'var(--txt3)',fontWeight:700}}>→</td>
-                    <td><code className="etlCode" style={{color:m.tgt?undefined:'var(--txt3)'}}>{m.tgt||'(not mapped)'}</code></td>
-                    <td>{m.xfm !== '—' && m.xfm.split(',').map(x=><span key={x} className="tag tB etlTag" style={{marginRight:2}}>{x}</span>)}</td>
-                    <td><span className={`stBadge ${m.status==='mapped'?'stA':m.status==='ignored'?'stI':'stR'} etlBadgeSm`}><span className="stDot"/>{m.status}</span></td>
-                    <td>
-                      <div style={{display:'flex',gap:4}}>
-                        <button className="btn btnS btnSm" onClick={() => setEditMapping({...m})}>✎</button>
-                        <button className="btn btnS btnSm etlDanger" onClick={() => setFieldMaps(p=>p.filter(x=>x.id!==m.id))}>🗑</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {fieldMaps.map(m => {
+                  const masterField = m.tgt ? m.tgt.split('.').pop() : null
+                  const gQc  = masterField ? qcRules.filter(r  => r.field  === masterField && (r.entity===form.entity||r.entity==='All')) : []
+                  const gXfm = masterField ? transforms.filter(r => r.field === masterField && (r.entity===form.entity||r.entity==='All')) : []
+                  return (
+                    <tr key={m.id}>
+                      <td><code className="etlCode">{m.src}</code></td>
+                      <td style={{color:'var(--txt3)',fontWeight:700}}>→</td>
+                      <td><code className="etlCode" style={{color:m.tgt?undefined:'var(--txt3)'}}>{m.tgt||'(not mapped)'}</code></td>
+                      <td>
+                        {m.xfm !== '—' ? m.xfm.split(',').map(x=><span key={x} className="tag tP etlTag" style={{marginRight:2}}>{x}</span>) : <span style={{color:'var(--txt3)',fontSize:11}}>—</span>}
+                      </td>
+                      <td>
+                        {gQc.length ? gQc.map(r=><span key={r.id} className="tag tR etlTag" style={{marginRight:2}} title={r.desc}>{r.id}</span>) : <span style={{color:'var(--txt3)',fontSize:11}}>—</span>}
+                      </td>
+                      <td>
+                        {gXfm.length ? gXfm.map(r=><span key={r.id} className="tag tB etlTag" style={{marginRight:2}} title={r.desc}>{r.id}</span>) : <span style={{color:'var(--txt3)',fontSize:11}}>—</span>}
+                      </td>
+                      <td><span className={`stBadge ${m.status==='mapped'?'stA':m.status==='ignored'?'stI':'stR'} etlBadgeSm`}><span className="stDot"/>{m.status}</span></td>
+                      <td>
+                        <div style={{display:'flex',gap:4}}>
+                          <button className="btn btnS btnSm" onClick={() => setEditMapping({...m})}>✎</button>
+                          <button className="btn btnS btnSm etlDanger" onClick={() => setFieldMaps(p=>p.filter(x=>x.id!==m.id))}>🗑</button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -570,6 +694,39 @@ function ConfigurePage({ pl, profiles, qcRules, transforms, onBack, onSave }) {
               {MATCH_ACTIONS.map(o=><option key={o}>{o}</option>)}
             </select>
           </FG>
+        </ModalShell>
+      )}
+      {editPQc && (
+        <ModalShell title={editPQc.id ? 'Edit Pipeline QC Rule' : 'Add Pipeline QC Rule'} onClose={() => setEditPQc(null)} onSave={() => savePQc(editPQc)} width={620}>
+          <div className="etlFormRow2">
+            <FG label="Source Field Name"><input className="etlInput etlInputMono" value={editPQc.field} onChange={e=>setEditPQc(r=>({...r,field:e.target.value}))}/></FG>
+            <FG label="Rule Type">
+              <select className="etlInput" value={editPQc.rule} onChange={e=>setEditPQc(r=>({...r,rule:e.target.value}))}>
+                {QC_TYPES.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+          </div>
+          <FG label="Severity">
+            <select className="etlInput" value={editPQc.severity} onChange={e=>setEditPQc(r=>({...r,severity:e.target.value}))}>
+              {SEVERITY.map(o=><option key={o}>{o}</option>)}
+            </select>
+          </FG>
+          <FG label="Expression / SQL condition"><textarea className="etlInput etlInputMono" rows={3} value={editPQc.expr} onChange={e=>setEditPQc(r=>({...r,expr:e.target.value}))}/></FG>
+          <FG label="Description"><input className="etlInput" value={editPQc.desc} onChange={e=>setEditPQc(r=>({...r,desc:e.target.value}))}/></FG>
+        </ModalShell>
+      )}
+      {editPXm && (
+        <ModalShell title={editPXm.id ? 'Edit Pipeline Transform' : 'Add Pipeline Transform'} onClose={() => setEditPXm(null)} onSave={() => savePXm(editPXm)} width={620}>
+          <div className="etlFormRow2">
+            <FG label="Source Field Name"><input className="etlInput etlInputMono" value={editPXm.field} onChange={e=>setEditPXm(r=>({...r,field:e.target.value}))}/></FG>
+            <FG label="Transform Type">
+              <select className="etlInput" value={editPXm.type} onChange={e=>setEditPXm(r=>({...r,type:e.target.value}))}>
+                {XFM_TYPES.map(o=><option key={o}>{o}</option>)}
+              </select>
+            </FG>
+          </div>
+          <FG label="Rule Expression"><textarea className="etlInput etlInputMono" rows={3} value={editPXm.rule} onChange={e=>setEditPXm(r=>({...r,rule:e.target.value}))}/></FG>
+          <FG label="Description"><input className="etlInput" value={editPXm.desc} onChange={e=>setEditPXm(r=>({...r,desc:e.target.value}))}/></FG>
         </ModalShell>
       )}
       {editSql && (
