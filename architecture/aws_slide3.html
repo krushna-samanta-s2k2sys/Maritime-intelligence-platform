@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Architecture — Capabilities &amp; Features</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.slide{width:980px;max-width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,43,94,.1);aspect-ratio:16/9;display:flex;flex-direction:column}
+:fullscreen body,:-webkit-full-screen body{background:#111;padding:0}
+:fullscreen .slide,:-webkit-full-screen .slide{width:100vw;max-width:100vw;height:100vh;border-radius:0;box-shadow:none;aspect-ratio:unset}
+:fullscreen .nav,:-webkit-full-screen .nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;background:rgba(0,0,0,.55);padding:7px 18px;border-radius:24px;backdrop-filter:blur(8px)}
+:fullscreen .nbtn,:-webkit-full-screen .nbtn{background:rgba(255,255,255,.15)!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important}
+:fullscreen .nbtn:hover,:-webkit-full-screen .nbtn:hover{background:rgba(255,153,0,.8)!important;border-color:#FF9900!important}
+:fullscreen .nlabel,:-webkit-full-screen .nlabel{color:rgba(255,255,255,.55)!important}
+.s-header{background:#232F3E;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#FF9900}
+h2{font-size:20px;font-weight:800;color:#fff;margin-top:3px}
+.tag{font-size:10px;color:rgba(255,255,255,.4)}
+.s-body{flex:1;overflow:hidden;padding:14px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start;background:#F4F8FF}
+.card{background:#fff;border:1px solid #C8D8EC;border-radius:8px;padding:11px 13px}
+.card-title{font-size:11px;font-weight:700;color:#232F3E;margin-bottom:6px}
+.aws-tag{font-size:7.5px;font-weight:600;background:#FFF3E0;color:#E07000;border:1px solid #FFCC80;border-radius:10px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+ul{list-style:none;padding:0}
+li{font-size:9.5px;color:#3A5070;line-height:1.7;padding-left:10px;position:relative}
+li::before{content:'›';position:absolute;left:0;color:#FF9900;font-weight:700}
+.nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.nbtn{padding:6px 20px;border-radius:20px;border:1px solid #C8D8EC;background:#fff;color:#232F3E;font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .18s;box-shadow:0 1px 4px rgba(13,43,94,.08)}
+.nbtn:hover{background:#FFF3E0;border-color:#FF9900;color:#7A4A00;box-shadow:0 2px 8px rgba(255,153,0,.2)}
+.nbtn.fs{background:#232F3E;color:#fff;border-color:#232F3E}
+.nbtn.fs:hover{background:#FF9900;border-color:#FF9900;color:#000}
+.nlabel{font-size:10px;color:#8AACCC;font-weight:500}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="s-header">
+    <div><div class="eyebrow">3 of 5 · AWS Stack</div><h2>System Capabilities &amp; Features</h2></div>
+    <div class="tag">13 Modules · 8 Personas · 650+ Vessel Attributes</div>
+  </div>
+  <div class="s-body">
+
+    <div class="card" style="border-top:3px solid #232F3E">
+      <div class="card-title">Data Ingestion &amp; Pipelines <span class="aws-tag">SQS · MWAA · DuckDB · S3</span></div>
+      <ul>
+        <li>200+ feed adapters via D6 Platform → Lambda</li>
+        <li>SQS + SNS for event streaming; EventBridge scheduling</li>
+        <li>MWAA Apache Airflow for DAG orchestration</li>
+        <li>DuckDB in Fargate — fast in-process S3 Parquet transforms</li>
+        <li>SHA-256 dedup · schema validation · SQS DLQ retry</li>
+        <li>S3 Bronze → Silver → Gold Medallion lake</li>
+        <li>Bi-temporal model — valid time + system time</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #FF9900">
+      <div class="card-title">AI &amp; Intelligence Engine <span class="aws-tag">SageMaker · DuckDB</span></div>
+      <ul>
+        <li>Source hierarchy resolution (50+ source weights)</li>
+        <li>Conflict detection across concurrent feeds</li>
+        <li>SageMaker endpoint — confidence scoring 0.0–1.0</li>
+        <li>Auto-apply above threshold · Review Queue below</li>
+        <li>SageMaker Pipelines for MLOps / model retraining</li>
+        <li>Model Registry — versioned model artefacts on S3</li>
+        <li>DuckDB for fast in-process feature engineering</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #007A8A">
+      <div class="card-title">Search &amp; Discovery <span class="aws-tag">Amazon OpenSearch</span></div>
+      <ul>
+        <li>Amazon OpenSearch Service — sub-100ms vessel search</li>
+        <li>Maritime synonym analyzers (IMO, MMSI, name)</li>
+        <li>Faceted filters: type, flag, class, route, status</li>
+        <li>Geo-point queries — port radius, voyage track</li>
+        <li>CDC-fed from S3 Gold via Airflow DAG near-real-time</li>
+        <li>Auto-complete · fuzzy match · saved searches</li>
+        <li>Multi-AZ OpenSearch domain with dedicated master</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #1A7A4A">
+      <div class="card-title">Vessel &amp; Fleet Management <span class="aws-tag">EKS · Aurora · S3</span></div>
+      <ul>
+        <li>650+ vessel attributes across 13 attribute groups</li>
+        <li>Live AIS tracking · voyage history on Aurora PostGIS</li>
+        <li>DRAFT → IN_REVIEW → APPROVED edit workflow</li>
+        <li>Recursive AttrTreeSidebar + AttrContentPanel UX</li>
+        <li>Aurora PostgreSQL Serverless v2 for geo queries</li>
+        <li>Vessel images and docs via S3 + CloudFront CDN</li>
+        <li>Signed S3 URLs for per-document access control</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #5A2A8A">
+      <div class="card-title">Analytics &amp; Reporting <span class="aws-tag">Athena · Redshift · QuickSight</span></div>
+      <ul>
+        <li>Amazon QuickSight dashboards — fleet, route, port</li>
+        <li>Athena serverless SQL — $5/TB, no cluster to manage</li>
+        <li>Redshift Serverless for heavy analytics queries</li>
+        <li>DuckDB for ad-hoc BI processing in Fargate tasks</li>
+        <li>Glue Data Catalog — unified S3 schema registry</li>
+        <li>Snowflake data share for financial analytics teams</li>
+        <li>Export: CSV, Excel, PDF, API feed, S3 direct</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #E05A00">
+      <div class="card-title">Observability &amp; SRE <span class="aws-tag">Grafana · CloudWatch · X-Ray</span></div>
+      <ul>
+        <li>Grafana Cloud dashboards pulling CloudWatch metrics</li>
+        <li>CloudWatch Logs + Metrics + Alarms (30-day retention)</li>
+        <li>AWS X-Ray distributed tracing (OpenTelemetry)</li>
+        <li>Grafana Tempo for trace storage (cost-effective)</li>
+        <li>PagerDuty on-call via SNS → PagerDuty integration</li>
+        <li>SLO: API p99 &lt;500ms · search &lt;100ms · 99.9% uptime</li>
+        <li>KEDA autoscale EKS · Aurora auto-pause (dev/test)</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #C02030">
+      <div class="card-title">Security &amp; Compliance <span class="aws-tag">KMS · GuardDuty · Macie</span></div>
+      <ul>
+        <li>Okta SSO + MFA · OIDC/SAML · JWT 15-min tokens</li>
+        <li>8 RBAC roles mapped to 8 user personas via IAM</li>
+        <li>AWS KMS CMK · Secrets Manager · Amazon Macie DLP</li>
+        <li>GuardDuty threat detection · Security Hub CSPM</li>
+        <li>S3 Object Lock (WORM) for immutable audit log</li>
+        <li>SOC 2 Type II / ISO 27001 aligned controls</li>
+        <li>AWS Config rules · SCPs deny-all egress</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #1A4A8A">
+      <div class="card-title">Platform Infrastructure <span class="aws-tag">EKS · Fargate · Terraform</span></div>
+      <ul>
+        <li>EKS with managed node groups (IRSA pod IAM roles)</li>
+        <li>Fargate Spot for non-critical ETL workers (~70% savings)</li>
+        <li>Aurora Serverless v2 — auto-pause in dev/test</li>
+        <li>S3 Intelligent-Tiering — automatic cost optimisation</li>
+        <li>Multi-AZ primary (us-east-1) · DR warm (us-west-2)</li>
+        <li>CodeBuild + CodePipeline CI/CD · ECR image registry</li>
+        <li>Terraform IaC — reproducible environments</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:3px solid #007A8A">
+      <div class="card-title">Content &amp; Media <span class="aws-tag">S3 · CloudFront · SES</span></div>
+      <ul>
+        <li>Contentful CMS for editorial and static content</li>
+        <li>S3 multi-tier (Standard / IA / Glacier Instant)</li>
+        <li>CloudFront CDN — global edge caching for images</li>
+        <li>Fargate image processing workers (resize, watermark)</li>
+        <li>Document upload: PDF, Excel, certificates to S3</li>
+        <li>Amazon SES for transactional email (or SendGrid)</li>
+        <li>SNS + Lambda for real-time webhook push</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+<div class="nav">
+  <a class="nbtn" href="aws_slide2.html">← Previous</a>
+  <span class="nlabel">Slide 3 of 5 — Capabilities &amp; Features</span>
+  <a class="nbtn" href="aws_slide4.html">Next →</a>
+  <button class="nbtn fs" onclick="toggleFS()" id="fsBtn">⛶ Fullscreen</button>
+</div>
+<script>
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen&&document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  document.getElementById('fsBtn').textContent=document.fullscreenElement?'✕ Exit Full':'⛶ Fullscreen';
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='f'||e.key==='F')toggleFS();
+});
+</script>
+</body>
+</html>

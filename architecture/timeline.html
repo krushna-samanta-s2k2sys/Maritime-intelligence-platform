@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S&P Maritime Intelligence Platform — Execution Plan &amp; Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#060D1A;--navy2:#0A1628;--navy3:#0F2040;
+  --gold:#F2A900;--blue:#2080E8;--blue2:#4AA0FF;--cyan:#00C8FF;
+  --green:#00D4A0;--red:#FF5252;--purple:#A070E0;
+  --text:#E8F2FF;--text2:#8AACCC;--text3:#4A6A8A;
+  --border:rgba(255,255,255,0.07);
+  /* Team colors */
+  --t1:#C88A20;--t2:#1A6EB8;--t3:#1A8A50;--t4:#7A3AB8;
+}
+html,body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);font-size:13px;line-height:1.6}
+a{color:var(--blue2)}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--cyan)}
+
+.wrap{max-width:1280px;margin:0 auto;padding:40px 48px 80px}
+
+/* Header */
+.page-header{margin-bottom:48px;border-bottom:1px solid var(--border);padding-bottom:32px}
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+h1{font-size:40px;font-weight:800;line-height:1.15}
+.page-sub{font-size:15px;color:var(--text2);margin-top:10px;max-width:680px}
+
+/* Section */
+h2{font-size:20px;font-weight:700;color:var(--text);margin:48px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+h3{font-size:14px;font-weight:700;color:var(--gold);margin:28px 0 10px}
+p{color:var(--text2);margin-bottom:12px}
+
+/* Summary stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:48px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-align:center}
+.stat-num{font-size:30px;font-weight:800;color:var(--gold);line-height:1}
+.stat-num-b{font-size:30px;font-weight:800;color:var(--blue2);line-height:1}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+
+/* Team cards */
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:48px}
+.team-card{border-radius:12px;padding:20px 22px}
+.team-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 10px;border-radius:12px;text-transform:uppercase;margin-bottom:10px}
+.team-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.team-size{font-size:11px;color:var(--text3);margin-bottom:10px}
+.team-desc{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6}
+.team-skills{display:flex;flex-wrap:wrap;gap:5px}
+.skill{font-size:10px;padding:3px 9px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--text2)}
+
+/* Phase table */
+.phases{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}
+.phases th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+.phases td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.phases tr:last-child td{border-bottom:none}
+.phases td:first-child{color:var(--text);font-weight:600;white-space:nowrap}
+.phases td:nth-child(2){color:var(--text2)}
+.phases td:nth-child(3){color:var(--text3);white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px}
+.phases td:nth-child(4){white-space:nowrap}
+
+/* ─── GANTT ─── */
+.gantt-wrap{overflow-x:auto;margin:24px 0 48px}
+.gantt{width:100%;min-width:900px}
+.gantt-header{display:grid;grid-template-columns:190px repeat(12,1fr);gap:3px;margin-bottom:6px}
+.gantt-header-cell{text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:4px 0}
+.gantt-group-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:14px 0 6px;border-top:1px solid var(--border);margin-top:10px}
+.gantt-row{display:grid;grid-template-columns:190px repeat(12,1fr);gap:3px;margin-bottom:3px;align-items:center}
+.gantt-label{font-size:11px;color:var(--text2);padding-right:10px;line-height:1.3}
+.gantt-cell{height:20px;border-radius:3px;background:rgba(255,255,255,.04)}
+.gantt-bar{height:20px;border-radius:3px}
+.gantt-milestone-row{display:grid;grid-template-columns:190px repeat(12,1fr);gap:3px;margin-top:14px;align-items:center}
+.gantt-milestone-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.milestone-cell{height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:help}
+.gantt-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.legend-dot{width:14px;height:8px;border-radius:3px}
+
+/* Milestone table */
+.milestones{width:100%;border-collapse:collapse;margin:16px 0 32px;font-size:12px}
+.milestones th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+.milestones td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;color:var(--text2)}
+.milestones td:first-child{color:var(--gold);font-weight:700;font-family:'JetBrains Mono',monospace}
+.milestones td:nth-child(2){color:var(--text);font-weight:600}
+
+/* Risk table */
+.risks{width:100%;border-collapse:collapse;margin:16px 0 32px;font-size:12px}
+.risks th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+.risks td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text2);vertical-align:top}
+.risks td:first-child{color:var(--text);font-weight:600}
+.risk-h{color:var(--red);font-weight:700;font-size:11px}
+.risk-m{color:var(--gold);font-weight:700;font-size:11px}
+.risk-l{color:var(--green);font-weight:700;font-size:11px}
+
+/* Callout */
+.callout{border-left:3px solid var(--gold);background:rgba(242,169,0,.06);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0 20px;font-size:12px;color:var(--text2);line-height:1.6}
+.callout-blue{border-left-color:var(--blue);background:rgba(32,128,232,.06)}
+.callout-green{border-left-color:var(--green);background:rgba(0,212,160,.06)}
+
+/* tag */
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.t1-tag{background:rgba(200,138,32,.2);color:#E8A840;border:1px solid rgba(200,138,32,.35)}
+.t2-tag{background:rgba(26,110,184,.2);color:#4AA0FF;border:1px solid rgba(26,110,184,.35)}
+.t3-tag{background:rgba(26,138,80,.2);color:#40D090;border:1px solid rgba(26,138,80,.35)}
+.t4-tag{background:rgba(122,58,184,.2);color:#C080FF;border:1px solid rgba(122,58,184,.35)}
+
+/* Decision gate */
+.gate{display:inline-block;font-size:10px;font-weight:700;padding:2px 10px;border-radius:4px;background:rgba(255,82,82,.15);color:var(--red);border:1px solid rgba(255,82,82,.3)}
+.go{background:rgba(0,212,160,.15);color:var(--green);border-color:rgba(0,212,160,.3)}
+
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════ PAGE HEADER ═══ -->
+<div class="page-header">
+  <div class="page-eyebrow">S&P Maritime Intelligence Platform · Execution Plan</div>
+  <h1>12-Month Project <span style="color:var(--gold)">Timeline</span></h1>
+  <p class="page-sub">Full execution plan covering team structure, phase-by-phase delivery, Gantt chart with swim lanes, key milestones, and risk register for a 12-month end-to-end build and launch.</p>
+</div>
+
+<!-- ═══════════════════════════════════════ SUMMARY STATS ═══ -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">12</div><div class="stat-label">Months to Launch</div></div>
+  <div class="stat"><div class="stat-num">4</div><div class="stat-label">Teams</div></div>
+  <div class="stat"><div class="stat-num">~17</div><div class="stat-label">Team Members</div></div>
+  <div class="stat"><div class="stat-num-b">9</div><div class="stat-label">Key Milestones</div></div>
+  <div class="stat"><div class="stat-num-b">10</div><div class="stat-label">Delivery Phases</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════ TEAM STRUCTURE ═══ -->
+<h2>Team Structure</h2>
+<div class="teams">
+  <div class="team-card" style="background:rgba(200,138,32,.08);border:1px solid rgba(200,138,32,.25)">
+    <div class="team-tag t1-tag">FTE Team 1</div>
+    <div class="team-name">Core Platform Engineering</div>
+    <div class="team-size">~5 engineers (internal FTE)</div>
+    <div class="team-desc">Owns the BigQuery Medallion architecture, ETL pipeline orchestration, AI confidence scoring engine, Terahelix and Gearbox integration, and the data quality framework. Accountable for all data-layer deliverables and data SLOs.</div>
+    <div class="team-skills">
+      <span class="skill">Python / Go</span><span class="skill">BigQuery / SQL</span><span class="skill">Apache Beam / Dataflow</span><span class="skill">Vertex AI</span><span class="skill">Pub/Sub</span><span class="skill">Data Architecture</span>
+    </div>
+  </div>
+  <div class="team-card" style="background:rgba(26,110,184,.08);border:1px solid rgba(26,110,184,.25)">
+    <div class="team-tag t2-tag">FTE Team 2</div>
+    <div class="team-name">Application &amp; UX</div>
+    <div class="team-size">~4 engineers (internal FTE)</div>
+    <div class="team-desc">Owns the React/TypeScript UX application, edit and approval workflow UI, admin console, CMS integration, and Looker analytics dashboards. Accountable for application SLOs and user experience across all 8 personas.</div>
+    <div class="team-skills">
+      <span class="skill">React + TypeScript</span><span class="skill">Vite</span><span class="skill">GraphQL</span><span class="skill">Looker</span><span class="skill">UX / Design Systems</span>
+    </div>
+  </div>
+  <div class="team-card" style="background:rgba(26,138,80,.08);border:1px solid rgba(26,138,80,.25)">
+    <div class="team-tag t3-tag">Contractor Team 1</div>
+    <div class="team-name">Infrastructure &amp; Migration</div>
+    <div class="team-size">~4 contractors (external)</div>
+    <div class="team-desc">Owns GCP Terraform infrastructure baseline, D6 feed connector development, Elasticsearch cluster setup, and full execution of the ~1TB historical data migration and backfill. Accountable for infrastructure reliability and migration accuracy.</div>
+    <div class="team-skills">
+      <span class="skill">GCP / Terraform</span><span class="skill">Elasticsearch</span><span class="skill">Apache Beam</span><span class="skill">Data Migration</span><span class="skill">PostgreSQL</span>
+    </div>
+  </div>
+  <div class="team-card" style="background:rgba(122,58,184,.08);border:1px solid rgba(122,58,184,.25)">
+    <div class="team-tag t4-tag">Contractor Team 2</div>
+    <div class="team-name">Security &amp; Delivery</div>
+    <div class="team-size">~4 contractors (external)</div>
+    <div class="team-desc">Owns Okta configuration, Apigee API gateway, notification engine, file management pipeline, Snowflake and GCP EDO-Fabric integrations, Datadog monitoring stack, and security pen test. Accountable for delivery SLOs and security posture.</div>
+    <div class="team-skills">
+      <span class="skill">Okta</span><span class="skill">Apigee</span><span class="skill">Snowflake</span><span class="skill">Datadog</span><span class="skill">Security / GCP IAM</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PHASE PLAN ═══ -->
+<h2>Execution Phases</h2>
+
+<h3>Phase 0 — Foundation &amp; Setup</h3>
+<p><strong>Duration:</strong> Month 1 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t3-tag">Contractor 1</span> <span class="tag t4-tag">Contractor 2</span> <span class="tag t1-tag">FTE 1</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>GCP Infrastructure</td><td>Project setup, VPC networking, IAM baseline, Cloud Armor, Secret Manager, Terraform repo initialised</td><td>M1</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Identity &amp; Auth</td><td>Okta tenant configured, RBAC groups, OIDC app registrations, MFA policies</td><td>M1</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>CI/CD Pipelines</td><td>Cloud Build pipelines, Artifact Registry, staging and prod environments</td><td>M1</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>BigQuery Datasets</td><td>Dataset and table structure provisioned (Bronze/Silver/Gold/Edit/Audit namespaces)</td><td>M1</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Team Onboarding</td><td>All teams onboarded, architecture walkthrough, development standards agreed</td><td>M1</td><td>All</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 1 — Data Ingestion (D6 Integration)</h3>
+<p><strong>Duration:</strong> Month 1–3 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t1-tag">FTE 1</span> <span class="tag t3-tag">Contractor 1</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Feed Registry</td><td>All 200+ feeds registered in D6 Feed Registry with field mapping YAML configs</td><td>M1–M2</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Priority Connectors</td><td>Top 50 feeds live (vessel registry, AIS, ownership, class society, PSC)</td><td>M1–M3</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Bronze Tables</td><td>All landing tables provisioned, partition and cluster strategy applied</td><td>M1–M2</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Dead-Letter Queue</td><td>DLQ setup, retry logic, DLQ monitoring alert, admin reprocess UI</td><td>M2</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Feed Monitoring</td><td>Feed freshness dashboard, delay alert policies</td><td>M3</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Remaining Feeds</td><td>All 200+ feeds live and ingesting to Bronze</td><td>M3–M4</td><td><span class="tag t3-tag">C1</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 2 — Data Foundation (Medallion Architecture)</h3>
+<p><strong>Duration:</strong> Month 2–5 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t1-tag">FTE 1</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Silver Layer</td><td>Validation jobs, completeness scoring, DQ flags, Silver domain tables for all 6 domains</td><td>M2–M4</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Gold Layer</td><td>Master tables with bi-temporal design, GEOGRAPHY columns, GeoJSON support</td><td>M3–M5</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Terahelix Integration</td><td>Identifier mapping live; IMO/MMSI/name resolution for vessels operational</td><td>M3–M4</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Gearbox Integration</td><td>Relationship graph operational; ownership, class, flag relationships linked</td><td>M4–M5</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Edit/Approve Workflow</td><td>Change set tables, workflow state machine, conflict detection, API endpoints</td><td>M4–M5</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Analytical Views</td><td>Materialized views for dashboard queries; BI Engine configuration</td><td>M5</td><td><span class="tag t1-tag">T1</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 3 — AI Intelligence Engine</h3>
+<p><strong>Duration:</strong> Month 3–6 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t1-tag">FTE 1</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Source Registry</td><td>All sources registered with global rank, field overrides, reliability scores</td><td>M3</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Source Hierarchy Resolver</td><td>Per-field priority rules engine operational; applies to Silver→Gold promotion</td><td>M4</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Conflict Detector</td><td>Detects and flags competing values before Gold promotion</td><td>M4</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Confidence Scorer v1</td><td>Vertex AI model trained; scoring applied to all Silver records; thresholds configured</td><td>M5–M6</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Auto-Apply Engine</td><td>High-confidence values auto-promoted to Gold; review queue for below-threshold</td><td>M6</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Feedback Loop</td><td>Approval/rejection signals feed back to model; nightly retraining pipeline via Vertex AI</td><td>M6</td><td><span class="tag t1-tag">T1</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 4 — Application Development</h3>
+<p><strong>Duration:</strong> Month 4–8 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t2-tag">FTE 2</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Design System</td><td>Component library, typography, colour tokens, pattern library</td><td>M3–M4</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Core UX Pages</td><td>Vessels (650+ attrs), Companies, Ports, Dashboard with persona system</td><td>M4–M6</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>GIS / AIS Map</td><td>Live vessel map, route replay, port overlays, spatial search integration</td><td>M5–M7</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Edit/Approve UI</td><td>Change set creation, field-level diff view, review queue, approval workflow</td><td>M5–M7</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Admin Console</td><td>User management, feed config UI, source hierarchy rule editor, notification rule builder</td><td>M6–M8</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Compliance &amp; PSC</td><td>Inspection records, sanctions screening UI, compliance events</td><td>M6–M8</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Analytics Platform</td><td>Looker dashboards for each domain; self-service report builder; BigQuery BI Engine</td><td>M7–M9</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>CMS Integration</td><td>Contentful/headless CMS for reference content, announcements, help docs</td><td>M8</td><td><span class="tag t2-tag">T2</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 5 — Search &amp; Delivery</h3>
+<p><strong>Duration:</strong> Month 5–9 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t3-tag">Contractor 1</span> <span class="tag t4-tag">Contractor 2</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Elasticsearch Cluster</td><td>Elastic Cloud on GCP provisioned; all domain indexes created; maritime analyzers configured</td><td>M5–M6</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Search Indexer</td><td>CDC from BigQuery Gold → Pub/Sub → Cloud Run indexer → Elasticsearch upsert</td><td>M6–M7</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Search API</td><td>REST + GraphQL search endpoints; smart query parser; geo search; synonym maps</td><td>M7–M8</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Apigee API Gateway</td><td>Rate limiting, JWT validation, request logging, API key management, OpenAPI spec</td><td>M6–M8</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Data Feeds</td><td>Scheduled export jobs; delta feeds; webhook push; SFTP delivery</td><td>M7–M9</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Snowflake Integration</td><td>BigQuery → Snowflake replication; shared schemas; Snowflake Data Sharing setup</td><td>M8–M9</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>GCP EDO-Fabric</td><td>Data products published to EDO catalog; lineage registered; IAM policies applied</td><td>M8–M9</td><td><span class="tag t4-tag">C2</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 6 — Data Migration &amp; Backfill (~1 TB)</h3>
+<p><strong>Duration:</strong> Month 6–10 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t3-tag">Contractor 1</span> <span class="tag t1-tag">FTE 1</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Assessment</td><td>Legacy source inventory, field mapping, data quality audit, volume estimate</td><td>M6</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Migration Tooling</td><td>Dataflow Beam templates, YAML field maps, validation suite, reconciliation dashboard</td><td>M6–M7</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Dry Run</td><td>10% sample; full validation; analyst spot-check; performance test</td><td>M7</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Bronze Backfill</td><td>All ~1TB historical raw data loaded to Bronze partitions</td><td>M7–M9</td><td><span class="tag t3-tag">C1</span></td></tr>
+    <tr><td>Silver/Gold Backfill</td><td>Historical records processed through Silver → Terahelix → Gold pipeline</td><td>M8–M10</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Validation &amp; Sign-off</td><td>Row count reconciliation; domain analyst sign-off by entity type</td><td>M10</td><td>Both</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 7 — Notifications, Files &amp; CMS</h3>
+<p><strong>Duration:</strong> Month 7–10 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t4-tag">Contractor 2</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Notification Engine</td><td>Pub/Sub consumer, rules engine, deduplication, multi-channel dispatch (Email/Slack/In-App/Webhook/PagerDuty)</td><td>M7–M8</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Notification Log</td><td>Delivery tracking table; status updates (SENT/DELIVERED/READ/FAILED)</td><td>M8</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>File Management</td><td>GCS bucket structure, CDN config, file registry table, upload API, image processing pipeline</td><td>M7–M9</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Notification Rule UI</td><td>Admin UI for notification rule builder; user watchlist configuration</td><td>M9–M10</td><td><span class="tag t2-tag">T2</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 8 — Security &amp; Governance</h3>
+<p><strong>Duration:</strong> Month 8–11 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t4-tag">Contractor 2</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Security Hardening</td><td>VPC Service Controls finalised; column-level security on PII; Cloud Armor policies tuned</td><td>M8–M9</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Data Governance</td><td>Dataplex catalog populated; lineage registered for all pipelines; PII classified</td><td>M9–M10</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Audit System</td><td>Audit log table, application instrumentation complete, 10-year retention policy applied</td><td>M9</td><td><span class="tag t1-tag">T1</span></td></tr>
+    <tr><td>Penetration Test</td><td>Third-party pen test; all critical and high findings resolved</td><td>M10–M11</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Access Reviews</td><td>Initial Okta group membership review; quarterly review cadence established</td><td>M11</td><td><span class="tag t4-tag">C2</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 9 — Monitoring &amp; Observability</h3>
+<p><strong>Duration:</strong> Month 9–12 &nbsp;|&nbsp; <strong>Lead teams:</strong> <span class="tag t4-tag">Contractor 2</span></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>Datadog Integration</td><td>All services instrumented; unified Datadog dashboard; SLO dashboards</td><td>M9–M10</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>OpenTelemetry Tracing</td><td>Distributed tracing across API → services → BigQuery; trace sampling configured</td><td>M9–M10</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>PagerDuty On-Call</td><td>Alert → PagerDuty routing; escalation policies; on-call rota; runbooks per alert ID</td><td>M10</td><td><span class="tag t4-tag">C2</span></td></tr>
+    <tr><td>Performance Tuning</td><td>BigQuery query cost optimisation; Elasticsearch index tuning; API latency profiling</td><td>M10–M11</td><td>Both FTEs</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase 10 — Launch &amp; Hypercare</h3>
+<p><strong>Duration:</strong> Month 11–12 &nbsp;|&nbsp; <strong>All teams</strong></p>
+<table class="phases">
+  <thead><tr><th>Workstream</th><th>Deliverables</th><th>Month</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr><td>User Acceptance Testing</td><td>UAT with 2–3 users per persona; critical bugs resolved; sign-off obtained</td><td>M11</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Production Cutover</td><td>Traffic switch to production; legacy systems placed on read-only; monitoring confirms stable</td><td>M12</td><td>All</td></tr>
+    <tr><td>Documentation</td><td>Operator runbooks, API reference (auto-generated), user guides per persona</td><td>M11–M12</td><td><span class="tag t2-tag">T2</span></td></tr>
+    <tr><td>Hypercare</td><td>All teams on elevated support for 2 weeks post-launch; P1 SLA: 1 hour</td><td>M12</td><td>All</td></tr>
+    <tr><td>Transition</td><td>Contractor handover to FTE teams; knowledge transfer sessions; runbook sign-off</td><td>M12</td><td>All</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ GANTT CHART ═══ -->
+<h2>Gantt Chart — Swim Lanes by Team</h2>
+<div class="gantt-wrap">
+  <div class="gantt">
+    <!-- Header -->
+    <div class="gantt-header">
+      <div class="gantt-header-cell" style="text-align:left;color:var(--text3);padding-left:0">Workstream</div>
+      <div class="gantt-header-cell">M1</div><div class="gantt-header-cell">M2</div>
+      <div class="gantt-header-cell">M3</div><div class="gantt-header-cell">M4</div>
+      <div class="gantt-header-cell">M5</div><div class="gantt-header-cell">M6</div>
+      <div class="gantt-header-cell">M7</div><div class="gantt-header-cell">M8</div>
+      <div class="gantt-header-cell">M9</div><div class="gantt-header-cell">M10</div>
+      <div class="gantt-header-cell">M11</div><div class="gantt-header-cell">M12</div>
+    </div>
+
+    <!-- FTE Team 1 -->
+    <div class="gantt-group-label" style="color:var(--t1)">FTE Team 1 — Core Platform Engineering</div>
+    <div id="g-t1"></div>
+
+    <!-- FTE Team 2 -->
+    <div class="gantt-group-label" style="color:var(--t2)">FTE Team 2 — Application &amp; UX</div>
+    <div id="g-t2"></div>
+
+    <!-- Contractor 1 -->
+    <div class="gantt-group-label" style="color:var(--t3)">Contractor Team 1 — Infrastructure &amp; Migration</div>
+    <div id="g-t3"></div>
+
+    <!-- Contractor 2 -->
+    <div class="gantt-group-label" style="color:var(--t4)">Contractor Team 2 — Security &amp; Delivery</div>
+    <div id="g-t4"></div>
+
+    <!-- Milestones -->
+    <div class="gantt-milestone-row" style="margin-top:20px">
+      <div class="gantt-milestone-label">Milestones</div>
+      <div class="milestone-cell" title="M1 — Foundation ready" style="color:var(--gold)">◆</div>
+      <div class="milestone-cell"></div>
+      <div class="milestone-cell" title="M3 — 50+ feeds live, Bronze/Silver operational" style="color:var(--blue2)">◆</div>
+      <div class="milestone-cell"></div>
+      <div class="milestone-cell" title="M5 — Gold master layer live, Terahelix/Gearbox online" style="color:var(--gold)">◆</div>
+      <div class="milestone-cell" title="M6 — AI Engine v1 in production" style="color:var(--purple)">◆</div>
+      <div class="milestone-cell"></div>
+      <div class="milestone-cell" title="M8 — Full UX app ready for UAT" style="color:var(--cyan)">◆</div>
+      <div class="milestone-cell" title="M9 — Elasticsearch live, API v1 released externally" style="color:var(--green)">◆</div>
+      <div class="milestone-cell" title="M10 — Data migration 90%+ complete" style="color:var(--gold)">◆</div>
+      <div class="milestone-cell" title="M11 — All delivery channels live, security sign-off" style="color:var(--blue2)">◆</div>
+      <div class="milestone-cell" title="M12 — Production launch + hypercare complete" style="color:var(--green);font-size:18px">◆</div>
+    </div>
+
+    <div class="gantt-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--t1)"></div>FTE Team 1</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--t2)"></div>FTE Team 2</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--t3)"></div>Contractor Team 1</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--t4)"></div>Contractor Team 2</div>
+      <div class="legend-item"><div style="font-size:14px;color:var(--gold)">◆</div>Milestone</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ MILESTONES ═══ -->
+<h2>Key Milestones &amp; Go/No-Go Gates</h2>
+<table class="milestones">
+  <thead><tr><th>Month</th><th>Milestone</th><th>Go/No-Go Criteria</th><th>Owner</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>M1</td>
+      <td>Foundation Ready</td>
+      <td>GCP infrastructure live, Okta configured, first feed ingesting to Bronze</td>
+      <td><span class="tag t3-tag">C1</span> <span class="tag t4-tag">C2</span></td>
+    </tr>
+    <tr>
+      <td>M3</td>
+      <td>Ingestion Live</td>
+      <td>50+ feeds ingesting reliably to Bronze and Silver; DLQ &lt; 100; feed SLA met for priority feeds</td>
+      <td><span class="tag t1-tag">T1</span> <span class="tag t3-tag">C1</span></td>
+    </tr>
+    <tr>
+      <td>M5</td>
+      <td>Gold Master Layer</td>
+      <td>Gold tables live; Terahelix resolving vessel IMOs; Gearbox ownership graph populated; &gt;90% completeness on priority vessels</td>
+      <td><span class="tag t1-tag">T1</span></td>
+    </tr>
+    <tr>
+      <td>M6</td>
+      <td>AI Engine v1</td>
+      <td>Confidence scoring applied to all Silver records; auto-apply thresholds configured; review queue operational; &lt;5% manual review rate for vessel type field</td>
+      <td><span class="tag t1-tag">T1</span></td>
+    </tr>
+    <tr>
+      <td>M8</td>
+      <td>UX Application UAT-Ready</td>
+      <td>All 8 persona views complete; edit/approve workflow functional; admin console live; no P1 bugs</td>
+      <td><span class="tag t2-tag">T2</span></td>
+    </tr>
+    <tr>
+      <td>M9</td>
+      <td>Search &amp; API Live</td>
+      <td>Elasticsearch p95 &lt;200ms; API v1 deployed behind Apigee; first external customer onboarded to API</td>
+      <td><span class="tag t3-tag">C1</span> <span class="tag t4-tag">C2</span></td>
+    </tr>
+    <tr>
+      <td>M10</td>
+      <td>Migration 90% Complete</td>
+      <td>≥90% of historical vessel records in Gold; row count reconciliation passed for vessels, companies, ports</td>
+      <td><span class="tag t3-tag">C1</span></td>
+    </tr>
+    <tr>
+      <td>M11</td>
+      <td>All Channels Live + Security Sign-off</td>
+      <td>Snowflake replication active; EDO-Fabric products published; data feeds live; pen test findings all resolved; security sign-off obtained</td>
+      <td><span class="tag t4-tag">C2</span></td>
+    </tr>
+    <tr>
+      <td>M12</td>
+      <td style="color:var(--gold);font-weight:700">🚀 Production Launch</td>
+      <td>UAT signed off; all SLOs green for 7+ days; no open P1/P2 bugs; legacy system read-only; hypercare team standing by</td>
+      <td>All teams</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ RISK REGISTER ═══ -->
+<h2>Risk Register</h2>
+<table class="risks">
+  <thead><tr><th>Risk</th><th>Severity</th><th>Probability</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>D6 connector development takes longer than planned</td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td>Prioritise top 50 feeds for M3 milestone; remaining 150 feeds can follow. Buffer 2 months allocated in Phase 1. Direct D6 team engagement in M1.</td>
+    </tr>
+    <tr>
+      <td>Terahelix / Gearbox integration complexity exceeds estimates</td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td>Engage Terahelix/Gearbox product teams in M2. Prototype integration in M3. Gold layer can launch without full Gearbox if needed (relationships added incrementally).</td>
+    </tr>
+    <tr>
+      <td>Historical data quality is worse than expected</td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td>Phase 6 assessment week identifies issues early. Migration uses the same Silver-layer DQ framework. Partial migration is acceptable — launch with current data and backfill continues post-launch.</td>
+    </tr>
+    <tr>
+      <td>AI confidence scoring model underperforms</td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td>Source hierarchy rules-based fallback is available without the ML model. Lower auto-apply thresholds initially and raise as model accuracy improves through feedback loop.</td>
+    </tr>
+    <tr>
+      <td>Key contractor personnel unavailable mid-project</td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td><span class="risk-l">LOW</span></td>
+      <td>Ensure knowledge is documented in wikis and Terraform code from M1. Contractor contracts include key-person clauses. FTE teams shadow contractors on critical deliverables.</td>
+    </tr>
+    <tr>
+      <td>Okta or Apigee configuration delays block delivery</td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td><span class="risk-l">LOW</span></td>
+      <td>Start Okta configuration in M1 (Phase 0). Apigee can be bypassed temporarily with internal JWT validation — never blocks feature development.</td>
+    </tr>
+    <tr>
+      <td>BigQuery cost overrun from unoptimised queries</td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td>BigQuery slot reservations cap costs. All ad-hoc queries go through Cloud Run service (never directly from UX). Cost anomaly alerts configured from M1. Elasticsearch handles all search — BigQuery not hit by user queries.</td>
+    </tr>
+    <tr>
+      <td>Pen test finds critical security issues late in project</td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td><span class="risk-l">LOW</span></td>
+      <td>Security design reviewed in M1-M2. VPC Service Controls and column-level security designed in from the start. Pen test in M10-M11 leaves 4–8 weeks to resolve findings before launch.</td>
+    </tr>
+    <tr>
+      <td>Scope creep from new feature requests</td>
+      <td><span class="risk-m">MEDIUM</span></td>
+      <td><span class="risk-h">HIGH</span></td>
+      <td>Architecture review board approves scope changes only. New requests go to backlog for post-launch. Program manager accountable for scope gate. Monthly steering committee review.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ SUCCESS METRICS ═══ -->
+<h2>Definition of Success</h2>
+<p>The platform is considered successfully launched when all of the following are met:</p>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:16px">
+  <div style="background:rgba(242,169,0,.07);border:1px solid rgba(242,169,0,.2);border-radius:10px;padding:16px 18px">
+    <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Data Quality</div>
+    <ul style="color:var(--text2);font-size:12px;line-height:1.8;padding-left:16px">
+      <li>&gt;99% of active vessels have Gold records</li>
+      <li>&gt;95% completeness score on priority vessels</li>
+      <li>&lt;5% of vessel fields in review queue (AI auto-applies the rest)</li>
+      <li>Zero accidental overwrites to Gold master</li>
+    </ul>
+  </div>
+  <div style="background:rgba(32,128,232,.07);border:1px solid rgba(32,128,232,.2);border-radius:10px;padding:16px 18px">
+    <div style="font-size:11px;font-weight:700;color:var(--blue2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Performance</div>
+    <ul style="color:var(--text2);font-size:12px;line-height:1.8;padding-left:16px">
+      <li>Search p95 &lt; 200ms</li>
+      <li>API p99 &lt; 500ms</li>
+      <li>API availability 99.9% over 30 days</li>
+      <li>Feed ingestion SLA met 99% of the time</li>
+    </ul>
+  </div>
+  <div style="background:rgba(0,212,160,.07);border:1px solid rgba(0,212,160,.2);border-radius:10px;padding:16px 18px">
+    <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Adoption</div>
+    <ul style="color:var(--text2);font-size:12px;line-height:1.8;padding-left:16px">
+      <li>All 8 persona types actively using the platform</li>
+      <li>At least 1 external customer on API v1</li>
+      <li>Snowflake and EDO-Fabric data products live</li>
+      <li>Legacy system decommissioned or read-only</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout" style="margin-top:24px">
+  <strong>Post-launch roadmap items</strong> (not in scope for 12-month plan): AI model v2 (expanded training data), mobile application, additional AIS data providers, customer-facing self-service API portal, Kafka migration for real-time AIS streaming, and automated sanctions screening integration.
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+const ganttRows={
+  't1':[
+    {label:'GCP setup + BigQuery datasets', s:1,e:1},
+    {label:'Bronze landing tables', s:1,e:2},
+    {label:'Silver validation + staging', s:2,e:4},
+    {label:'Gold master + bi-temporal', s:3,e:5},
+    {label:'Terahelix integration', s:3,e:4},
+    {label:'Gearbox integration', s:4,e:5},
+    {label:'Edit/Approve workflow', s:4,e:5},
+    {label:'AI source hierarchy + scoring', s:3,e:6},
+    {label:'Data quality framework', s:5,e:8},
+    {label:'Audit system', s:8,e:9},
+    {label:'Performance optimisation', s:10,e:11},
+  ],
+  't2':[
+    {label:'Design system + components', s:3,e:4},
+    {label:'Vessels + Companies + Ports UX', s:4,e:6},
+    {label:'Dashboard (persona-driven)', s:4,e:6},
+    {label:'GIS / AIS map', s:5,e:7},
+    {label:'Edit/Approve workflow UI', s:5,e:7},
+    {label:'Compliance + PSC pages', s:6,e:8},
+    {label:'Admin console', s:6,e:8},
+    {label:'Analytics + Looker dashboards', s:7,e:9},
+    {label:'CMS integration', s:8,e:8},
+    {label:'Notification rule UI', s:9,e:10},
+    {label:'UAT support + launch', s:11,e:12},
+  ],
+  't3':[
+    {label:'Terraform infrastructure baseline', s:1,e:2},
+    {label:'D6 connectors — priority 50 feeds', s:1,e:3},
+    {label:'D6 connectors — all 200+ feeds', s:3,e:4},
+    {label:'Elasticsearch cluster + indexes', s:5,e:6},
+    {label:'Search indexer (CDC pipeline)', s:6,e:7},
+    {label:'Search API (REST + GraphQL)', s:7,e:8},
+    {label:'Migration assessment + tooling', s:6,e:7},
+    {label:'Bronze backfill (~1TB)', s:7,e:9},
+    {label:'Silver/Gold historical backfill', s:8,e:10},
+    {label:'Migration validation + sign-off', s:10,e:10},
+    {label:'Cutover support', s:11,e:12},
+  ],
+  't4':[
+    {label:'Okta config + RBAC', s:1,e:2},
+    {label:'Security foundation (VPC/KMS/IAM)', s:1,e:3},
+    {label:'Apigee API gateway', s:6,e:8},
+    {label:'Notification engine', s:7,e:8},
+    {label:'File management (GCS + CDN)', s:7,e:9},
+    {label:'Snowflake integration', s:8,e:9},
+    {label:'GCP EDO-Fabric data products', s:8,e:9},
+    {label:'Datadog + OpenTelemetry', s:9,e:10},
+    {label:'PagerDuty on-call', s:10,e:10},
+    {label:'Dataplex data governance', s:9,e:10},
+    {label:'Pen test + security sign-off', s:10,e:11},
+  ]
+};
+
+const colors={'t1':'rgba(200,138,32,.8)','t2':'rgba(26,110,184,.8)','t3':'rgba(26,138,80,.8)','t4':'rgba(122,58,184,.8)'};
+
+Object.entries(ganttRows).forEach(([team,rows])=>{
+  const container=document.getElementById('g-'+team);
+  rows.forEach(row=>{
+    const div=document.createElement('div');
+    div.className='gantt-row';
+    let html=`<div class="gantt-label">${row.label}</div>`;
+    for(let m=1;m<=12;m++){
+      if(m>=row.s && m<=row.e){
+        const isFirst=m===row.s, isLast=m===row.e;
+        const r=isFirst?'6px':0, rr=isLast?'6px':0;
+        html+=`<div class="gantt-bar" style="background:${colors[team]};border-radius:${r} ${rr} ${rr} ${r}"></div>`;
+      } else {
+        html+=`<div class="gantt-cell"></div>`;
+      }
+    }
+    div.innerHTML=html;
+    container.appendChild(div);
+  });
+});
+</script>
+</body>
+</html>

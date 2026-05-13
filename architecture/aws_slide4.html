@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Architecture — Infrastructure Cost</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.slide{width:980px;max-width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,43,94,.1);aspect-ratio:16/9;display:flex;flex-direction:column}
+:fullscreen body,:-webkit-full-screen body{background:#111;padding:0}
+:fullscreen .slide,:-webkit-full-screen .slide{width:100vw;max-width:100vw;height:100vh;border-radius:0;box-shadow:none;aspect-ratio:unset}
+:fullscreen .nav,:-webkit-full-screen .nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;background:rgba(0,0,0,.55);padding:7px 18px;border-radius:24px;backdrop-filter:blur(8px)}
+:fullscreen .nbtn,:-webkit-full-screen .nbtn{background:rgba(255,255,255,.15)!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important}
+:fullscreen .nbtn:hover,:-webkit-full-screen .nbtn:hover{background:rgba(255,153,0,.8)!important;border-color:#FF9900!important}
+:fullscreen .nlabel,:-webkit-full-screen .nlabel{color:rgba(255,255,255,.55)!important}
+.s-header{background:#232F3E;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#FF9900}
+h2{font-size:20px;font-weight:800;color:#fff;margin-top:3px}
+.tag{font-size:10px;color:rgba(255,255,255,.4)}
+.s-body{flex:1;overflow:hidden;background:#F4F8FF;padding:10px 16px}
+.cost-wrap{overflow:auto;height:100%;display:flex;flex-direction:column;gap:6px}
+.savings-banner{background:#E8F5EE;border:1px solid #70BE90;border-radius:6px;padding:6px 12px;font-size:9.5px;color:#1A5A28;display:flex;gap:16px;align-items:center;flex-shrink:0}
+.savings-banner strong{font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:10px}
+thead th{background:#232F3E;color:#fff;padding:6px 9px;text-align:left;font-weight:700;font-size:9.5px}
+tbody tr:nth-child(even){background:#EEF4FF}
+tbody td{padding:5px 9px;color:#0D1F3C;border-bottom:1px solid #dde8f5;vertical-align:top;line-height:1.3}
+tbody td:first-child{font-weight:600;color:#232F3E}
+.tenv td{background:#E6EEF8;font-weight:700;color:#1A4A8A;padding:4px 9px;font-size:9px}
+.ttotal td{background:#FFF8EC;font-weight:700;color:#232F3E;border-top:2px solid #FF9900}
+.note{font-size:8.5px;color:#7A90B0;line-height:1.4;flex-shrink:0}
+.nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.nbtn{padding:6px 20px;border-radius:20px;border:1px solid #C8D8EC;background:#fff;color:#232F3E;font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .18s;box-shadow:0 1px 4px rgba(13,43,94,.08)}
+.nbtn:hover{background:#FFF3E0;border-color:#FF9900;color:#7A4A00;box-shadow:0 2px 8px rgba(255,153,0,.2)}
+.nbtn.fs{background:#232F3E;color:#fff;border-color:#232F3E}
+.nbtn.fs:hover{background:#FF9900;border-color:#FF9900;color:#000}
+.nlabel{font-size:10px;color:#8AACCC;font-weight:500}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="s-header">
+    <div><div class="eyebrow">4 of 5 · AWS Stack</div><h2>Infrastructure Cost Estimate</h2></div>
+    <div class="tag">Dev · Test · Staging · Production · DR — delivery layer excluded · cost-optimised</div>
+  </div>
+  <div class="s-body">
+    <div class="cost-wrap">
+      <div class="savings-banner">
+        <strong>Cost Optimisation Strategy:</strong>
+        S3 Intelligent-Tiering &nbsp;·&nbsp; Fargate Spot workers (~70% off) &nbsp;·&nbsp; Aurora Serverless v2 auto-pause &nbsp;·&nbsp; Athena + DuckDB (no cluster) &nbsp;·&nbsp; Redshift Serverless on-demand &nbsp;·&nbsp; 1-yr Reserved EKS nodes in Prod &nbsp;·&nbsp;
+        <strong style="color:#E07000">~45% cheaper than equivalent GCP stack</strong>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:190px">Service / Component</th>
+            <th>Dev<br><span style="font-weight:400;font-size:8px">~$440/mo</span></th>
+            <th>Test<br><span style="font-weight:400;font-size:8px">~$780/mo</span></th>
+            <th>Staging<br><span style="font-weight:400;font-size:8px">~$2,500/mo</span></th>
+            <th>Production<br><span style="font-weight:400;font-size:8px">~$8,100/mo</span></th>
+            <th>DR (warm)<br><span style="font-weight:400;font-size:8px">~$2,000/mo</span></th>
+            <th>Cost Optimisation Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="tenv"><td colspan="7">AWS Compute</td></tr>
+          <tr>
+            <td>EKS (node groups)</td>
+            <td>1× t3.xlarge $116</td>
+            <td>2× t3.xlarge $232</td>
+            <td>3× m5.xlarge $432</td>
+            <td>6× m5.xlarge $605</td>
+            <td>3× m5.xlarge $432</td>
+            <td>Prod uses 1-yr reserved (40% off list). KEDA autoscale.</td>
+          </tr>
+          <tr>
+            <td>Fargate (workers)</td>
+            <td>$15</td>
+            <td>$30</td>
+            <td>$90</td>
+            <td>$280</td>
+            <td>$60</td>
+            <td>Spot Fargate for ETL/DuckDB workers (~70% off). Pay-per-task.</td>
+          </tr>
+          <tr>
+            <td>Lambda (feed adapters)</td>
+            <td>$5</td>
+            <td>$10</td>
+            <td>$30</td>
+            <td>$100</td>
+            <td>$20</td>
+            <td>1M free req/mo; event-driven. Near-zero in dev.</td>
+          </tr>
+          <tr class="tenv"><td colspan="7">AWS Data &amp; Pipeline</td></tr>
+          <tr>
+            <td>S3 (storage + requests)</td>
+            <td>$5</td>
+            <td>$12</td>
+            <td>$45</td>
+            <td>$220</td>
+            <td>$110</td>
+            <td>S3 Intelligent-Tiering auto-moves cold data to IA/Glacier.</td>
+          </tr>
+          <tr>
+            <td>MWAA Apache Airflow</td>
+            <td>$45</td>
+            <td>$45</td>
+            <td>$180</td>
+            <td>$360</td>
+            <td>—</td>
+            <td>mw1.small in Dev/Test. mw1.medium Staging. mw1.large Prod.</td>
+          </tr>
+          <tr>
+            <td>DuckDB (Fargate tasks)</td>
+            <td>incl. Fargate</td>
+            <td>incl. Fargate</td>
+            <td>incl. Fargate</td>
+            <td>incl. Fargate</td>
+            <td>incl. Fargate</td>
+            <td>No separate cost — runs as Fargate Spot ephemeral tasks.</td>
+          </tr>
+          <tr>
+            <td>Amazon Athena</td>
+            <td>$5</td>
+            <td>$12</td>
+            <td>$50</td>
+            <td>$200</td>
+            <td>—</td>
+            <td>$5/TB scanned. Parquet + partitioning cuts scan by ~80%.</td>
+          </tr>
+          <tr>
+            <td>Redshift Serverless</td>
+            <td>—</td>
+            <td>$30</td>
+            <td>$160</td>
+            <td>$650</td>
+            <td>$160</td>
+            <td>On-demand RPU. Pauses when idle. Only needed for heavy BI.</td>
+          </tr>
+          <tr>
+            <td>Glue Data Catalog</td>
+            <td>$1</td>
+            <td>$1</td>
+            <td>$5</td>
+            <td>$20</td>
+            <td>$5</td>
+            <td>$1/100K objects. Unified schema for Athena + Spark + DuckDB.</td>
+          </tr>
+          <tr>
+            <td>SQS + SNS</td>
+            <td>$3</td>
+            <td>$6</td>
+            <td>$25</td>
+            <td>$120</td>
+            <td>$40</td>
+            <td>1M SQS free/mo. SNS $0.50/1M publishes.</td>
+          </tr>
+          <tr>
+            <td>EventBridge</td>
+            <td>$1</td>
+            <td>$3</td>
+            <td>$10</td>
+            <td>$50</td>
+            <td>$10</td>
+            <td>$1/M events. Replaces Cloud Scheduler at fraction of cost.</td>
+          </tr>
+          <tr class="tenv"><td colspan="7">AWS Database, Search &amp; CDN</td></tr>
+          <tr>
+            <td>Aurora PostgreSQL Serverless v2</td>
+            <td>$30</td>
+            <td>$60</td>
+            <td>$180</td>
+            <td>$520</td>
+            <td>$260</td>
+            <td>Auto-pause in Dev/Test (near $0 when idle). 0.5 ACU min.</td>
+          </tr>
+          <tr>
+            <td>Amazon OpenSearch Service</td>
+            <td>$35</td>
+            <td>$70</td>
+            <td>$175</td>
+            <td>$540</td>
+            <td>$270</td>
+            <td>t3.medium.search dev. r6g.large.search prod (3-node Multi-AZ).</td>
+          </tr>
+          <tr>
+            <td>CloudFront + Data Transfer</td>
+            <td>$5</td>
+            <td>$10</td>
+            <td>$40</td>
+            <td>$320</td>
+            <td>—</td>
+            <td>~2TB/mo egress Prod. Origins free S3→CloudFront.</td>
+          </tr>
+          <tr class="tenv"><td colspan="7">AWS AI, Security &amp; Observability</td></tr>
+          <tr>
+            <td>SageMaker (train + serve)</td>
+            <td>$25</td>
+            <td>$50</td>
+            <td>$130</td>
+            <td>$650</td>
+            <td>—</td>
+            <td>ml.t3.medium endpoint dev. ml.m5.xlarge prod. Spot training.</td>
+          </tr>
+          <tr>
+            <td>API Gateway (REST)</td>
+            <td>—</td>
+            <td>$3</td>
+            <td>$40</td>
+            <td>$200</td>
+            <td>$80</td>
+            <td>$3.50/M API calls. ~5M calls/mo Prod. 1M free/mo.</td>
+          </tr>
+          <tr>
+            <td>AWS WAF + Shield Std</td>
+            <td>$6</td>
+            <td>$6</td>
+            <td>$25</td>
+            <td>$150</td>
+            <td>$75</td>
+            <td>Shield Standard free. WAF $5/WebACL + $1/M requests.</td>
+          </tr>
+          <tr>
+            <td>KMS + Secrets Manager</td>
+            <td>$3</td>
+            <td>$3</td>
+            <td>$12</td>
+            <td>$50</td>
+            <td>$25</td>
+            <td>$0.03/key/mo + $0.03/10K API calls. Secrets $0.40/secret/mo.</td>
+          </tr>
+          <tr>
+            <td>CloudWatch Logs + Metrics</td>
+            <td>$10</td>
+            <td>$18</td>
+            <td>$60</td>
+            <td>$240</td>
+            <td>$60</td>
+            <td>$0.50/GB ingested. Grafana replaces CW dashboards (cost saving).</td>
+          </tr>
+          <tr>
+            <td>GuardDuty + Macie</td>
+            <td>$8</td>
+            <td>$8</td>
+            <td>$25</td>
+            <td>$90</td>
+            <td>$45</td>
+            <td>GuardDuty $0.80/M events. 30-day free trial available.</td>
+          </tr>
+          <tr>
+            <td>CodeBuild + ECR</td>
+            <td>$8</td>
+            <td>$8</td>
+            <td>$15</td>
+            <td>$35</td>
+            <td>—</td>
+            <td>100 build mins free/mo. ECR $0.10/GB/mo.</td>
+          </tr>
+          <tr class="tenv"><td colspan="7">Non-AWS SaaS (no delivery layer)</td></tr>
+          <tr>
+            <td>Okta (SSO + MFA)</td>
+            <td>$50</td>
+            <td>$50</td>
+            <td>$150</td>
+            <td>$500</td>
+            <td>—</td>
+            <td>~500 users Prod. Per-user pricing.</td>
+          </tr>
+          <tr>
+            <td>Grafana Cloud</td>
+            <td>—</td>
+            <td>—</td>
+            <td>$50</td>
+            <td>$200</td>
+            <td>—</td>
+            <td>Free tier covers Dev/Test. Pro plan for Prod dashboards.</td>
+          </tr>
+          <tr>
+            <td>PagerDuty</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>$120</td>
+            <td>—</td>
+            <td>Business plan; 5 on-call users.</td>
+          </tr>
+          <tr>
+            <td>Contentful CMS</td>
+            <td>—</td>
+            <td>—</td>
+            <td>$300</td>
+            <td>$300</td>
+            <td>—</td>
+            <td>Team plan; shared Prod/Staging.</td>
+          </tr>
+          <tr class="ttotal">
+            <td>TOTAL / MONTH</td>
+            <td>~$375</td>
+            <td>~$677</td>
+            <td>~$2,279</td>
+            <td>~$7,020</td>
+            <td>~$1,652</td>
+            <td style="color:#1A7A4A;font-weight:700">Annual run-rate ~$104K (Prod+DR) — vs ~$263K GCP (~60% saving)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">* AWS us-east-1 on-demand pricing, May 2026. 1-yr Reserved Instances applied to EKS nodes in Prod (shown as reserved price). Fargate Spot used for ETL workers. Savings Plans not applied — additional 10–20% savings possible. S3 Intelligent-Tiering breakeven at ~30 days. Delivery layer costs (Snowflake, API Gateway egress to consumers) excluded per scope.</div>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <a class="nbtn" href="aws_slide3.html">← Previous</a>
+  <span class="nlabel">Slide 4 of 5 — Infrastructure Cost</span>
+  <a class="nbtn" href="aws_slide5.html">Next →</a>
+  <button class="nbtn fs" onclick="toggleFS()" id="fsBtn">⛶ Fullscreen</button>
+</div>
+<script>
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen&&document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  document.getElementById('fsBtn').textContent=document.fullscreenElement?'✕ Exit Full':'⛶ Fullscreen';
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='f'||e.key==='F')toggleFS();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Architecture — Timeline &amp; Resource Cost</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.slide{width:980px;max-width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,43,94,.1);aspect-ratio:16/9;display:flex;flex-direction:column}
+:fullscreen body,:-webkit-full-screen body{background:#111;padding:0}
+:fullscreen .slide,:-webkit-full-screen .slide{width:100vw;max-width:100vw;height:100vh;border-radius:0;box-shadow:none;aspect-ratio:unset}
+:fullscreen .nav,:-webkit-full-screen .nav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;background:rgba(0,0,0,.55);padding:7px 18px;border-radius:24px;backdrop-filter:blur(8px)}
+:fullscreen .nbtn,:-webkit-full-screen .nbtn{background:rgba(255,255,255,.15)!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important}
+:fullscreen .nbtn:hover,:-webkit-full-screen .nbtn:hover{background:rgba(255,153,0,.8)!important;border-color:#FF9900!important}
+:fullscreen .nlabel,:-webkit-full-screen .nlabel{color:rgba(255,255,255,.55)!important}
+.s-header{background:#232F3E;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#FF9900}
+h2{font-size:20px;font-weight:800;color:#fff;margin-top:3px}
+.tag{font-size:10px;color:rgba(255,255,255,.4)}
+.s-body{flex:1;overflow:hidden;background:#F4F8FF;padding:10px 18px;display:flex;flex-direction:column;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:10px}
+thead th{background:#232F3E;color:#fff;padding:6px 9px;text-align:left;font-weight:700;font-size:9.5px}
+tbody tr:nth-child(even){background:#EEF4FF}
+tbody td{padding:5px 9px;color:#0D1F3C;border-bottom:1px solid #dde8f5;vertical-align:top;line-height:1.3}
+tbody td:first-child{font-weight:600;color:#232F3E}
+.ttotal td{background:#FFF8EC;font-weight:700;color:#232F3E;border-top:2px solid #FF9900}
+.thighlight{background:#FFF3E0 !important}
+.thighlight td{font-weight:700;color:#7A4A00}
+.sec-label{font-size:9px;font-weight:700;color:#232F3E;letter-spacing:.06em;flex-shrink:0}
+.nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.nbtn{padding:6px 20px;border-radius:20px;border:1px solid #C8D8EC;background:#fff;color:#232F3E;font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .18s;box-shadow:0 1px 4px rgba(13,43,94,.08)}
+.nbtn:hover{background:#FFF3E0;border-color:#FF9900;color:#7A4A00;box-shadow:0 2px 8px rgba(255,153,0,.2)}
+.nbtn.fs{background:#232F3E;color:#fff;border-color:#232F3E}
+.nbtn.fs:hover{background:#FF9900;border-color:#FF9900;color:#000}
+.nlabel{font-size:10px;color:#8AACCC;font-weight:500}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="s-header">
+    <div><div class="eyebrow">5 of 5 · AWS Stack</div><h2>Timeline &amp; Resource Cost</h2></div>
+    <div class="tag">12-Month · 4 Teams · 2 FTE + 2 Contractor · ~$2.37M Total</div>
+  </div>
+  <div class="s-body">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <!-- Team Cost -->
+      <div>
+        <div class="sec-label" style="margin-bottom:5px">TEAM COMPOSITION &amp; ANNUAL COST</div>
+        <table>
+          <thead><tr><th>Team</th><th>Focus</th><th>Size</th><th>Annual Cost</th></tr></thead>
+          <tbody>
+            <tr><td>FTE Team 1</td><td>Core Platform (BE + Data + Pipelines)</td><td>4 FTE</td><td>$680K</td></tr>
+            <tr><td>FTE Team 2</td><td>UX / App (FE + Design)</td><td>3 FTE</td><td>$510K</td></tr>
+            <tr><td>Contractor 1</td><td>AWS Infra / Migration / DevOps</td><td>3 Contractors</td><td>$540K</td></tr>
+            <tr><td>Contractor 2</td><td>Security / OpenSearch / SageMaker</td><td>3 Contractors</td><td>$540K</td></tr>
+            <tr class="ttotal"><td colspan="2">Total People Cost</td><td>13 people</td><td>$2.27M</td></tr>
+            <tr class="ttotal"><td colspan="2">AWS Infra Prod + DR (12 mo)</td><td>—</td><td>$104K</td></tr>
+            <tr class="ttotal"><td colspan="2">AWS Infra Dev + Test + Staging</td><td>—</td><td>$43K</td></tr>
+            <tr class="thighlight"><td colspan="2">TOTAL PROJECT BUDGET</td><td>—</td><td style="color:#E07000;font-weight:700">~$2.42M</td></tr>
+            <tr style="background:#E8F5EE"><td colspan="4" style="font-size:8.5px;color:#1A5A28;font-weight:600">Saving vs GCP equivalent: ~$140K on infra alone (3-year ~$420K saving)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Milestones -->
+      <div>
+        <div class="sec-label" style="margin-bottom:5px">KEY MILESTONES &amp; GO/NO-GO GATES</div>
+        <table>
+          <thead><tr><th style="width:36px">Mo.</th><th>Milestone</th><th>Team</th></tr></thead>
+          <tbody>
+            <tr><td>M1</td><td>AWS Infra bootstrapped — EKS, VPC, S3, Terraform</td><td>C1</td></tr>
+            <tr><td>M2</td><td>D6 feeds live · Lambda adapters · SQS · S3 Bronze</td><td>FTE1</td></tr>
+            <tr><td>M3</td><td>MWAA Airflow DAGs · DuckDB Silver transforms · Terahelix</td><td>FTE1</td></tr>
+            <tr><td style="color:#FF9900;font-weight:700">M4 ✓</td><td>OpenSearch live · Vessel search MVP — <b>Go/No-Go</b></td><td>All</td></tr>
+            <tr><td>M5</td><td>Edit/Approve workflow · 8 Personas UX · Aurora PostGIS</td><td>FTE2</td></tr>
+            <tr><td style="color:#FF9900;font-weight:700">M6 ✓</td><td>SageMaker confidence engine · DuckDB scoring — <b>Go/No-Go</b></td><td>FTE1</td></tr>
+            <tr><td>M7</td><td>Snowflake data share · API Gateway live</td><td>C2</td></tr>
+            <tr><td style="color:#FF9900;font-weight:700">M8 ✓</td><td>Security audit · GuardDuty/Macie · Okta RBAC — <b>Go/No-Go</b></td><td>C2</td></tr>
+            <tr><td>M9</td><td>Data migration complete · 1TB Gold on S3 reconciled</td><td>C1</td></tr>
+            <tr><td>M10</td><td>Staging load test · p99 &lt;500ms · OpenSearch &lt;100ms</td><td>All</td></tr>
+            <tr><td style="color:#FF9900;font-weight:700">M11 ✓</td><td>DR failover verified (us-west-2) · RTO &lt;4h — <b>Go/No-Go</b></td><td>C1+C2</td></tr>
+            <tr><td style="color:#1A7A4A;font-weight:700">M12 🚀</td><td>Production launch · 30-day Hypercare</td><td>All</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gantt -->
+    <div style="flex-shrink:0">
+      <div class="sec-label" style="margin-bottom:4px">12-MONTH GANTT SUMMARY</div>
+      <svg viewBox="0 0 860 132" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+        <!-- Header -->
+        <rect x="0" y="0" width="860" height="15" fill="#232F3E"/>
+        <text x="80" y="10.5" font-size="7.5" font-weight="600" fill="#FF9900" text-anchor="middle">Team</text>
+        <text x="188" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M1</text>
+        <text x="245" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M2</text>
+        <text x="302" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M3</text>
+        <text x="359" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M4</text>
+        <text x="416" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M5</text>
+        <text x="473" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M6</text>
+        <text x="530" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M7</text>
+        <text x="587" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M8</text>
+        <text x="644" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M9</text>
+        <text x="701" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M10</text>
+        <text x="758" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M11</text>
+        <text x="815" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M12</text>
+
+        <!-- Grid lines -->
+        <line x1="160" y1="0" x2="160" y2="132" stroke="#C8D8EC" stroke-width=".5"/>
+        <line x1="217" y1="15" x2="217" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="274" y1="15" x2="274" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="331" y1="15" x2="331" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="388" y1="15" x2="388" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="445" y1="15" x2="445" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="502" y1="15" x2="502" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="559" y1="15" x2="559" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="616" y1="15" x2="616" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="673" y1="15" x2="673" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="730" y1="15" x2="730" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="787" y1="15" x2="787" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+        <line x1="844" y1="15" x2="844" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+
+        <!-- Row BGs -->
+        <rect x="0" y="15" width="860" height="26" fill="#F4F8FF"/>
+        <rect x="0" y="41" width="860" height="26" fill="#FAFCFF"/>
+        <rect x="0" y="67" width="860" height="26" fill="#F4F8FF"/>
+        <rect x="0" y="93" width="860" height="26" fill="#FAFCFF"/>
+        <rect x="0" y="119" width="860" height="13" fill="#F0F4FF"/>
+
+        <!-- Team labels -->
+        <text x="4" y="30" font-size="7.5" font-weight="700" fill="#1A4A8A">FTE Team 1</text>
+        <text x="4" y="39" font-size="6" fill="#5A7AAA">Core Platform</text>
+        <text x="4" y="56" font-size="7.5" font-weight="700" fill="#1A6A40">FTE Team 2</text>
+        <text x="4" y="65" font-size="6" fill="#4A8A6A">UX / App</text>
+        <text x="4" y="82" font-size="7.5" font-weight="700" fill="#7A5000">Contractor 1</text>
+        <text x="4" y="91" font-size="6" fill="#9A7020">AWS Infra/Mig</text>
+        <text x="4" y="108" font-size="7.5" font-weight="700" fill="#7A2020">Contractor 2</text>
+        <text x="4" y="117" font-size="6" fill="#9A4040">Security/Search</text>
+
+        <!-- FTE1 -->
+        <rect x="161" y="19" width="170" height="9" rx="2" fill="#2060CC"/>
+        <text x="246" y="26" font-size="6" fill="#fff" text-anchor="middle">D6 Lambda · SQS · S3 Bronze · MWAA setup</text>
+        <rect x="331" y="19" width="228" height="9" rx="2" fill="#1A4A9A"/>
+        <text x="445" y="26" font-size="6" fill="#fff" text-anchor="middle">SageMaker AI · DuckDB Gold · Terahelix · Silver DAGs</text>
+        <rect x="559" y="19" width="285" height="9" rx="2" fill="#0D2B5E"/>
+        <text x="700" y="26" font-size="6" fill="#fff" text-anchor="middle">OpenSearch CDC · Athena · Data Migration · Launch</text>
+        <rect x="161" y="30" width="683" height="7" rx="2" fill="#90B0E8" opacity=".35"/>
+        <text x="502" y="35" font-size="5.5" fill="#0D2B5E" text-anchor="middle">Bi-temporal S3 · Edit/Approve · Notifications (SNS) · Audit (S3 WORM)</text>
+
+        <!-- FTE2 -->
+        <rect x="218" y="45" width="170" height="9" rx="2" fill="#1A8A50"/>
+        <text x="303" y="52" font-size="6" fill="#fff" text-anchor="middle">UX Foundation · 8 Personas</text>
+        <rect x="388" y="45" width="228" height="9" rx="2" fill="#1A6A40"/>
+        <text x="502" y="52" font-size="6" fill="#fff" text-anchor="middle">Vessel Detail · OpenSearch UI · Analytics</text>
+        <rect x="616" y="45" width="228" height="9" rx="2" fill="#0D4A2A"/>
+        <text x="730" y="52" font-size="6" fill="#fff" text-anchor="middle">Admin Console · Contentful · Release</text>
+        <rect x="218" y="56" width="626" height="7" rx="2" fill="#90D8B0" opacity=".35"/>
+        <text x="531" y="61" font-size="5.5" fill="#1A4A2A" text-anchor="middle">CloudFront CDN · S3 file mgmt · SES/Slack notifs · QuickSight dashboards</text>
+
+        <!-- C1 -->
+        <rect x="161" y="71" width="114" height="9" rx="2" fill="#C87000"/>
+        <text x="218" y="78" font-size="6" fill="#fff" text-anchor="middle">AWS Bootstrap</text>
+        <rect x="275" y="71" width="284" height="9" rx="2" fill="#A05800"/>
+        <text x="417" y="78" font-size="6" fill="#fff" text-anchor="middle">EKS · Aurora · MWAA · S3 · CloudFront · Terraform IaC</text>
+        <rect x="559" y="71" width="285" height="9" rx="2" fill="#7A4000"/>
+        <text x="700" y="78" font-size="6" fill="#fff" text-anchor="middle">Data Migration (AWS Glue/DuckDB) · DR setup · Load test</text>
+        <rect x="161" y="82" width="683" height="7" rx="2" fill="#F8D090" opacity=".45"/>
+        <text x="502" y="87" font-size="5.5" fill="#7A4000" text-anchor="middle">Snowflake · API Gateway · CodeBuild + CodePipeline + ECR · Terraform modules</text>
+
+        <!-- C2 -->
+        <rect x="161" y="97" width="170" height="9" rx="2" fill="#AA2020"/>
+        <text x="246" y="104" font-size="6" fill="#fff" text-anchor="middle">Security Architecture</text>
+        <rect x="331" y="97" width="171" height="9" rx="2" fill="#882020"/>
+        <text x="416" y="104" font-size="6" fill="#fff" text-anchor="middle">Okta RBAC · KMS · Macie · GuardDuty</text>
+        <rect x="502" y="97" width="342" height="9" rx="2" fill="#661010"/>
+        <text x="672" y="104" font-size="6" fill="#fff" text-anchor="middle">API GW · Pen Test · SOC 2 · SCPs · OpenSearch tuning · Launch</text>
+        <rect x="161" y="108" width="683" height="7" rx="2" fill="#F0A0A0" opacity=".4"/>
+        <text x="502" y="113" font-size="5.5" fill="#661010" text-anchor="middle">AWS Config · Security Hub · WAF rules · Secrets Manager · PagerDuty integration</text>
+
+        <!-- Go/No-Go milestones -->
+        <polygon points="388,119 392,130 384,130" fill="#FF9900"/>
+        <text x="388" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M4✓</text>
+        <polygon points="502,119 506,130 498,130" fill="#FF9900"/>
+        <text x="502" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M6✓</text>
+        <polygon points="616,119 620,130 612,130" fill="#FF9900"/>
+        <text x="616" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M8✓</text>
+        <polygon points="787,119 791,130 783,130" fill="#FF9900"/>
+        <text x="787" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M11✓</text>
+        <polygon points="844,119 848,130 840,130" fill="#1A6A40"/>
+        <text x="844" y="132" font-size="5.5" fill="#1A6A40" text-anchor="middle">LAUNCH</text>
+      </svg>
+    </div>
+
+  </div>
+</div>
+<div class="nav">
+  <a class="nbtn" href="aws_slide4.html">← Previous</a>
+  <span class="nlabel">Slide 5 of 5 — Timeline &amp; Resource Cost</span>
+  <a class="nbtn" href="aws_index.html">Hub →</a>
+  <button class="nbtn fs" onclick="toggleFS()" id="fsBtn">⛶ Fullscreen</button>
+</div>
+<script>
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen&&document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  document.getElementById('fsBtn').textContent=document.fullscreenElement?'✕ Exit Full':'⛶ Fullscreen';
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='f'||e.key==='F')toggleFS();
+});
+</script>
+</body>
+</html>

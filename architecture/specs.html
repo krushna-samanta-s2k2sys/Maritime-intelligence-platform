@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S&P Maritime Intelligence Platform — Architecture Specifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#060D1A;--navy2:#0A1628;--navy3:#0F2040;
+  --gold:#F2A900;--blue:#2080E8;--blue2:#4AA0FF;--cyan:#00C8FF;
+  --green:#00D4A0;--red:#FF5252;--purple:#A070E0;
+  --text:#E8F2FF;--text2:#8AACCC;--text3:#4A6A8A;
+  --border:rgba(255,255,255,0.07);--sidebar-w:240px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);font-size:13px}
+a{color:var(--blue2);text-decoration:none}
+a:hover{color:var(--cyan)}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;color:var(--cyan)}
+pre{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;line-height:1.7;color:#C8DFF0}
+pre .cm{color:#5A7A9A}pre .kw{color:#79B8FF}pre .st{color:#9ECB7A}pre .nm{color:var(--gold)}pre .fn{color:var(--cyan)}
+
+/* Layout */
+.shell{display:flex;height:100vh;overflow:hidden}
+aside{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);height:100%;overflow-y:auto;
+  background:var(--navy2);border-right:1px solid var(--border);
+  padding:24px 0;flex-shrink:0;
+}
+main{flex:1;overflow-y:auto;padding:40px 56px;max-width:1000px}
+
+/* Sidebar */
+.side-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.side-logo-name{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.side-logo-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.side-section{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:12px 20px 6px}
+.side-link{
+  display:block;padding:7px 20px;font-size:12px;color:var(--text2);
+  border-left:2px solid transparent;transition:all .15s;cursor:pointer;
+}
+.side-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.side-link.active{color:var(--gold);border-left-color:var(--gold);background:rgba(242,169,0,.06)}
+
+/* Content */
+.page-header{margin-bottom:36px}
+.breadcrumb{font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:32px;font-weight:800;line-height:1.2;color:var(--text)}
+.page-sub{font-size:15px;color:var(--text2);margin-top:8px;line-height:1.6}
+
+h2{font-size:18px;font-weight:700;color:var(--text);margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+h3{font-size:14px;font-weight:700;color:var(--gold);margin:24px 0 10px}
+h4{font-size:12px;font-weight:700;color:var(--text2);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.08em}
+p{color:var(--text2);line-height:1.7;margin-bottom:12px}
+ul,ol{padding-left:20px;color:var(--text2);line-height:1.8;margin-bottom:12px}
+li{margin-bottom:2px}
+strong{color:var(--text);font-weight:600}
+
+/* Cards */
+.card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.card-gold{border-color:rgba(242,169,0,.25);background:rgba(242,169,0,.05)}
+.card-blue{border-color:rgba(32,128,232,.25);background:rgba(32,128,232,.05)}
+.card-green{border-color:rgba(0,212,160,.25);background:rgba(0,212,160,.05)}
+.card-purple{border-color:rgba(160,112,224,.25);background:rgba(160,112,224,.05)}
+.card-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12px}
+th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--text);font-weight:500}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* Tag */
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin:2px}
+.tag-gold{background:rgba(242,169,0,.15);color:var(--gold);border:1px solid rgba(242,169,0,.3)}
+.tag-blue{background:rgba(32,128,232,.15);color:var(--blue2);border:1px solid rgba(32,128,232,.3)}
+.tag-green{background:rgba(0,212,160,.15);color:var(--green);border:1px solid rgba(0,212,160,.3)}
+.tag-purple{background:rgba(160,112,224,.15);color:var(--purple);border:1px solid rgba(160,112,224,.3)}
+.tag-red{background:rgba(255,82,82,.15);color:var(--red);border:1px solid rgba(255,82,82,.3)}
+
+/* Callout */
+.callout{border-left:3px solid var(--gold);background:rgba(242,169,0,.06);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0 20px;font-size:12px;color:var(--text2);line-height:1.6}
+.callout-blue{border-left-color:var(--blue);background:rgba(32,128,232,.06)}
+.callout-green{border-left-color:var(--green);background:rgba(0,212,160,.06)}
+
+/* Layer diagram */
+.layer-diagram{display:flex;flex-direction:column;gap:6px;margin:16px 0 24px}
+.layer-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:1px solid}
+.layer-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;width:70px;flex-shrink:0}
+.layer-items{display:flex;flex-wrap:wrap;gap:6px}
+.layer-item{font-size:10px;font-weight:600;padding:3px 10px;border-radius:5px}
+
+/* Section anchor scroll */
+section{scroll-margin-top:20px}
+
+/* Divider */
+hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside>
+  <div class="side-logo">
+    <div class="side-logo-name">Maritime Intelligence</div>
+    <div class="side-logo-sub">Architecture Specifications</div>
+  </div>
+  <div class="side-section">Overview</div>
+  <a class="side-link active" onclick="scrollTo('overview')">Platform Overview</a>
+  <a class="side-link" onclick="scrollTo('principles')">Design Principles</a>
+  <div class="side-section">Data Layer</div>
+  <a class="side-link" onclick="scrollTo('ingestion')">Data Ingestion (D6)</a>
+  <a class="side-link" onclick="scrollTo('medallion')">Medallion Architecture</a>
+  <a class="side-link" onclick="scrollTo('geospatial')">Geospatial Design</a>
+  <a class="side-link" onclick="scrollTo('temporal')">Bi-Temporal Design</a>
+  <div class="side-section">Intelligence</div>
+  <a class="side-link" onclick="scrollTo('editapprove')">Edit &amp; Approve Workflow</a>
+  <a class="side-link" onclick="scrollTo('terahelix')">Terahelix — Entity Mapping</a>
+  <a class="side-link" onclick="scrollTo('gearbox')">Gearbox — Relationships</a>
+  <a class="side-link" onclick="scrollTo('aiengine')">AI Confidence Engine</a>
+  <div class="side-section">Application</div>
+  <a class="side-link" onclick="scrollTo('search')">Real-Time Search</a>
+  <a class="side-link" onclick="scrollTo('application')">Application Layer</a>
+  <a class="side-link" onclick="scrollTo('delivery')">Delivery Channels</a>
+  <a class="side-link" onclick="scrollTo('files')">File Management</a>
+  <a class="side-link" onclick="scrollTo('notifications')">Notification System</a>
+  <div class="side-section">Operations</div>
+  <a class="side-link" onclick="scrollTo('auth')">Auth &amp; RBAC (Okta)</a>
+  <a class="side-link" onclick="scrollTo('monitoring')">Monitoring &amp; SLOs</a>
+  <a class="side-link" onclick="scrollTo('audit')">Audit System</a>
+  <a class="side-link" onclick="scrollTo('security')">Security &amp; Governance</a>
+  <a class="side-link" onclick="scrollTo('migration')">Data Migration</a>
+  <div class="side-section">Reference</div>
+  <a class="side-link" onclick="scrollTo('techstack')">Technology Stack</a>
+  <a class="side-link" onclick="scrollTo('schemas')">Key Schemas</a>
+</aside>
+
+<main id="main">
+
+<!-- ── OVERVIEW ── -->
+<section id="overview">
+<div class="page-header">
+  <div class="breadcrumb">Architecture Specifications · v1.0 · May 2026</div>
+  <h1>S&P Maritime Intelligence Platform</h1>
+  <p class="page-sub">Cloud-native, AI-powered maritime data intelligence infrastructure. Ingests 200+ external feeds, resolves entities via Terahelix and Gearbox, scores source confidence with a Vertex AI model, and distributes authoritative master data to internal applications and external customers.</p>
+</div>
+
+<div class="g3">
+  <div class="card card-gold"><div class="card-title">Scale</div><div style="font-size:22px;font-weight:800;color:var(--gold)">200+</div><div style="color:var(--text2);font-size:11px;margin-top:2px">External data feeds</div></div>
+  <div class="card card-blue"><div class="card-title">History</div><div style="font-size:22px;font-weight:800;color:var(--blue2)">~1 TB</div><div style="color:var(--text2);font-size:11px;margin-top:2px">Historical data to migrate</div></div>
+  <div class="card card-green"><div class="card-title">Search SLO</div><div style="font-size:22px;font-weight:800;color:var(--green)">&lt;200ms</div><div style="color:var(--text2);font-size:11px;margin-top:2px">p95 search latency target</div></div>
+</div>
+
+<h2>System Layers</h2>
+<div class="layer-diagram">
+  <div class="layer-row" style="border-color:rgba(100,120,220,.3);background:rgba(42,55,110,.2)">
+    <div class="layer-badge" style="color:#9AAAF0">Sources</div>
+    <div class="layer-items">
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">AIS Streams</div>
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">SFTP / FTP</div>
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">REST APIs</div>
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">Email / Attachments</div>
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">Excel / CSV / XML</div>
+      <div class="layer-item" style="background:rgba(100,120,220,.2);color:#9AAAF0">200+ total feeds</div>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--gold);font-size:14px;padding:2px 0">↓</div>
+  <div class="layer-row" style="border-color:rgba(32,128,232,.3);background:rgba(32,80,160,.15)">
+    <div class="layer-badge" style="color:var(--blue2)">D6 Ingest</div>
+    <div class="layer-items">
+      <div class="layer-item" style="background:rgba(32,128,232,.15);color:var(--blue2)">Feed Registry</div>
+      <div class="layer-item" style="background:rgba(32,128,232,.15);color:var(--blue2)">Protocol Adapters</div>
+      <div class="layer-item" style="background:rgba(32,128,232,.15);color:var(--blue2)">Format Parsers</div>
+      <div class="layer-item" style="background:rgba(32,128,232,.15);color:var(--blue2)">Normalizer</div>
+      <div class="layer-item" style="background:rgba(32,128,232,.15);color:var(--blue2)">Dead-Letter Queue</div>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--gold);font-size:14px;padding:2px 0">↓</div>
+  <div class="layer-row" style="border-color:rgba(242,169,0,.25);background:rgba(10,30,60,.4)">
+    <div class="layer-badge" style="color:var(--gold)">BigQuery</div>
+    <div class="layer-items">
+      <div class="layer-item" style="background:rgba(160,80,20,.3);color:#F0A060">🥉 Bronze (Raw)</div>
+      <div class="layer-item" style="background:rgba(60,100,160,.3);color:#80C0F0">🥈 Silver (Staged)</div>
+      <div class="layer-item" style="background:rgba(160,120,0,.3);color:var(--gold)">🥇 Gold (Master)</div>
+      <div class="layer-item" style="background:rgba(40,120,60,.2);color:#80E0A0">✏️ Draft/Edit</div>
+      <div class="layer-item" style="background:rgba(120,60,180,.2);color:var(--purple)">🤖 AI Engine</div>
+      <div class="layer-item" style="background:rgba(0,140,140,.2);color:var(--cyan)">🔗 Terahelix·Gearbox</div>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--gold);font-size:14px;padding:2px 0">↓</div>
+  <div class="layer-row" style="border-color:rgba(0,200,255,.2);background:rgba(0,60,60,.2)">
+    <div class="layer-badge" style="color:var(--cyan)">Services</div>
+    <div class="layer-items">
+      <div class="layer-item" style="background:rgba(0,200,255,.1);color:var(--cyan)">Elasticsearch</div>
+      <div class="layer-item" style="background:rgba(0,200,255,.1);color:var(--cyan)">File/Image (GCS)</div>
+      <div class="layer-item" style="background:rgba(0,200,255,.1);color:var(--cyan)">Notification Engine</div>
+      <div class="layer-item" style="background:rgba(0,200,255,.1);color:var(--cyan)">Okta Auth</div>
+      <div class="layer-item" style="background:rgba(0,200,255,.1);color:var(--cyan)">Audit &amp; Monitoring</div>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--gold);font-size:14px;padding:2px 0">↓</div>
+  <div class="layer-row" style="border-color:rgba(0,212,160,.2);background:rgba(0,40,20,.2)">
+    <div class="layer-badge" style="color:var(--green)">Delivery</div>
+    <div class="layer-items">
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">Maritime UX (React)</div>
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">Analytics (Looker)</div>
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">REST/GraphQL API</div>
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">Data Feeds</div>
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">Snowflake</div>
+      <div class="layer-item" style="background:rgba(0,212,160,.1);color:var(--green)">GCP EDO-Fabric</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── PRINCIPLES ── -->
+<section id="principles">
+<h2>Design Principles</h2>
+<div class="g2">
+  <div class="card"><strong>Immutability at source:</strong><p style="margin:6px 0 0">Bronze layer is append-only. Source data is never modified. All transformations create new records in downstream layers.</p></div>
+  <div class="card"><strong>No direct Gold writes:</strong><p style="margin:6px 0 0">All edits — human or AI — must pass through the Draft→Review→Approve workflow. Accidental partial updates to the master are architecturally impossible.</p></div>
+  <div class="card"><strong>Confidence over certainty:</strong><p style="margin:6px 0 0">Conflicting values are not discarded. The AI engine scores each competing value; humans review below-threshold cases. All sources are preserved.</p></div>
+  <div class="card"><strong>Search-first UX:</strong><p style="margin:6px 0 0">Elasticsearch handles all user-facing search. BigQuery is never hit by search queries — only by analytical jobs and internal pipelines.</p></div>
+  <div class="card"><strong>Observable by default:</strong><p style="margin:6px 0 0">Every component emits structured logs to Cloud Logging. Metrics flow to Datadog. Traces span the full request path via OpenTelemetry.</p></div>
+  <div class="card"><strong>Governed from day one:</strong><p style="margin:6px 0 0">Data lineage is tracked from feed receipt through every layer to the delivery channel. PII is classified and access-controlled at column level from initial schema design.</p></div>
+</div>
+</section>
+
+<hr>
+
+<!-- ── INGESTION ── -->
+<section id="ingestion">
+<h2>Data Ingestion — D6 Platform</h2>
+<p>D6 is S&P's internal data ingestion and routing platform. It handles the full lifecycle of feed receipt, parsing, normalisation, and delivery to BigQuery landing tables. The Maritime platform does not build its own ingestion infrastructure — it configures D6 via the Feed Registry.</p>
+
+<h3>Feed Registry</h3>
+<p>Every feed is declared in the Feed Registry before it can be ingested. The registry drives connector configuration, schedule, schema mapping, and routing.</p>
+<pre>
+<span class="cm">-- Feed registry (Cloud Spanner or BigQuery config table)</span>
+<span class="kw">CREATE TABLE</span> feed_registry (
+  feed_id            STRING  <span class="kw">NOT NULL</span>,
+  feed_name          STRING,
+  provider           STRING,
+  domain             STRING,        <span class="cm">-- vessel|port|company|cargo|compliance</span>
+  delivery_method    STRING,        <span class="cm">-- sftp|email|api|websocket|manual</span>
+  format             STRING,        <span class="cm">-- csv|excel|xml|json|binary</span>
+  schedule_cron      STRING,
+  sftp_host          STRING,
+  sftp_path_pattern  STRING,
+  api_endpoint       STRING,
+  api_auth_type      STRING,
+  landing_table      STRING,        <span class="cm">-- BigQuery target table</span>
+  field_map          JSON,          <span class="cm">-- source field → canonical field</span>
+  schema_version     STRING,
+  is_active          BOOL,
+  contact_owner      STRING
+);</pre>
+
+<h3>D6 Pipeline Steps</h3>
+<ol>
+  <li><strong>Protocol Adapter</strong> — SFTP poll, email parse, API call, WebSocket subscribe</li>
+  <li><strong>Format Parser</strong> — CSV/Excel/XML/JSON → normalised JSON</li>
+  <li><strong>Schema Validator</strong> — mandatory fields, type coercion, encoding correction</li>
+  <li><strong>Metadata Envelope</strong> — attach <code>feed_id</code>, <code>ingestion_ts</code>, <code>source_file_ref</code>, <code>row_hash</code> (SHA-256)</li>
+  <li><strong>BigQuery Delivery</strong> — append to Bronze partition table</li>
+</ol>
+
+<div class="callout">Dead-letter queue captures all parse failures with the raw payload and error context. 3-attempt retry with exponential back-off. Alert triggered when DLQ depth exceeds configured threshold.</div>
+
+<h3>Feed Format Coverage</h3>
+<table>
+  <thead><tr><th>Format</th><th>Mechanism</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>CSV</td><td>D6 CSV adapter with configurable delimiter, encoding, header row</td><td>Most common; ~40% of feeds</td></tr>
+    <tr><td>Excel (.xlsx)</td><td>Apache POI-based parser; sheet selection configurable</td><td>~20% of feeds</td></tr>
+    <tr><td>XML</td><td>XPath-based extractor with per-feed XPath config</td><td>Registry, classification feeds</td></tr>
+    <tr><td>JSON</td><td>JSONPath extractor; nested document flattening</td><td>API responses, AIS</td></tr>
+    <tr><td>Email</td><td>IMAP reader → attachment extraction → route to format parser</td><td>Manual / irregular feeds</td></tr>
+    <tr><td>SFTP</td><td>Scheduled polling with configurable pattern matching</td><td>Most bulk providers</td></tr>
+    <tr><td>REST API</td><td>Configurable poll interval, pagination strategy, auth type</td><td>AIS, registries</td></tr>
+    <tr><td>WebSocket</td><td>Persistent subscriber; heartbeat managed by D6</td><td>Real-time AIS streams</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── MEDALLION ── -->
+<section id="medallion">
+<h2>Medallion Architecture</h2>
+<p>All data flows through three immutable quality layers in BigQuery before reaching the Gold master. A separate Draft/Edit layer handles all pending changes.</p>
+
+<h3>Bronze Layer — Raw Landing</h3>
+<div class="card card-gold">
+  <ul>
+    <li>Append-only, immutable — no record is ever updated or deleted</li>
+    <li>Full raw payload stored as JSON column alongside parsed fields</li>
+    <li>SHA-256 <code>row_hash</code> enables idempotent re-ingestion</li>
+    <li>Retained for 7 years (regulatory requirement)</li>
+    <li>Partitioned by <code>record_date</code>, clustered by <code>feed_id</code></li>
+  </ul>
+</div>
+<pre>
+<span class="kw">CREATE TABLE</span> bq_bronze.vessel_raw (
+  ingestion_id      STRING  <span class="kw">NOT NULL</span>,   <span class="cm">-- UUID</span>
+  feed_id           STRING  <span class="kw">NOT NULL</span>,
+  source_file_ref   STRING,             <span class="cm">-- gs://... URI</span>
+  ingestion_ts      TIMESTAMP <span class="kw">NOT NULL</span>,
+  record_date       DATE,               <span class="cm">-- partition column</span>
+  raw_payload       JSON,
+  row_hash          STRING,             <span class="cm">-- SHA-256 dedup key</span>
+  processing_status STRING <span class="kw">DEFAULT</span> <span class="st">'PENDING'</span>
+)
+<span class="kw">PARTITION BY</span> record_date
+<span class="kw">CLUSTER BY</span> feed_id, processing_status;</pre>
+
+<h3>Silver Layer — Validated / Staged</h3>
+<p>Parsed, type-checked, deduplicated records with completeness scores and DQ flags. Source attribution is always preserved.</p>
+<pre>
+<span class="kw">CREATE TABLE</span> bq_silver.vessel_staging (
+  staging_id        STRING  <span class="kw">NOT NULL</span>,
+  ingestion_id      STRING,             <span class="cm">-- FK to bronze</span>
+  feed_id           STRING,
+  feed_priority     INT64,              <span class="cm">-- source hierarchy rank</span>
+  imo_number        STRING,
+  vessel_name       STRING,
+  vessel_type       STRING,
+  flag_code         STRING,
+  gross_tonnage     NUMERIC,
+  deadweight        NUMERIC,
+  last_position     GEOGRAPHY,
+  completeness_score FLOAT64,
+  dq_flags          ARRAY&lt;STRING&gt;,
+  source_valid_from TIMESTAMP,
+  record_date       DATE
+)
+<span class="kw">PARTITION BY</span> record_date
+<span class="kw">CLUSTER BY</span> imo_number, feed_id;</pre>
+
+<h3>Gold Layer — Curated Master</h3>
+<p>Business-ready, bi-temporal, geospatially enriched, AI confidence-scored master records. The authoritative source of truth for all delivery channels.</p>
+<pre>
+<span class="kw">CREATE TABLE</span> bq_gold.vessel_master (
+  vessel_id         STRING  <span class="kw">NOT NULL</span>,
+  imo_number        STRING  <span class="kw">NOT NULL</span>,
+
+  <span class="cm">-- Bi-Temporal</span>
+  valid_from        TIMESTAMP <span class="kw">NOT NULL</span>,
+  valid_to          TIMESTAMP,          <span class="cm">-- NULL = current</span>
+  sys_from          TIMESTAMP <span class="kw">NOT NULL</span>,
+  sys_to            TIMESTAMP,          <span class="cm">-- NULL = current version</span>
+
+  vessel_name       STRING,
+  vessel_type       STRING,
+  flag_code         STRING,
+  deadweight        NUMERIC,
+  gross_tonnage     NUMERIC,
+  owner_id          STRING,
+  operator_id       STRING,
+  last_known_position  GEOGRAPHY,
+  last_known_position_geojson JSON,
+  route_geojson     JSON,               <span class="cm">-- last voyage as LineString</span>
+
+  <span class="cm">-- Quality</span>
+  confidence_score  FLOAT64,
+  primary_source_id STRING,
+  contributing_sources ARRAY&lt;STRING&gt;,
+
+  record_status     STRING <span class="kw">DEFAULT</span> <span class="st">'ACTIVE'</span>,
+  approved_by       STRING,
+  approved_at       TIMESTAMP
+)
+<span class="kw">PARTITION BY</span> DATE(valid_from)
+<span class="kw">CLUSTER BY</span> imo_number, flag_code, vessel_type;</pre>
+</section>
+
+<!-- ── GEOSPATIAL ── -->
+<section id="geospatial">
+<h2>Geospatial Design</h2>
+<p>BigQuery GEOGRAPHY type handles all spatial data natively. No separate geospatial database is required.</p>
+<table>
+  <thead><tr><th>Use Case</th><th>BigQuery Function</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td>Vessel position</td><td><code>ST_GEOGPOINT(lon, lat)</code></td><td>Store AIS position as GEOGRAPHY point</td></tr>
+    <tr><td>Port boundary</td><td><code>ST_GEOGFROMGEOJSON()</code></td><td>Port polygon from GeoJSON feed</td></tr>
+    <tr><td>Voyage track</td><td>GEOGRAPHY linestring</td><td>Multi-point AIS trajectory</td></tr>
+    <tr><td>Proximity search</td><td><code>ST_DWITHIN(pos, centre, dist_metres)</code></td><td>Vessels within 50km of port</td></tr>
+    <tr><td>Containment</td><td><code>ST_WITHIN(point, polygon)</code></td><td>Vessel inside EEZ or port boundary</td></tr>
+    <tr><td>Distance calc</td><td><code>ST_DISTANCE(a, b)</code></td><td>Distance between two vessels</td></tr>
+    <tr><td>API output</td><td><code>ST_ASGEOJSON(geog)</code></td><td>Serialize GEOGRAPHY to GeoJSON for API</td></tr>
+  </tbody>
+</table>
+<div class="callout callout-blue">GeoJSON is also stored as a raw <code>JSON</code> column alongside the <code>GEOGRAPHY</code> column. This preserves arbitrary GeoJSON properties (e.g., feature collections with metadata) that the GEOGRAPHY type cannot represent.</div>
+</section>
+
+<!-- ── TEMPORAL ── -->
+<section id="temporal">
+<h2>Bi-Temporal Design</h2>
+<p>Every Gold record carries two independent time axes:</p>
+<div class="g2">
+  <div class="card card-gold">
+    <h4>Valid Time (World Time)</h4>
+    <p>When the fact was true in the real world. <code>valid_from</code> / <code>valid_to</code> (NULL = still current).</p>
+    <p>Example: A vessel was flagged Panama from 2018-03-01 until 2022-11-15.</p>
+  </div>
+  <div class="card card-blue">
+    <h4>Transaction Time (System Time)</h4>
+    <p>When the record was inserted into this system. <code>sys_from</code> / <code>sys_to</code> (NULL = current version).</p>
+    <p>Example: We learned about the flag change on 2022-12-01 from a registry feed.</p>
+  </div>
+</div>
+<p>This enables full point-in-time queries: <em>"What did our system believe about this vessel's flag on 2021-06-01?"</em> and <em>"What was actually true about this vessel's flag on 2021-06-01?"</em> — which may differ if a source reported the change late.</p>
+</section>
+
+<hr>
+
+<!-- ── EDIT/APPROVE ── -->
+<section id="editapprove">
+<h2>Edit &amp; Approval Workflow</h2>
+<p>No edit — whether from a user, an AI auto-apply, or an ETL pipeline — goes directly to Gold. All changes are staged as change sets and require approval before promotion.</p>
+
+<h3>Workflow States</h3>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 20px;font-size:12px">
+  <div style="padding:6px 16px;background:rgba(32,128,232,.2);border:1px solid rgba(32,128,232,.4);border-radius:6px;color:var(--blue2)">DRAFT</div>
+  <span style="color:var(--text3)">→</span>
+  <div style="padding:6px 16px;background:rgba(242,169,0,.15);border:1px solid rgba(242,169,0,.35);border-radius:6px;color:var(--gold)">IN_REVIEW</div>
+  <span style="color:var(--text3)">→</span>
+  <div style="padding:6px 16px;background:rgba(0,212,160,.15);border:1px solid rgba(0,212,160,.35);border-radius:6px;color:var(--green)">APPROVED</div>
+  <span style="color:var(--text3)">→</span>
+  <div style="padding:6px 16px;background:rgba(160,112,224,.15);border:1px solid rgba(160,112,224,.35);border-radius:6px;color:var(--purple)">PUBLISHED</div>
+  <span style="color:var(--text3);margin:0 8px">or</span>
+  <div style="padding:6px 16px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.35);border-radius:6px;color:var(--red)">REJECTED</div>
+</div>
+
+<pre>
+<span class="kw">CREATE TABLE</span> bq_edit.change_set (
+  change_set_id  STRING  <span class="kw">NOT NULL</span>,
+  entity_type    STRING  <span class="kw">NOT NULL</span>,
+  entity_id      STRING  <span class="kw">NOT NULL</span>,
+  change_source  STRING,  <span class="cm">-- USER|AI_ENGINE|ETL_PIPELINE|IMPORT</span>
+  status         STRING <span class="kw">DEFAULT</span> <span class="st">'DRAFT'</span>,
+  title          STRING,
+  priority       STRING <span class="kw">DEFAULT</span> <span class="st">'NORMAL'</span>,
+  created_by     STRING  <span class="kw">NOT NULL</span>,
+  created_at     TIMESTAMP <span class="kw">NOT NULL</span>,
+  submitted_at   TIMESTAMP,
+  reviewed_by    STRING,
+  review_notes   STRING,
+  applied_at     TIMESTAMP
+);
+
+<span class="kw">CREATE TABLE</span> bq_edit.change_field (
+  change_field_id  STRING  <span class="kw">NOT NULL</span>,
+  change_set_id    STRING  <span class="kw">NOT NULL</span>,
+  field_name       STRING  <span class="kw">NOT NULL</span>,
+  old_value        JSON,    <span class="cm">-- current Gold snapshot</span>
+  new_value        JSON,    <span class="cm">-- proposed value</span>
+  confidence_score FLOAT64,
+  auto_apply       BOOL <span class="kw">DEFAULT</span> FALSE,
+  conflict_flag    BOOL <span class="kw">DEFAULT</span> FALSE,
+  conflict_detail  JSON     <span class="cm">-- all competing values with sources</span>
+);</pre>
+</section>
+
+<!-- ── TERAHELIX ── -->
+<section id="terahelix">
+<h2>Terahelix — Entity Identifier Mapping</h2>
+<p>Terahelix resolves the many-to-one mapping between external source identifiers and the platform's canonical internal entity IDs.</p>
+<h3>Resolution Priority (Vessels)</h3>
+<ol>
+  <li><strong>IMO Number</strong> — definitively unique, never reassigned. Highest confidence.</li>
+  <li><strong>MMSI</strong> — may be reassigned between vessels; used with temporal bounds.</li>
+  <li><strong>Call Sign + Flag</strong> — reasonably unique in combination.</li>
+  <li><strong>Vessel Name + Build Year + GT</strong> — fuzzy match with configurable similarity threshold.</li>
+  <li><strong>Manual Override</strong> — admin-managed exceptions for edge cases.</li>
+</ol>
+<pre>
+<span class="kw">CREATE TABLE</span> terahelix.identifier_registry (
+  registry_id      STRING  <span class="kw">NOT NULL</span>,
+  canonical_id     STRING  <span class="kw">NOT NULL</span>,  <span class="cm">-- internal entity UUID</span>
+  entity_type      STRING  <span class="kw">NOT NULL</span>,
+  identifier_type  STRING  <span class="kw">NOT NULL</span>,  <span class="cm">-- IMO|MMSI|CALL_SIGN|NAME|EXTERNAL_REF</span>
+  identifier_value STRING  <span class="kw">NOT NULL</span>,
+  source_id        STRING,
+  confidence       FLOAT64 <span class="kw">DEFAULT</span> 1.0,
+  is_primary       BOOL    <span class="kw">DEFAULT</span> FALSE,
+  valid_from       TIMESTAMP,
+  valid_to         TIMESTAMP
+);</pre>
+</section>
+
+<!-- ── GEARBOX ── -->
+<section id="gearbox">
+<h2>Gearbox — Entity Relationship Graph</h2>
+<p>Gearbox builds and maintains a temporal relationship graph. Every relationship has valid_from / valid_to timestamps and is sourced and confidence-scored.</p>
+<table>
+  <thead><tr><th>Relationship</th><th>Entity A</th><th>Entity B</th><th>Type</th></tr></thead>
+  <tbody>
+    <tr><td>OWNED_BY</td><td>Vessel</td><td>Company</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>OPERATED_BY</td><td>Vessel</td><td>Company</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>MANAGED_BY</td><td>Vessel</td><td>Company</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>REGISTERED_UNDER</td><td>Vessel</td><td>Flag State</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>CLASSED_BY</td><td>Vessel</td><td>Class Society</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>PARENT_OF</td><td>Company</td><td>Company</td><td><span class="tag tag-gold">Temporal</span></td></tr>
+    <tr><td>LOCATED_AT</td><td>Terminal</td><td>Port</td><td><span class="tag tag-blue">Static</span></td></tr>
+    <tr><td>ENTERED_PORT</td><td>Vessel</td><td>Port</td><td><span class="tag tag-green">Event</span></td></tr>
+    <tr><td>INSPECTED_AT</td><td>PSC Inspection</td><td>Port</td><td><span class="tag tag-green">Event</span></td></tr>
+  </tbody>
+</table>
+<div class="callout callout-blue">Every relationship change publishes a <code>RELATIONSHIP_CHANGED</code> event to Pub/Sub. Downstream consumers (Elasticsearch indexer, Notification Engine) react within seconds.</div>
+</section>
+
+<!-- ── AI ENGINE ── -->
+<section id="aiengine">
+<h2>AI Confidence Engine</h2>
+<p>The AI engine resolves conflicts when multiple sources provide different values for the same entity field. It outputs a confidence score (0.0–1.0) and either auto-applies to Gold or queues for human review.</p>
+
+<h3>Pipeline</h3>
+<p>Silver records → Source Hierarchy Resolver → Conflict Detector → Confidence Scorer (Vertex AI) → Auto-apply or Review Queue</p>
+
+<h3>Scoring Features</h3>
+<table>
+  <thead><tr><th>Feature</th><th>Weight</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Source global rank</td><td style="color:var(--gold)">High</td><td>From source_registry.global_rank</td></tr>
+    <tr><td>Field-specific source rank</td><td style="color:var(--gold)">High</td><td>Overrides global rank per field type</td></tr>
+    <tr><td>Corroboration count</td><td style="color:var(--gold)">High</td><td>Number of other sources agreeing</td></tr>
+    <tr><td>Data age (days)</td><td style="color:var(--blue2)">Medium</td><td>Penalises old source values</td></tr>
+    <tr><td>Provider reliability score</td><td style="color:var(--blue2)">Medium</td><td>Historical accuracy vs ground truth</td></tr>
+    <tr><td>Conflict count</td><td style="color:var(--red)">Negative</td><td>More disagreement = lower confidence</td></tr>
+    <tr><td>Outlier score</td><td style="color:var(--red)">Negative</td><td>Statistical distance from field distribution</td></tr>
+  </tbody>
+</table>
+
+<h3>Auto-Apply Thresholds</h3>
+<table>
+  <thead><tr><th>Field</th><th>Threshold</th><th>Rationale</th></tr></thead>
+  <tbody>
+    <tr><td>IMO Number</td><td style="color:var(--red)">Manual only</td><td>Identity field — never auto-changed</td></tr>
+    <tr><td>Vessel Name</td><td style="color:var(--gold)">≥ 0.95</td><td>Name changes are significant events</td></tr>
+    <tr><td>Vessel Type</td><td style="color:var(--gold)">≥ 0.90</td><td>Stable; multi-source corroboration sufficient</td></tr>
+    <tr><td>Owner / Manager</td><td style="color:var(--blue2)">≥ 0.85</td><td>Changes frequently; well-covered by sources</td></tr>
+    <tr><td>Class Status</td><td style="color:var(--gold)">≥ 0.88</td><td>Compliance significance</td></tr>
+    <tr><td>AIS Position</td><td style="color:var(--green)">≥ 0.70</td><td>Real-time; lower threshold acceptable</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">Human approvals and rejections feed back to the model. Approvals of low-confidence suggestions create positive training signals; rejections of high-confidence ones trigger source reliability downgrade. Model retrains nightly via Vertex AI pipeline.</div>
+</section>
+
+<hr>
+
+<!-- ── SEARCH ── -->
+<section id="search">
+<h2>Real-Time Search — Elasticsearch</h2>
+<p>Elasticsearch (Elastic Cloud on GCP) sits in front of BigQuery for all user-facing search. CDC from BigQuery Gold keeps indexes fresh in near-real-time.</p>
+
+<h3>Index Design Highlights</h3>
+<pre>
+<span class="cm">// vessels index mapping (key fields)</span>
+{
+  <span class="st">"vessel_name"</span>: { <span class="st">"type"</span>: <span class="st">"text"</span>, <span class="st">"analyzer"</span>: <span class="st">"maritime_name_analyzer"</span>,
+                    <span class="st">"fields"</span>: { <span class="st">"keyword"</span>: { <span class="st">"type"</span>: <span class="st">"keyword"</span> } } },
+  <span class="st">"imo_number"</span>:  { <span class="st">"type"</span>: <span class="st">"keyword"</span> },
+  <span class="st">"vessel_type"</span>: { <span class="st">"type"</span>: <span class="st">"keyword"</span> },
+  <span class="st">"flag_code"</span>:   { <span class="st">"type"</span>: <span class="st">"keyword"</span> },
+  <span class="st">"deadweight"</span>:  { <span class="st">"type"</span>: <span class="st">"float"</span> },
+  <span class="st">"last_known_position"</span>: { <span class="st">"type"</span>: <span class="st">"geo_point"</span> },
+  <span class="st">"owner_name"</span>:  { <span class="st">"type"</span>: <span class="st">"text"</span> },
+  <span class="st">"full_text"</span>:   { <span class="st">"type"</span>: <span class="st">"text"</span>, <span class="st">"analyzer"</span>: <span class="st">"maritime_analyzer"</span> }
+}</pre>
+
+<h3>Smart Search Examples</h3>
+<table>
+  <thead><tr><th>Query</th><th>Resolved To</th></tr></thead>
+  <tbody>
+    <tr><td><code>"vlcc detained"</code></td><td>vessel_type:Oil Tanker + dwt:[200000 TO 350000] + status:Detained</td></tr>
+    <tr><td><code>"flag:panama built&gt;2015"</code></td><td>flag_code:PA + year_built:[2016 TO *]</td></tr>
+    <tr><td><code>"bulk carrier dnv"</code></td><td>vessel_type:Bulk Carrier + class_society:DNV GL</td></tr>
+    <tr><td><code>"near:singapore radius:50km"</code></td><td>geo_distance(103.82, 1.35, 50km)</td></tr>
+    <tr><td><code>"IMO 9811000"</code></td><td>imo_number:9811000 (exact keyword)</td></tr>
+    <tr><td><code>"container ships maersk"</code></td><td>vessel_type:Container Ship + owner_name:Maersk</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── APPLICATION ── -->
+<section id="application">
+<h2>Application Layer</h2>
+
+<h3>Personas &amp; Permissions</h3>
+<table>
+  <thead><tr><th>Persona</th><th>Role</th><th>Key Capabilities</th></tr></thead>
+  <tbody>
+    <tr><td>Full Access</td><td>ADMIN / FULL_ACCESS</td><td>Read + Write + Approve across all domains</td></tr>
+    <tr><td>Vessel Analyst</td><td>VESSEL_ANALYST</td><td>Read all; Edit + Submit vessel change sets</td></tr>
+    <tr><td>Port Analyst</td><td>PORT_ANALYST</td><td>Read all; Edit + Submit port data</td></tr>
+    <tr><td>Compliance Officer</td><td>COMPLIANCE_OFFICER</td><td>Read all; Edit + Approve compliance events</td></tr>
+    <tr><td>Registry Analyst</td><td>REGISTRY_ANALYST</td><td>Read all; Edit IMO core / class data</td></tr>
+    <tr><td>Ownership Mgmt</td><td>OWNERSHIP_MGMT</td><td>Read all; Edit company / ownership data</td></tr>
+    <tr><td>Dimensions Analyst</td><td>DIMENSIONS_ANALYST</td><td>Read all; Edit technical spec fields</td></tr>
+    <tr><td>External Customer</td><td>API_CONSUMER</td><td>Read-only via API; scoped to licensed products</td></tr>
+  </tbody>
+</table>
+
+<h3>Application Modules</h3>
+<div class="g2">
+  <div>
+    <ul>
+      <li><strong>Dashboard</strong> — persona-driven configurable card grid; drag-to-reorder; 16 available cards</li>
+      <li><strong>Vessels</strong> — list + detail with 650+ attributes via recursive AttrTreeSidebar</li>
+      <li><strong>Companies</strong> — company profiles, ownership graph, subsidiary hierarchy</li>
+      <li><strong>Ports</strong> — port details, terminal map, call history</li>
+      <li><strong>GIS / AIS Map</strong> — live vessel positions, route replay, port overlays</li>
+      <li><strong>Movements</strong> — voyage tracking, ETA, port calls</li>
+    </ul>
+  </div>
+  <div>
+    <ul>
+      <li><strong>Fixtures</strong> — cargo fixtures, charter market data</li>
+      <li><strong>PSC Inspections</strong> — inspection records, deficiency tracking, detention history</li>
+      <li><strong>Compliance</strong> — sanctions screening, flag state compliance, events</li>
+      <li><strong>IMO Core</strong> — bi-temporal viewer for regulatory core data</li>
+      <li><strong>ETL Monitor</strong> — feed health, job status, DLQ viewer</li>
+      <li><strong>Admin Console</strong> — user management, feed config, source hierarchy rules</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ── DELIVERY ── -->
+<section id="delivery">
+<h2>Delivery Channels</h2>
+
+<h3>REST / GraphQL API</h3>
+<p>Exposed via Apigee API Gateway. Rate-limited per API key and plan tier. JWT-validated via Okta. Full OpenAPI 3.1 specification auto-generated. GraphQL endpoint for flexible field selection.</p>
+
+<h3>Data Feeds</h3>
+<table>
+  <thead><tr><th>Feed Type</th><th>Format</th><th>Cadence</th><th>Delivery</th></tr></thead>
+  <tbody>
+    <tr><td>Full vessel dataset</td><td>CSV / JSON</td><td>Daily</td><td>SFTP / GCS presigned URL</td></tr>
+    <tr><td>Vessel delta</td><td>JSON</td><td>Hourly</td><td>Pub/Sub webhook / SFTP</td></tr>
+    <tr><td>Ownership changes</td><td>JSON</td><td>Daily</td><td>SFTP / email</td></tr>
+    <tr><td>Compliance events</td><td>JSON</td><td>Real-time</td><td>Webhook push</td></tr>
+    <tr><td>Custom extract</td><td>CSV / Excel</td><td>On-demand</td><td>UI download / SFTP</td></tr>
+  </tbody>
+</table>
+
+<h3>Snowflake Integration</h3>
+<p>BigQuery → Snowflake replication via Fivetran or custom Dataflow connector. Shared database schemas for enterprise analytics. Snowflake Data Sharing to external customer accounts — no ETL required at the consumer end.</p>
+
+<h3>GCP EDO-Fabric</h3>
+<p>Curated data products published to S&P's internal data fabric: <code>Maritime.Vessel.Master</code>, <code>Maritime.Port.Master</code>, <code>Maritime.Company.Master</code>, <code>Maritime.AIS.Positions</code>. Full data lineage tracked. Access controlled via EDO IAM policies.</p>
+</section>
+
+<!-- ── FILES ── -->
+<section id="files">
+<h2>File &amp; Image Management</h2>
+
+<h3>GCS Bucket Structure</h3>
+<pre>
+gs://maritime-intelligence-files/
+  vessels/{imo_number}/
+    photos/
+    certificates/        <span class="cm"># class, flag, safety certificates</span>
+    inspection-reports/
+    documents/
+  ports/{unlocode}/
+    charts/
+    photos/
+    regulations/
+  companies/{company_id}/documents/
+  reference/
+    flag-icons/
+    vessel-type-icons/
+
+gs://maritime-intelligence-files-cdn/   <span class="cm"># CDN-served public assets</span></pre>
+
+<h3>File Registry Schema</h3>
+<pre>
+<span class="kw">CREATE TABLE</span> bq_gold.file_registry (
+  file_id         STRING  <span class="kw">NOT NULL</span>,
+  entity_type     STRING  <span class="kw">NOT NULL</span>,
+  entity_id       STRING  <span class="kw">NOT NULL</span>,
+  file_type       STRING  <span class="kw">NOT NULL</span>,   <span class="cm">-- PHOTO|CERTIFICATE|DOCUMENT</span>
+  file_category   STRING,              <span class="cm">-- class_cert|flag_cert|etc.</span>
+  storage_uri     STRING  <span class="kw">NOT NULL</span>,   <span class="cm">-- gs://... URI</span>
+  cdn_url         STRING,
+  content_type    STRING,
+  size_bytes      INT64,
+  checksum_sha256 STRING,
+  valid_from      DATE,                <span class="cm">-- document validity start</span>
+  valid_to        DATE,                <span class="cm">-- document expiry</span>
+  uploaded_by     STRING,
+  uploaded_at     TIMESTAMP
+);</pre>
+
+<h3>Image Processing Pipeline</h3>
+<p>Upload → GCS trigger → Cloud Run processor → Virus scan (Cloud DLP) → EXIF strip → Thumbnail generation (256px, 512px) → WebP conversion → CDN push → File registry update</p>
+</section>
+
+<!-- ── NOTIFICATIONS ── -->
+<section id="notifications">
+<h2>Notification System</h2>
+
+<h3>Event Bus Architecture</h3>
+<p>GCP Pub/Sub is the notification backbone. All platform events (data changes, feed failures, approval requests) are published to <code>notification-events</code>. The Notification Engine consumes events, matches against configured rules, deduplicates, and enqueues delivery jobs.</p>
+
+<h3>Delivery Channels</h3>
+<ul>
+  <li>Email (SendGrid) — for user and external customer notifications</li>
+  <li>Slack (Slack API) — for team and ops alerts</li>
+  <li>In-App (WebSocket push) — real-time within the UX</li>
+  <li>Webhook push — configurable per customer</li>
+  <li>PagerDuty — for P1/P2 operational incidents</li>
+</ul>
+
+<h3>Notification Log</h3>
+<pre>
+<span class="kw">CREATE TABLE</span> notifications.notification_log (
+  notification_id STRING  <span class="kw">NOT NULL</span>,
+  rule_id         STRING,
+  entity_type     STRING,
+  entity_id       STRING,
+  channel         STRING,
+  recipient       STRING,
+  status          STRING,   <span class="cm">-- QUEUED|SENT|DELIVERED|READ|FAILED</span>
+  sent_at         TIMESTAMP,
+  delivered_at    TIMESTAMP,
+  read_at         TIMESTAMP,
+  failure_reason  STRING,
+  retry_count     INT64 <span class="kw">DEFAULT</span> 0
+);</pre>
+</section>
+
+<hr>
+
+<!-- ── AUTH ── -->
+<section id="auth">
+<h2>Authentication &amp; Authorisation — Okta</h2>
+
+<h3>Token Architecture</h3>
+<ul>
+  <li><strong>Access Token</strong>: 15-minute expiry, JWT, contains roles + scopes</li>
+  <li><strong>Refresh Token</strong>: 8-hour sliding window, rotated on use</li>
+  <li><strong>API Keys</strong>: Long-lived, rate-limited, SHA-256 hashed in DB</li>
+  <li><strong>Service Accounts</strong>: OAuth2 Client Credentials for machine-to-machine</li>
+</ul>
+
+<h3>Permission Model</h3>
+<pre>
+Permission format: {domain}:{action}
+
+  vessels:read    vessels:write    vessels:approve
+  ports:read      ports:write      ports:approve
+  companies:read  companies:write  companies:approve
+  compliance:read compliance:write compliance:approve
+  feeds:read      feeds:admin
+  users:admin
+  audit:read</pre>
+
+<h3>MFA Requirements</h3>
+<table>
+  <thead><tr><th>Role</th><th>MFA Required</th></tr></thead>
+  <tbody>
+    <tr><td>ADMIN</td><td style="color:var(--red)">Yes — enforced</td></tr>
+    <tr><td>FULL_ACCESS</td><td style="color:var(--red)">Yes — enforced</td></tr>
+    <tr><td>VESSEL_ANALYST</td><td style="color:var(--gold)">Yes — enforced</td></tr>
+    <tr><td>COMPLIANCE_OFFICER</td><td style="color:var(--gold)">Yes — enforced</td></tr>
+    <tr><td>READ_ONLY</td><td style="color:var(--green)">Recommended, not enforced</td></tr>
+    <tr><td>API_CONSUMER</td><td style="color:var(--blue2)">API Key (no MFA applicable)</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── MONITORING ── -->
+<section id="monitoring">
+<h2>Monitoring &amp; SLOs</h2>
+
+<h3>Observability Stack</h3>
+<div class="g2">
+  <div class="card card-blue"><strong>Metrics:</strong> GCP Cloud Monitoring + Datadog. CPU, memory, pod restarts, BigQuery slot utilisation, Pub/Sub subscriber lag, Elasticsearch cluster health.</div>
+  <div class="card card-green"><strong>Logs:</strong> Cloud Logging structured JSON → Log Analytics for querying → BigQuery export for long-term retention and correlation.</div>
+  <div class="card card-purple"><strong>Traces:</strong> Cloud Trace + OpenTelemetry. Distributed tracing across API gateway, application services, ETL pipelines, and search.</div>
+  <div class="card" style="border-color:rgba(255,82,82,.25);background:rgba(255,82,82,.05)"><strong>Alerts:</strong> GCP Alerting policies → PagerDuty on-call. Severity P1 (5min) through P4 (next business day). Runbook per alert ID.</div>
+</div>
+
+<h3>Service Level Objectives</h3>
+<table>
+  <thead><tr><th>Service</th><th>SLI</th><th>SLO</th><th>Window</th></tr></thead>
+  <tbody>
+    <tr><td>External API</td><td>% requests &lt; 500ms</td><td style="color:var(--green)">95%</td><td>30 days</td></tr>
+    <tr><td>External API</td><td>% requests not 5xx</td><td style="color:var(--green)">99.9%</td><td>30 days</td></tr>
+    <tr><td>Search (Elasticsearch)</td><td>% queries &lt; 300ms</td><td style="color:var(--green)">95%</td><td>30 days</td></tr>
+    <tr><td>Feed Ingestion</td><td>% feeds received in SLA window</td><td style="color:var(--green)">99%</td><td>30 days</td></tr>
+    <tr><td>ETL Pipeline</td><td>% daily jobs completing successfully</td><td style="color:var(--green)">99.5%</td><td>30 days</td></tr>
+    <tr><td>Data Freshness</td><td>% Gold records updated within 24h of source</td><td style="color:var(--green)">95%</td><td>Active vessels</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── AUDIT ── -->
+<section id="audit">
+<h2>Audit System</h2>
+<p>Append-only BigQuery table captures all material events across the platform. SHA-256 record hash provides tamper detection. Retention: 10 years.</p>
+<pre>
+<span class="kw">CREATE TABLE</span> bq_audit.audit_log (
+  audit_id     STRING     <span class="kw">NOT NULL</span>,
+  event_type   STRING     <span class="kw">NOT NULL</span>,  <span class="cm">-- DATA_CHANGE|USER_ACTION|API_ACCESS|AUTH|FEED</span>
+  event_ts     TIMESTAMP  <span class="kw">NOT NULL</span>,
+  actor_id     STRING,
+  actor_type   STRING,                <span class="cm">-- USER|SERVICE|SYSTEM</span>
+  actor_ip     STRING,
+  entity_type  STRING,
+  entity_id    STRING,
+  action       STRING,                <span class="cm">-- VIEW|CREATE|EDIT|APPROVE|REJECT|EXPORT</span>
+  before_state JSON,
+  after_state  JSON,
+  outcome      STRING,                <span class="cm">-- SUCCESS|FAILURE|PARTIAL</span>
+  record_hash  STRING                 <span class="cm">-- SHA-256 tamper detection</span>
+)
+<span class="kw">PARTITION BY</span> DATE(event_ts)
+<span class="kw">CLUSTER BY</span> event_type, entity_type, actor_id;</pre>
+</section>
+
+<!-- ── SECURITY ── -->
+<section id="security">
+<h2>Security &amp; Governance</h2>
+
+<h3>Security Controls</h3>
+<table>
+  <thead><tr><th>Control</th><th>Implementation</th></tr></thead>
+  <tbody>
+    <tr><td>Encryption at Rest</td><td>GCP CMEK (Cloud KMS) for BigQuery, GCS, Spanner</td></tr>
+    <tr><td>Encryption in Transit</td><td>TLS 1.3 enforced; no TLS &lt; 1.2 accepted</td></tr>
+    <tr><td>Column-Level Security</td><td>BigQuery column-level access policies on PII and financial fields</td></tr>
+    <tr><td>Row-Level Security</td><td>BigQuery row access policies for data product segmentation</td></tr>
+    <tr><td>VPC Service Controls</td><td>BigQuery and GCS in VPC perimeter (prevents data exfiltration)</td></tr>
+    <tr><td>WAF / DDoS</td><td>Cloud Armor on all external endpoints</td></tr>
+    <tr><td>Secret Management</td><td>Google Secret Manager; no secrets in code or config files</td></tr>
+    <tr><td>Container Scanning</td><td>Artifact Registry + Container Analysis on every build</td></tr>
+    <tr><td>DLP on Upload</td><td>Cloud DLP scans all file uploads for PII and malware</td></tr>
+    <tr><td>Pen Testing</td><td>Annual third-party penetration test; findings tracked to resolution</td></tr>
+  </tbody>
+</table>
+
+<h3>Data Governance</h3>
+<table>
+  <thead><tr><th>Practice</th><th>Implementation</th></tr></thead>
+  <tbody>
+    <tr><td>Data Catalog</td><td>GCP Dataplex — business glossary, schema docs, data ownership</td></tr>
+    <tr><td>Data Lineage</td><td>OpenLineage / Dataplex — feed → Bronze → Silver → Gold → Product</td></tr>
+    <tr><td>Data Classification</td><td>Tags: PUBLIC · INTERNAL · CONFIDENTIAL · RESTRICTED (PII / pricing)</td></tr>
+    <tr><td>Retention</td><td>Bronze: 7yr · Silver: 5yr · Gold: indefinite · Audit: 10yr</td></tr>
+    <tr><td>Access Reviews</td><td>Quarterly Okta group membership reviews with automated report</td></tr>
+    <tr><td>GDPR / CCPA</td><td>PII inventoried; right-to-erasure via soft-delete + audit</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── MIGRATION ── -->
+<section id="migration">
+<h2>Data Migration &amp; Backfill</h2>
+
+<h3>Scope</h3>
+<p>~1 TB of historical maritime data from legacy systems, flat files, and predecessor databases. Priority order: Vessels → Ports → Companies → Cargo → Events.</p>
+
+<h3>5-Phase Approach</h3>
+<table>
+  <thead><tr><th>Phase</th><th>Activity</th><th>Duration</th></tr></thead>
+  <tbody>
+    <tr><td>1 — Assessment</td><td>Source inventory, field mapping, data quality audit, volume estimate</td><td>2 weeks</td></tr>
+    <tr><td>2 — Tooling</td><td>Dataflow Beam templates, YAML field map configs, validation suite, dry-run environment</td><td>2 weeks</td></tr>
+    <tr><td>3 — Dry Run</td><td>10% sample migration, full validation, analyst spot-check, performance test</td><td>1 week</td></tr>
+    <tr><td>4 — Full Migration</td><td>Bronze push → Silver transform → Terahelix resolution → Gold bi-temporal backfill</td><td>4–6 weeks</td></tr>
+    <tr><td>5 — Validation</td><td>Row count reconciliation, key metric comparison, domain analyst sign-off, legacy decommission</td><td>1 week</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-green">All migration jobs are idempotent (SHA-256 row hash dedup). Source data is never modified. Legacy system runs in parallel until final sign-off. Rollback = re-run migration from Bronze.</div>
+</section>
+
+<!-- ── TECH STACK ── -->
+<section id="techstack">
+<h2>Technology Stack</h2>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th><th>Rationale</th></tr></thead>
+  <tbody>
+    <tr><td>Ingestion</td><td>D6 Platform + Cloud Run</td><td>Internal standard; all 200+ feed types</td></tr>
+    <tr><td>Message Bus</td><td>GCP Pub/Sub</td><td>Managed, serverless, millions of events/day</td></tr>
+    <tr><td>Analytical DB</td><td>BigQuery (Medallion)</td><td>Petabyte scale, native geospatial, BI Engine</td></tr>
+    <tr><td>Transactional</td><td>AlloyDB (PostgreSQL + PostGIS)</td><td>ACID transactions, advanced geospatial</td></tr>
+    <tr><td>Entity Resolution</td><td>Terahelix + Gearbox</td><td>S&P internal maritime standards</td></tr>
+    <tr><td>AI / ML</td><td>Vertex AI + BigQuery ML</td><td>Native GCP, nightly retraining pipeline</td></tr>
+    <tr><td>Search</td><td>Elasticsearch (Elastic Cloud GCP)</td><td>Maritime analyzers, geo-point, sub-200ms</td></tr>
+    <tr><td>Auth</td><td>Okta Workforce</td><td>Enterprise SSO, OIDC, SAML, MFA</td></tr>
+    <tr><td>API Gateway</td><td>Apigee</td><td>Rate limiting, developer portal</td></tr>
+    <tr><td>Frontend</td><td>React + Vite + TypeScript</td><td>Current platform; persona-driven</td></tr>
+    <tr><td>Analytics BI</td><td>Looker + BigQuery BI Engine</td><td>Native integration, self-service reporting</td></tr>
+    <tr><td>Files / CDN</td><td>GCS + Cloud CDN</td><td>Structured hierarchy, global delivery</td></tr>
+    <tr><td>Notifications</td><td>Pub/Sub + SendGrid + Slack API</td><td>Multi-channel, event-driven</td></tr>
+    <tr><td>Monitoring</td><td>Cloud Monitoring + Datadog + PagerDuty</td><td>Unified; on-call integration</td></tr>
+    <tr><td>Tracing</td><td>Cloud Trace + OpenTelemetry</td><td>Vendor-neutral instrumentation</td></tr>
+    <tr><td>IaC</td><td>Terraform</td><td>All GCP resources version-controlled</td></tr>
+    <tr><td>Data Governance</td><td>GCP Dataplex</td><td>Native lineage, quality, catalog</td></tr>
+    <tr><td>DW Delivery</td><td>Snowflake + Fivetran</td><td>Enterprise analytics, external sharing</td></tr>
+    <tr><td>Internal Fabric</td><td>GCP EDO-Fabric</td><td>S&P internal data distribution</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ── SCHEMAS ── -->
+<section id="schemas">
+<h2>Key Schema Quick Reference</h2>
+
+<h3>Domain Tables (Gold Layer)</h3>
+<table>
+  <thead><tr><th>Table</th><th>Primary Key</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>bq_gold.vessel_master</code></td><td>vessel_id + valid_from</td><td>Bi-temporal; GEOGRAPHY position; bi-temporal</td></tr>
+    <tr><td><code>bq_gold.company_master</code></td><td>company_id + valid_from</td><td>Includes subsidiary links via Gearbox</td></tr>
+    <tr><td><code>bq_gold.port_master</code></td><td>port_id + valid_from</td><td>GEOGRAPHY boundary polygon; UNLOCODE</td></tr>
+    <tr><td><code>bq_gold.movement_master</code></td><td>movement_id</td><td>Vessel voyage events; LineString route GeoJSON</td></tr>
+    <tr><td><code>bq_gold.inspection_master</code></td><td>inspection_id</td><td>PSC inspection records with deficiency list</td></tr>
+    <tr><td><code>bq_gold.compliance_event</code></td><td>event_id</td><td>Sanctions, flags, port state actions</td></tr>
+  </tbody>
+</table>
+
+<h3>Supporting Tables</h3>
+<table>
+  <thead><tr><th>Table</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>terahelix.identifier_registry</code></td><td>All external ID → canonical ID mappings</td></tr>
+    <tr><td><code>gearbox.entity_relationship</code></td><td>Temporal entity relationships</td></tr>
+    <tr><td><code>ai_engine.source_registry</code></td><td>Source priority, reliability, and coverage scores</td></tr>
+    <tr><td><code>bq_edit.change_set</code></td><td>Edit workflow — change set header</td></tr>
+    <tr><td><code>bq_edit.change_field</code></td><td>Edit workflow — field-level proposals</td></tr>
+    <tr><td><code>bq_gold.file_registry</code></td><td>Document and image metadata</td></tr>
+    <tr><td><code>notifications.notification_rule</code></td><td>Notification trigger rules</td></tr>
+    <tr><td><code>notifications.notification_log</code></td><td>Delivery tracking per notification</td></tr>
+    <tr><td><code>bq_audit.audit_log</code></td><td>Immutable audit trail — all events</td></tr>
+    <tr><td><code>d6.feed_registry</code></td><td>Feed configuration and routing</td></tr>
+  </tbody>
+</table>
+</section>
+
+<div style="height:60px"></div>
+</main>
+</div>
+
+<script>
+function scrollTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.side-link').forEach(l=>l.classList.remove('active'));
+  event.target.classList.add('active');
+}
+// Highlight active section on scroll
+const main=document.getElementById('main');
+const sections=document.querySelectorAll('section[id]');
+main.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{
+    if(s.offsetTop-main.scrollTop<200)cur=s.id;
+  });
+  document.querySelectorAll('.side-link').forEach(l=>{
+    l.classList.toggle('active',l.getAttribute('onclick')&&l.getAttribute('onclick').includes("'"+cur+"'"));
+  });
+});
+</script>
+</body>
+</html>
