@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vessel Schema — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#0D3A2E);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#34D399;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#34D399}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:760px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;color:#34D399}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;color:#6EE7B7;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(52,211,153,.07);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(52,211,153,.15);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(52,211,153,.04)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6EE7B7;font-weight:600}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.gen{font-size:9px;font-weight:700;background:rgba(251,146,60,.15);color:#FB923C;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(52,211,153,.04);border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose strong{color:#fff}
+.rule-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:12px 16px;font-size:11px;color:#FCA5A5;margin:8px 0 16px;font-family:'JetBrains Mono',monospace}
+.rule-box strong{color:#F87171}
+.partition-box{background:rgba(251,146,60,.05);border:1px solid rgba(251,146,60,.2);border-radius:6px;padding:14px 16px;margin:8px 0 16px}
+.partition-box h4{font-size:10px;font-weight:700;color:#FB923C;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.partition-table{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.8}
+.partition-table span{color:#34D399}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:240px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.mv-box{background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.2);border-radius:8px;padding:16px;margin-bottom:20px}
+.mv-box h4{font-size:12px;font-weight:700;color:#60A5FA;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.mv-col-group{margin-bottom:10px}
+.mv-col-group strong{font-size:10px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.mv-cols{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.9}
+.mv-cols span{color:#34D399}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#34D399;color:#000}.btn-pri:hover{background:#6EE7B7}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Vessel Schema</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_platform.html">← Platform</a>
+    <a href="schema_port.html">Next: Port →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Core Entity</div>
+  <h1>Vessel <span>Schema</span></h1>
+  <p class="sub">The most complex entity schema in the platform. Uses a three-layer data model: <strong>silver layer</strong> (<code>attr_value</code> — insert-only vendor data), <strong>gold layer</strong> (<code>master_value</code> — explicitly approved master record), and <strong>bronze layer</strong> (<code>raw_ingest</code>). Plus a high-volume AIS position stream, two materialized views, and a vessel-level source preference table. Values only enter master via an approved <code>workflow.promotion_request</code> or <code>workflow.edit_draft</code>.</p>
+</div>
+
+<div class="main">
+
+  <div class="badge-row">
+    <span class="badge">8 tables + 2 mat. views</span>
+    <span class="badge">Silver: attr_value — 11 partitions (yearly)</span>
+    <span class="badge">Gold: master_value — 11 partitions (yearly)</span>
+    <span class="badge">position: 10 partitions (quarterly)</span>
+    <span class="badge">insert-only attr_value &amp; master_value</span>
+    <span class="badge">PostGIS GIST index on position</span>
+    <span class="badge">CONCURRENT refresh</span>
+    <span class="badge">v_current reads from master_value</span>
+  </div>
+
+  <!-- entity -->
+  <h3>vessel.entity</h3>
+  <div class="purpose"><strong>Purpose:</strong> Anchor table — one row per vessel. The IMO number is the primary key and the universal join key across all vessel tables. All EAV values, positions, PSC inspections, voyages and market records reference imo_number here.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><span class="pk">PK</span></td><td>—</td><td>IMO number — 7-digit international vessel identifier. Universal join key.</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When vessel was first added to the platform</td></tr>
+        <tr><td class="col">first_seen_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When first data was received for this vessel (may differ from created_at if backdated)</td></tr>
+        <tr><td class="col">first_source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Data source that first reported this vessel</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- attr_value -->
+  <h3>vessel.attr_value <span style="font-size:11px;color:#7A9CBB;font-weight:400">— Silver Layer (vendor data)</span></h3>
+  <div class="purpose"><strong>Purpose:</strong> Bi-temporal EAV store for all raw vendor-sourced attribute values. Insert-only — no updates or deletes permitted (enforced by PostgreSQL RULE). Each row records one value from one source at one point in time. <strong>This table does NOT drive the UI</strong> — it is the vendor/source audit layer. The <code>workflow_state</code> here reflects QC status only (PENDING = QC running, APPROVED = QC passed, REJECTED = QC blocked). Promotion to master requires an explicit <code>workflow.promotion_request</code> approval; <code>vessel.v_current</code> now reads from <code>vessel.master_value</code>, not this table.</div>
+  <div class="rule-box">
+    <strong>INSERT-ONLY RULES (prevents data loss):</strong><br>
+    CREATE RULE vessel_av_no_update AS ON UPDATE TO vessel.attr_value DO INSTEAD NOTHING;<br>
+    CREATE RULE vessel_av_no_delete AS ON DELETE TO vessel.attr_value DO INSTEAD NOTHING;
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">av_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (auto-partitioned)</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute this value is for</td></tr>
+        <tr><td class="col">value_text</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Text value (used when attribute_def.data_type = 'text')</td></tr>
+        <tr><td class="col">value_numeric</td><td class="typ">NUMERIC(20,6)</td><td>NULLABLE</td><td>NULL</td><td>Numeric value (data_type = 'numeric') — high precision for DWT, speed, etc.</td></tr>
+        <tr><td class="col">value_boolean</td><td class="typ">BOOLEAN</td><td>NULLABLE</td><td>NULL</td><td>Boolean value (data_type = 'boolean') — scrubber, IGS, COW, etc.</td></tr>
+        <tr><td class="col">value_date</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Date value (data_type = 'date')</td></tr>
+        <tr><td class="col">value_json</td><td class="typ">JSONB</td><td>NULLABLE</td><td>NULL</td><td>Complex/nested value (data_type = 'json')</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Which data source provided this value</td></tr>
+        <tr><td class="col">source_ref</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>External reference: IHS record ID, S3 path, API response ID</td></tr>
+        <tr><td class="col">confidence</td><td class="typ">NUMERIC(4,3)</td><td><div class="cc">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>0.5</td><td>Source confidence weight (inherits from source_def.default_weight; can be overridden by source_attr_weight)</td></tr>
+        <tr><td class="col">valid_from</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td><strong>Bi-temporal:</strong> Start of real-world validity for this value</td></tr>
+        <tr><td class="col">valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td><strong>Bi-temporal:</strong> End of real-world validity (NULL = currently valid)</td></tr>
+        <tr><td class="col">sys_from</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td><strong>Bi-temporal:</strong> When this row was written to the system (partition key)</td></tr>
+        <tr><td class="col">sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td><strong>Bi-temporal:</strong> When this row was superseded in the system (NULL = current system view)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>PENDING | APPROVED | REJECTED | SUPERSEDED — controls which rows appear in v_current</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.edit_draft</span></div></td><td>NULL</td><td>Set for analyst-approved manual edits (PENDING rows)</td></tr>
+        <tr><td class="col">run_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→ingest.feed_run</span></div></td><td>NULL</td><td>ETL run that produced this row (full data lineage)</td></tr>
+        <tr><td class="col">qc_flags</td><td class="typ">TEXT[]</td><td>NULLABLE</td><td>NULL</td><td>Array of QC rule IDs that flagged this row during ingest</td></tr>
+        <tr><td class="col">qc_passed</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>FALSE if any BLOCK-severity QC rule failed</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (sys_from))</h4>
+    <div class="partition-table">
+      <span>vessel.attr_value_2020</span> → 2020-01-01 TO 2021-01-01<br>
+      <span>vessel.attr_value_2021</span> → 2021-01-01 TO 2022-01-01<br>
+      <span>vessel.attr_value_2022</span> → 2022-01-01 TO 2023-01-01<br>
+      <span>vessel.attr_value_2023</span> → 2023-01-01 TO 2024-01-01<br>
+      <span>vessel.attr_value_2024</span> → 2024-01-01 TO 2025-01-01<br>
+      <span>vessel.attr_value_2025</span> → 2025-01-01 TO 2026-01-01<br>
+      <span>vessel.attr_value_2026</span> → 2026-01-01 TO 2027-01-01<br>
+      <span>vessel.attr_value_2027</span> → 2027-01-01 TO 2028-01-01<br>
+      <span>vessel.attr_value_2028</span> → 2028-01-01 TO 2029-01-01<br>
+      <span>vessel.attr_value_2029</span> → 2029-01-01 TO 2030-01-01<br>
+      <span>vessel.attr_value_overflow</span> → DEFAULT (catch-all for future years)
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on vessel.attr_value</h4>
+    <div class="idx-row"><span class="idx-name">idx_vav_imo_attr</span><span class="idx-def">(imo_number, attr_id) — baseline lookup per vessel+attribute</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vav_current</span><span class="idx-def">(imo_number, attr_id, confidence DESC) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — current value fast path</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vav_run</span><span class="idx-def">(run_id) WHERE run_id IS NOT NULL — lineage query per ETL run</span></div>
+  </div>
+
+  <!-- master_value -->
+  <h3>vessel.master_value <span style="font-size:11px;color:#7A9CBB;font-weight:400">— Gold Layer (master record)</span></h3>
+  <div class="purpose"><strong>Purpose:</strong> The explicitly curated golden record for vessel attributes. A row enters here only via: (a) an APPROVED <code>workflow.promotion_request</code> → entry_type VENDOR_PROMOTED or CONFLICT_RESOLVED; (b) an APPROVED <code>workflow.edit_draft</code> → entry_type MANUAL_ENTRY or BACKDATED. Insert-only: supersede a row by setting its <code>sys_to</code> / <code>valid_to</code> before inserting the replacement. <code>vessel.v_current</code> is built exclusively from this table. Full provenance is maintained via <code>source_av_id</code> (back-link to the vendor row) and <code>pr_id</code> / <code>draft_id</code>.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">mv_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (auto-partitioned)</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this master value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute this master value is for</td></tr>
+        <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">various</td><td>NULLABLE</td><td>NULL</td><td>The approved master value in the appropriate typed column</td></tr>
+        <tr><td class="col">entry_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>VENDOR_PROMOTED | MANUAL_ENTRY | BACKDATED | CONFLICT_RESOLVED — how this value entered master</td></tr>
+        <tr><td class="col">source_av_id</td><td class="typ">BIGINT</td><td>NULLABLE</td><td>NULL</td><td>Back-reference to <code>vessel.attr_value.av_id</code> when entry_type = VENDOR_PROMOTED. No FK — cross-partition.</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Originating vendor (NULL for MANUAL_ENTRY)</td></tr>
+        <tr><td class="col">pr_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.promotion_request</span></div></td><td>NULL</td><td>The promotion request that approved this value entering master</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.edit_draft</span></div></td><td>NULL</td><td>The edit draft that approved this manual/backdated entry</td></tr>
+        <tr><td class="col">entered_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>auth.app_user.user_id who entered/promoted this value</td></tr>
+        <tr><td class="col">approved_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>auth.app_user.user_id who approved the promotion</td></tr>
+        <tr><td class="col">valid_from</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td><strong>Bi-temporal:</strong> Start of real-world validity. Can be set to a past date for backdated entries.</td></tr>
+        <tr><td class="col">valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td><strong>Bi-temporal:</strong> End of real-world validity (NULL = currently valid)</td></tr>
+        <tr><td class="col">sys_from</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td><strong>Bi-temporal:</strong> When this row was written (partition key)</td></tr>
+        <tr><td class="col">sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td><strong>Bi-temporal:</strong> When this row was superseded (NULL = current master)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>APPROVED | SUPERSEDED | REJECTED — drives v_current JOIN filter</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (sys_from)) — mirrors attr_value partition schedule</h4>
+    <div class="partition-table">
+      <span>vessel.master_value_2020–2029</span> → yearly (2020-01-01 TO 2030-01-01)<br>
+      <span>vessel.master_value_overflow</span> → DEFAULT
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on vessel.master_value</h4>
+    <div class="idx-row"><span class="idx-name">idx_vmv_imo_attr</span><span class="idx-def">(imo_number, attr_id) — lookup per vessel+attribute across all partitions</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vmv_current</span><span class="idx-def">(imo_number, attr_id) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — v_current fast path</span></div>
+  </div>
+
+  <!-- attr_source_preference -->
+  <h3>vessel.attr_source_preference</h3>
+  <div class="purpose"><strong>Purpose:</strong> Vessel-level source trust preference. Records which data vendor a user prefers for a specific attribute on a specific vessel. Used by the confidence scoring engine when generating <code>workflow.promotion_request</code> records — it boosts the preferred vendor's request to appear first in the review queue. <strong>Does NOT auto-promote</strong>: it is a hint only. Overrides the global <code>registry.source_attr_weight</code> for this vessel+attribute combination.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this preference applies to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Attribute this preference applies to</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Preferred vendor for this vessel+attribute</td></tr>
+        <tr><td class="col">weight_override</td><td class="typ">NUMERIC(4,3)</td><td><div class="cc">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>1.0</td><td>Confidence weight to apply when scoring promotion_requests for this source+vessel+attribute</td></tr>
+        <tr><td class="col">set_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>auth.app_user.user_id who set this preference</td></tr>
+        <tr><td class="col">set_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When preference was last updated</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- raw_ingest -->
+  <h3>vessel.raw_ingest</h3>
+  <div class="purpose"><strong>Purpose:</strong> Bronze layer — raw feed payloads stored before parsing. Every ingest run writes the raw JSON/CSV here first, then maps to attr_value. Allows full replay of historical data if mapping rules change. Partitioned by quarter for efficient pruning.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">raw_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span> (+ received_at)</td><td>—</td><td>Composite PK with received_at for partitioning</td></tr>
+        <tr><td class="col">feed_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→ingest.feed_config</span></div></td><td>—</td><td>Which feed produced this raw payload</td></tr>
+        <tr><td class="col">run_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→ingest.feed_run</span></div></td><td>—</td><td>ETL run that received this payload</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td>NULLABLE</td><td>NULL</td><td>IMO extracted from payload (NULL if could not be parsed)</td></tr>
+        <tr><td class="col">received_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL <span class="pk">PK</span></td><td>NOW()</td><td>Partition key — exact receipt time</td></tr>
+        <tr><td class="col">raw_payload</td><td class="typ">JSONB</td><td>NOT NULL</td><td>—</td><td>Full raw payload (JSON, parsed XML, or CSV row as JSON object)</td></tr>
+        <tr><td class="col">parse_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | MAPPED | PARTIAL | REJECTED</td></tr>
+        <tr><td class="col">parse_errors</td><td class="typ">JSONB</td><td>NULLABLE</td><td>NULL</td><td>Field-level parse errors with paths and messages</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (received_at) — quarterly)</h4>
+    <div class="partition-table">
+      <span>vessel.raw_ingest_2024_q1</span> → 2024-01-01 TO 2024-04-01 &nbsp;·&nbsp;
+      <span>vessel.raw_ingest_2024_q2</span> → Q2 &nbsp;·&nbsp;
+      <span>vessel.raw_ingest_2024_q3</span> → Q3 &nbsp;·&nbsp;
+      <span>vessel.raw_ingest_2024_q4</span> → Q4<br>
+      <span>vessel.raw_ingest_2025_q1–q4</span> → Same pattern for 2025<br>
+      <span>vessel.raw_ingest_2026_q1</span> → 2026-01-01 TO 2026-04-01<br>
+      <span>vessel.raw_ingest_overflow</span> → DEFAULT
+    </div>
+  </div>
+
+  <!-- position -->
+  <h3>vessel.position</h3>
+  <div class="purpose"><strong>Purpose:</strong> High-volume AIS position stream. NOT EAV — each row is one position report from one AIS receiver. Partitioned by quarter. The <code>vessel.latest_position</code> materialized view deduplicates to one row per IMO for fast map rendering. Source: ais_positions.json (dev data) → live AIS feeds (Orbcomm, exactEarth, Spire).</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">pos_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span> (+ position_ts)</td><td>—</td><td>Composite PK with position_ts for partitioning</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel that reported this position</td></tr>
+        <tr><td class="col">mmsi</td><td class="typ">CHAR(9)</td><td>NULLABLE</td><td>NULL</td><td>MMSI from AIS message (may differ from vessel.attr_value MMSI if transponder changed)</td></tr>
+        <tr><td class="col">latitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc">NOT NULL <span class="ck">CHECK -90–90</span></div></td><td>—</td><td>WGS-84 latitude in decimal degrees</td></tr>
+        <tr><td class="col">longitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc">NOT NULL <span class="ck">CHECK -180–180</span></div></td><td>—</td><td>WGS-84 longitude in decimal degrees</td></tr>
+        <tr><td class="col">geom</td><td class="typ">GEOMETRY(Point, 4326)</td><td>NULLABLE</td><td>NULL</td><td>PostGIS point geometry (SRID 4326) for spatial queries and GIST index</td></tr>
+        <tr><td class="col">speed_kn</td><td class="typ">NUMERIC(5,2)</td><td>NULLABLE</td><td>NULL</td><td>Speed over ground in knots</td></tr>
+        <tr><td class="col">course_deg</td><td class="typ">NUMERIC(6,2)</td><td>NULLABLE</td><td>NULL</td><td>Course over ground in degrees (0–360)</td></tr>
+        <tr><td class="col">heading_deg</td><td class="typ">NUMERIC(6,2)</td><td>NULLABLE</td><td>NULL</td><td>Vessel heading in degrees (0–360)</td></tr>
+        <tr><td class="col">nav_status</td><td class="typ">SMALLINT</td><td>NULLABLE</td><td>NULL</td><td>AIS navigational status code (0=underway, 1=at anchor, 5=moored, 15=not defined)</td></tr>
+        <tr><td class="col">draught_m</td><td class="typ">NUMERIC(4,2)</td><td>NULLABLE</td><td>NULL</td><td>Current draught in metres (from AIS message type 5)</td></tr>
+        <tr><td class="col">destination</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Destination as reported via AIS (free text, up to 20 chars in AIS spec)</td></tr>
+        <tr><td class="col">eta</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>ETA as reported via AIS (unreliable — vessel-entered)</td></tr>
+        <tr><td class="col">position_ts</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL <span class="pk">PK</span></td><td>—</td><td>Timestamp of the position fix (partition key)</td></tr>
+        <tr><td class="col">received_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When our system received the AIS message (may lag position_ts)</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>AIS provider (Orbcomm, exactEarth, Spire, Datalastic)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (position_ts) — quarterly)</h4>
+    <div class="partition-table">
+      <span>vessel.position_2024_q1–q4</span> → 2024 quarters<br>
+      <span>vessel.position_2025_q1–q4</span> → 2025 quarters<br>
+      <span>vessel.position_2026_q1</span> → 2026-01-01 TO 2026-04-01<br>
+      <span>vessel.position_overflow</span> → DEFAULT
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on vessel.position</h4>
+    <div class="idx-row"><span class="idx-name">idx_vpos_imo_ts</span><span class="idx-def">(imo_number, position_ts DESC) — time-series position history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vpos_geom</span><span class="idx-def">GIST (geom) — spatial queries (bounding box, radius, within area)</span></div>
+  </div>
+
+  <!-- Mat Views -->
+  <h2><span class="sc">vessel</span> Materialized Views</h2>
+
+  <h3>vessel.latest_position (Materialized View)</h3>
+  <div class="purpose"><strong>Purpose:</strong> DISTINCT ON (imo_number) deduplicated view of the most recent position per vessel. Refreshed CONCURRENTLY after each AIS ingest run. Used by GisAis.jsx and the vessel list for live position display. Contains a GIST index for spatial queries.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Source</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">imo_number</td><td class="typ">DISTINCT ON</td><td>Unique index key — one row per vessel</td></tr>
+        <tr><td class="col">mmsi</td><td class="typ">vessel.position</td><td>Most recent MMSI from AIS</td></tr>
+        <tr><td class="col">latitude / longitude</td><td class="typ">vessel.position</td><td>WGS-84 coordinates of latest position</td></tr>
+        <tr><td class="col">geom</td><td class="typ">vessel.position</td><td>PostGIS Point for spatial operations (GIST indexed)</td></tr>
+        <tr><td class="col">speed_kn / course_deg / heading_deg</td><td class="typ">vessel.position</td><td>Latest AIS kinematics</td></tr>
+        <tr><td class="col">nav_status / draught_m</td><td class="typ">vessel.position</td><td>Navigational status and current draught</td></tr>
+        <tr><td class="col">destination / eta</td><td class="typ">vessel.position</td><td>Self-reported destination and ETA</td></tr>
+        <tr><td class="col">position_ts</td><td class="typ">vessel.position</td><td>Timestamp of the latest position fix</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">vessel.position</td><td>AIS provider for this latest position</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>vessel.v_current (Materialized View)</h3>
+  <div class="purpose"><strong>Purpose:</strong> Wide, pivoted, current-state view of the <strong>master record</strong>. Reads exclusively from <code>vessel.master_value</code> (gold layer) — only values that have been explicitly approved appear here. Column aliases exactly match <code>vessels.js</code> VESSELS property names so the API layer needs zero field remapping. Refreshed CONCURRENTLY after each ingest+promotion cycle via <code>registry.refresh_all_current_views()</code>. For vendor comparison across multiple sources, query <code>vessel.attr_value</code> directly.</div>
+  <div class="mv-box">
+    <h4>v_current Column Groups (pivoted from master_value using CASE WHEN attr_key = '...' THEN ...)</h4>
+    <div class="mv-col-group">
+      <strong>Identity (vessels.js: nm, imo, mmsi, cs, fn, fl, ty, st, up)</strong>
+      <div class="mv-cols">
+        <span>nm</span> = vessel_name &nbsp;·&nbsp; <span>imo</span> = imo_number &nbsp;·&nbsp; <span>mmsi</span> = mmsi_number &nbsp;·&nbsp; <span>cs</span> = call_sign &nbsp;·&nbsp; <span>fn</span> = flag_name &nbsp;·&nbsp; <span>fl</span> = flag_code &nbsp;·&nbsp; <span>ty</span> = vessel_type &nbsp;·&nbsp; <span>st</span> = vessel_status &nbsp;·&nbsp; <span>up</span> = last_updated
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Dimensions (vessels.js: loa, lbp, beam, depth, maxDraft, sumDraft)</strong>
+      <div class="mv-cols">
+        <span>loa_m</span> &nbsp;·&nbsp; <span>lbp_m</span> &nbsp;·&nbsp; <span>beam_m</span> &nbsp;·&nbsp; <span>depth_m</span> &nbsp;·&nbsp; <span>max_draft_m</span> &nbsp;·&nbsp; <span>summer_draft_m</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Tonnage (vessels.js: dwt, gt, nt)</strong>
+      <div class="mv-cols">
+        <span>dwt_mt</span> &nbsp;·&nbsp; <span>gt</span> &nbsp;·&nbsp; <span>nt</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Construction (vessels.js: yr, yard, hn, builtYard)</strong>
+      <div class="mv-cols">
+        <span>yr</span> = year_built &nbsp;·&nbsp; <span>yard</span> = shipyard &nbsp;·&nbsp; <span>hn</span> = hull_number &nbsp;·&nbsp; <span>built_yard_cc</span> = build_country_code
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Machinery (vessels.js: eng, mcr, spd, fuel, prp)</strong>
+      <div class="mv-cols">
+        <span>eng</span> = main_engine &nbsp;·&nbsp; <span>mcr_kw</span> &nbsp;·&nbsp; <span>spd_kn</span> = service_speed &nbsp;·&nbsp; <span>fuel</span> = fuel_type &nbsp;·&nbsp; <span>prp</span> = propulsion_type
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Classification (vessels.js: cls, clsNot, ice, dp)</strong>
+      <div class="mv-cols">
+        <span>cls</span> = class_society &nbsp;·&nbsp; <span>cls_not</span> = class_notation &nbsp;·&nbsp; <span>ice</span> = ice_class &nbsp;·&nbsp; <span>dp</span> = dp_class
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Ownership (vessels.js: ow, bo, op, mg, pi)</strong>
+      <div class="mv-cols">
+        <span>ow</span> = registered_owner &nbsp;·&nbsp; <span>bo</span> = beneficial_owner &nbsp;·&nbsp; <span>op</span> = commercial_operator &nbsp;·&nbsp; <span>mg</span> = technical_manager &nbsp;·&nbsp; <span>pi</span> = pi_club
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Safety &amp; Green Tech (vessels.js: scrubberFitted, igs, cow, bowDisch, sternDisch, heli, bwmp, ffCap)</strong>
+      <div class="mv-cols">
+        <span>scrubber_fitted</span> &nbsp;·&nbsp; <span>igs</span> &nbsp;·&nbsp; <span>cow</span> &nbsp;·&nbsp; <span>bow_disch</span> &nbsp;·&nbsp; <span>stern_disch</span> &nbsp;·&nbsp; <span>heli</span> &nbsp;·&nbsp; <span>bwmp</span> &nbsp;·&nbsp; <span>ff_cap</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Cargo (vessels.js: teu, teu_r, ceu, pax, holds, hatches, lanm)</strong>
+      <div class="mv-cols">
+        <span>teu</span> &nbsp;·&nbsp; <span>teu_r</span> = teu_reefer &nbsp;·&nbsp; <span>ceu</span> = car_units &nbsp;·&nbsp; <span>pax</span> = passengers &nbsp;·&nbsp; <span>holds</span> &nbsp;·&nbsp; <span>hatches</span> &nbsp;·&nbsp; <span>lanm</span> = lane_metres
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Current Position (from vessel.latest_position JOIN)</strong>
+      <div class="mv-cols">
+        <span>lat</span> &nbsp;·&nbsp; <span>lon</span> &nbsp;·&nbsp; <span>sog</span> = speed_kn &nbsp;·&nbsp; <span>cog</span> = course_deg &nbsp;·&nbsp; <span>nav_status</span> &nbsp;·&nbsp; <span>destination</span> &nbsp;·&nbsp; <span>eta</span> &nbsp;·&nbsp; <span>last_position_ts</span>
+      </div>
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on vessel.v_current (all partial expression indexes)</h4>
+    <div class="idx-row"><span class="idx-name">UNIQUE (imo_number)</span><span class="idx-def">— enforces single row per vessel; enables CONCURRENT refresh</span></div>
+    <div class="idx-row"><span class="idx-name">(ty)</span><span class="idx-def">— vessel type filter</span></div>
+    <div class="idx-row"><span class="idx-name">(fn)</span><span class="idx-def">— flag name filter</span></div>
+    <div class="idx-row"><span class="idx-name">(st)</span><span class="idx-def">— vessel status filter</span></div>
+    <div class="idx-row"><span class="idx-name">(dwt_mt)</span><span class="idx-def">— DWT range filter</span></div>
+    <div class="idx-row"><span class="idx-name">(cls)</span><span class="idx-def">— class society filter</span></div>
+    <div class="idx-row"><span class="idx-name">(ow)</span><span class="idx-def">— owner filter</span></div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — vessel Schema (three-layer data model)</h4>
+    <svg width="980" height="560" viewBox="0 0 980 560" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- vessel.entity (center) -->
+      <g>
+        <rect x="380" y="200" width="200" height="90" rx="6" fill="#0D3A2E" stroke="#34D399" stroke-width="2"/>
+        <rect x="380" y="200" width="200" height="26" rx="6" fill="#34D399" fill-opacity=".2"/>
+        <text x="480" y="218" text-anchor="middle" fill="#34D399" font-weight="700" font-size="12">vessel.entity</text>
+        <text x="390" y="241" fill="#FF9900" font-size="9">PK</text><text x="410" y="241" fill="#93B8D8">imo_number CHAR(7)</text>
+        <text x="390" y="256" fill="#60A5FA" font-size="9">FK</text><text x="410" y="256" fill="#93B8D8">first_source_id → source_def</text>
+        <text x="390" y="271" fill="#93B8D8" font-size="9">   created_at, first_seen_at</text>
+      </g>
+      <!-- vessel.attr_value (silver) -->
+      <g>
+        <rect x="20" y="170" width="230" height="175" rx="6" fill="#0D3A2E" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="20" y="170" width="230" height="26" rx="6" fill="#FB923C" fill-opacity=".15"/>
+        <text x="135" y="188" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">vessel.attr_value  (silver)</text>
+        <text x="30" y="210" fill="#FF9900" font-size="9">PK</text><text x="50" y="210" fill="#93B8D8">av_id BIGSERIAL</text>
+        <text x="30" y="224" fill="#60A5FA" font-size="9">FK</text><text x="50" y="224" fill="#93B8D8">imo_number → entity</text>
+        <text x="30" y="238" fill="#60A5FA" font-size="9">FK</text><text x="50" y="238" fill="#93B8D8">source_id → source_def</text>
+        <text x="30" y="252" fill="#93B8D8" font-size="9">   value_text/numeric/bool/date/json</text>
+        <text x="30" y="266" fill="#93B8D8" font-size="9">   valid_from/to · sys_from/to</text>
+        <text x="30" y="280" fill="#93B8D8" font-size="9">   workflow_state (QC status only)</text>
+        <text x="30" y="294" fill="#93B8D8" font-size="9">   confidence · run_id FK</text>
+        <text x="30" y="308" fill="#F87171" font-size="9">   INSERT-ONLY (RULE) · 11 partitions</text>
+        <text x="30" y="322" fill="#FB923C" font-size="9">   Vendor data — does NOT drive UI</text>
+      </g>
+      <!-- vessel.master_value (gold) -->
+      <g>
+        <rect x="20" y="390" width="230" height="155" rx="6" fill="#0D3A2E" stroke="#FFD700" stroke-width="1.5"/>
+        <rect x="20" y="390" width="230" height="26" rx="6" fill="#FFD700" fill-opacity=".12"/>
+        <text x="135" y="408" text-anchor="middle" fill="#FFD700" font-weight="700" font-size="11">vessel.master_value  (gold)</text>
+        <text x="30" y="430" fill="#FF9900" font-size="9">PK</text><text x="50" y="430" fill="#93B8D8">mv_id BIGSERIAL</text>
+        <text x="30" y="444" fill="#60A5FA" font-size="9">FK</text><text x="50" y="444" fill="#93B8D8">imo_number → entity</text>
+        <text x="30" y="458" fill="#93B8D8" font-size="9">   entry_type CK (4 values)</text>
+        <text x="30" y="472" fill="#93B8D8" font-size="9">   source_av_id (back-link, no FK)</text>
+        <text x="30" y="486" fill="#60A5FA" font-size="9">FK</text><text x="50" y="486" fill="#93B8D8">pr_id → promotion_request</text>
+        <text x="30" y="500" fill="#93B8D8" font-size="9">   valid_from/to · sys_from/to</text>
+        <text x="30" y="514" fill="#FFD700" font-size="9">   workflow_state=APPROVED → v_current</text>
+        <text x="30" y="528" fill="#F87171" font-size="9">   INSERT-ONLY · 11 partitions</text>
+      </g>
+      <!-- vessel.attr_source_preference -->
+      <g>
+        <rect x="390" y="400" width="215" height="100" rx="6" fill="#0D3A2E" stroke="#A78BFA" stroke-width="1.5"/>
+        <rect x="390" y="400" width="215" height="26" rx="6" fill="#A78BFA" fill-opacity=".12"/>
+        <text x="497" y="418" text-anchor="middle" fill="#A78BFA" font-weight="700" font-size="10">vessel.attr_source_preference</text>
+        <text x="400" y="440" fill="#FF9900" font-size="9">PK</text><text x="420" y="440" fill="#93B8D8">imo_number FK + attr_id FK</text>
+        <text x="400" y="454" fill="#60A5FA" font-size="9">FK</text><text x="420" y="454" fill="#93B8D8">source_id → source_def</text>
+        <text x="400" y="468" fill="#93B8D8" font-size="9">   weight_override (0–1)</text>
+        <text x="400" y="482" fill="#A78BFA" font-size="9">   Confidence hint only · no auto-promote</text>
+      </g>
+      <!-- vessel.position -->
+      <g>
+        <rect x="700" y="170" width="240" height="165" rx="6" fill="#0D3A2E" stroke="#34D399" stroke-width="1.5"/>
+        <rect x="700" y="170" width="240" height="26" rx="6" fill="#34D399" fill-opacity=".15"/>
+        <text x="820" y="188" text-anchor="middle" fill="#34D399" font-weight="700" font-size="11">vessel.position</text>
+        <text x="710" y="210" fill="#FF9900" font-size="9">PK</text><text x="730" y="210" fill="#93B8D8">pos_id + position_ts</text>
+        <text x="710" y="224" fill="#60A5FA" font-size="9">FK</text><text x="730" y="224" fill="#93B8D8">imo_number → entity</text>
+        <text x="710" y="238" fill="#93B8D8" font-size="9">   lat/lon/geom ←GIST</text>
+        <text x="710" y="252" fill="#93B8D8" font-size="9">   speed_kn, course_deg</text>
+        <text x="710" y="266" fill="#93B8D8" font-size="9">   nav_status, destination, eta</text>
+        <text x="710" y="280" fill="#93B8D8" font-size="9">   source_id FK</text>
+        <text x="710" y="294" fill="#93B8D8" font-size="9">   10 quarterly partitions</text>
+      </g>
+      <!-- vessel.raw_ingest -->
+      <g>
+        <rect x="390" y="330" width="200" height="55" rx="6" fill="#0D3A2E" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="390" y="330" width="200" height="22" rx="6" fill="#FB923C" fill-opacity=".1"/>
+        <text x="490" y="346" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">vessel.raw_ingest</text>
+        <text x="400" y="362" fill="#93B8D8" font-size="9">   raw_payload JSONB · 10 quarterly partitions</text>
+      </g>
+      <!-- vessel.latest_position MAT VIEW -->
+      <g>
+        <rect x="700" y="20" width="240" height="70" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="820" y="38" text-anchor="middle" fill="#4A9EFF" font-size="10" font-weight="700">latest_position (MAT VIEW)</text>
+        <text x="710" y="55" fill="#93B8D8" font-size="9">   DISTINCT ON (imo_number)</text>
+        <text x="710" y="69" fill="#4A9EFF" font-size="9">   UNIQUE(imo_number) · GIST(geom)</text>
+      </g>
+      <!-- vessel.v_current MAT VIEW -->
+      <g>
+        <rect x="20" y="20" width="260" height="90" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="150" y="38" text-anchor="middle" fill="#4A9EFF" font-size="10" font-weight="700">vessel.v_current (MAT VIEW)</text>
+        <text x="30" y="55" fill="#93B8D8" font-size="9">   Reads from master_value (gold layer)</text>
+        <text x="30" y="69" fill="#93B8D8" font-size="9">   MAX(CASE WHEN attr_key='...' THEN ...)</text>
+        <text x="30" y="83" fill="#4A9EFF" font-size="9">   + latest_position JOIN · 7 indexes</text>
+      </g>
+      <!-- Arrows -->
+      <!-- attr_value → entity -->
+      <line x1="250" y1="255" x2="380" y2="245" stroke="#FB923C" stroke-width="1.5" marker-end="url(#arrV)"/>
+      <!-- position → entity -->
+      <line x1="700" y1="245" x2="580" y2="245" stroke="#34D399" stroke-width="1.5" marker-end="url(#arrV)"/>
+      <!-- raw_ingest → entity -->
+      <line x1="490" y1="330" x2="490" y2="290" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrV)"/>
+      <!-- master_value → entity (via imo_number) -->
+      <line x1="250" y1="470" x2="380" y2="290" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="5,2" marker-end="url(#arrV)"/>
+      <!-- attr_source_preference → entity -->
+      <line x1="490" y1="400" x2="490" y2="290" stroke="#A78BFA" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrV)"/>
+      <!-- master_value → v_current -->
+      <line x1="135" y1="390" x2="135" y2="110" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrV)"/>
+      <!-- position → latest_position -->
+      <line x1="820" y1="170" x2="820" y2="90" stroke="#4A9EFF" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrV)"/>
+      <defs>
+        <marker id="arrV" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#34D399" opacity=".8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_platform.html">← Platform Schemas</a>
+    <a class="nav-btn btn-pri" href="schema_port.html">Next: Port Schema →</a>
+  </div>
+</div>
+</body>
+</html>

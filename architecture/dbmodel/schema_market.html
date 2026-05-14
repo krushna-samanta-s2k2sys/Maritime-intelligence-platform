@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market &amp; Geo Schemas — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#0D200D);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#34D399;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#34D399}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:760px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace}
+h2 .market{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34D399}
+h2 .geo{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);color:#38BDF8}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+h3.market{color:#6EE7B7}
+h3.geo{color:#7DD3FC}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(52,211,153,.06);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(52,211,153,.12);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(52,211,153,.03)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6EE7B7;font-weight:600}
+td.col.geo{color:#7DD3FC}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.gen{font-size:9px;font-weight:700;background:rgba(251,146,60,.15);color:#FB923C;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(52,211,153,.04);border-left:3px solid #34D399;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose.geo{background:rgba(56,189,248,.04);border-left-color:#38BDF8}
+.purpose strong{color:#fff}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:250px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#34D399;color:#000}.btn-pri:hover{background:#6EE7B7}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+.divider{height:1px;background:rgba(255,255,255,.07);margin:36px 0}
+.function-box{background:rgba(74,158,255,.04);border:1px solid rgba(74,158,255,.15);border-radius:8px;padding:16px;margin:24px 0}
+.function-box h4{font-size:11px;font-weight:700;color:#60A5FA;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.function-box pre{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8AACCC;line-height:1.7;overflow-x:auto}
+.function-box pre span{color:#34D399}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Market &amp; Geo</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_voyage.html">← Voyage</a>
+    <a href="index.html">← Hub</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Domain Schemas</div>
+  <h1>Market &amp; <span>Geo</span> Schemas</h1>
+  <p class="sub">The <strong>market</strong> schema stores freight indices (BDI, BDTI, BCTI, BLNG), route benchmark values, spot fixture reports, time-charter contracts and vessel valuations — all sourced from Clarksons, Baltic Exchange and broker networks. The <strong>geo</strong> schema provides quasi-static GIS reference data: maritime chokepoints and PSC MOU patrol zone polygons.</p>
+</div>
+
+<div class="main">
+  <div class="badge-row">
+    <span class="badge">9 tables total</span>
+    <span class="badge">market: fixtures, TC contracts, benchmarks, valuations</span>
+    <span class="badge">geo: PostGIS Point + Polygon geometries</span>
+    <span class="badge">GENERATED lat/lon from geom</span>
+    <span class="badge">2 utility functions in registry schema</span>
+  </div>
+
+  <!-- ═══════ market ═══════ -->
+  <h2><span class="sc market">market</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Freight indices, fixtures, rates, valuations</span></h2>
+
+  <h3 class="market">market.index_definition</h3>
+  <div class="purpose"><strong>Purpose:</strong> Freight index definitions — one row per index. Mirrors market_indices.json "code" and "name" fields. Includes display metadata (color, description) used by the Market page charting components. Index codes: BDI, BDTI, BCTI, BCI, BLNG, BPGX, CCFI etc.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">index_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">index_code</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>Short machine code: 'BDI', 'BDTI', 'BCTI', 'BLNG', 'BCI', 'BPGX'</td></tr>
+        <tr><td class="col">index_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Full name: 'Baltic Dry Index', 'Baltic Dirty Tanker Index'</td></tr>
+        <tr><td class="col">index_type</td><td class="typ">VARCHAR(30)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>DRY | TANKER | LNG | LPG | CONTAINER | COMPOSITE</td></tr>
+        <tr><td class="col">provider</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Publishing body (e.g. 'Baltic Exchange', 'Shanghai Shipping Exchange')</td></tr>
+        <tr><td class="col">unit</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>NULL</td><td>Value unit (e.g. 'points', '$/day', 'WS')</td></tr>
+        <tr><td class="col">color</td><td class="typ">VARCHAR(40)</td><td>NULLABLE</td><td>NULL</td><td>CSS color for chart rendering (matches market_indices.json "color", e.g. 'var(--blue)')</td></tr>
+        <tr><td class="col">description</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Index description for tooltip/info panels (matches market_indices.json "description")</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Controls whether index appears on the Market page</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="market">market.index_value</h3>
+  <div class="purpose"><strong>Purpose:</strong> Daily index values — one row per index per date. Mirrors market_indices.json "value", "prev", "w52_low", "w52_high", "sparkline" fields. sparkline is stored as a NUMERIC[] array (15 values for the mini-chart). Unique constraint on (index_id, value_date) prevents duplicate days.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">value_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">index_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→index_definition</span></div></td><td>—</td><td>Which index this value belongs to</td></tr>
+        <tr><td class="col">value_date</td><td class="typ">DATE</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE(index_id, date)</span></div></td><td>—</td><td>Date of the index observation</td></tr>
+        <tr><td class="col">value</td><td class="typ">NUMERIC(12,4)</td><td>NOT NULL</td><td>—</td><td>Index value on this date (matches market_indices.json "value")</td></tr>
+        <tr><td class="col">prev_value</td><td class="typ">NUMERIC(12,4)</td><td>NULLABLE</td><td>NULL</td><td>Previous day value (matches market_indices.json "prev")</td></tr>
+        <tr><td class="col">daily_change / pct_change</td><td class="typ">NUMERIC(10,4) / NUMERIC(8,4)</td><td>NULLABLE</td><td>NULL</td><td>Absolute and percentage change from previous day</td></tr>
+        <tr><td class="col">direction</td><td class="typ">VARCHAR(4)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>up | down | flat — drives arrow indicator in Market page</td></tr>
+        <tr><td class="col">w52_low / w52_high</td><td class="typ">NUMERIC(12,4)</td><td>NULLABLE</td><td>NULL</td><td>52-week range (matches market_indices.json "w52_low"/"w52_high")</td></tr>
+        <tr><td class="col">sparkline</td><td class="typ">NUMERIC(8,2)[]</td><td>NULLABLE</td><td>NULL</td><td>15-value array for mini sparkline chart (matches market_indices.json "sparkline")</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Baltic Exchange, SSE, etc.</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_miv_index_date</span><span class="idx-def">(index_id, value_date DESC) — time-series chart data per index</span></div>
+  </div>
+
+  <h3 class="market">market.freight_rate</h3>
+  <div class="purpose"><strong>Purpose:</strong> Spot and TC freight rate observations per vessel type and route. Not tied to a specific fixture — these are market rate observations. Separate from route_benchmark (which tracks published Baltic Exchange benchmarks). SPOT, TC_6M, TC_1Y, TC_3Y, VOYAGE rate types.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">rate_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">vessel_type</td><td class="typ">VARCHAR(60)</td><td>NOT NULL</td><td>—</td><td>'VLCC', 'Suezmax', 'Aframax', 'Capesize', 'Panamax', 'LNG', 'LPG'</td></tr>
+        <tr><td class="col">route_code</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Trade route code if applicable</td></tr>
+        <tr><td class="col">load_port / discharge_port</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NULLABLE <span class="fk">FK→port.entity</span></div></td><td>NULL</td><td>Load and discharge port UNLOCODEs</td></tr>
+        <tr><td class="col">rate_date</td><td class="typ">DATE</td><td>NOT NULL</td><td>—</td><td>Date of rate observation</td></tr>
+        <tr><td class="col">rate_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>SPOT | TC_6M | TC_1Y | TC_3Y | VOYAGE</td></tr>
+        <tr><td class="col">rate_value</td><td class="typ">NUMERIC(14,4)</td><td>NOT NULL</td><td>—</td><td>Rate value in rate_unit (WS points, $/MT, $/day)</td></tr>
+        <tr><td class="col">rate_unit</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>NULL</td><td>'WS', '$/MT', '$/day', '$/BBL'</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Baltic Exchange, Clarksons, broker estimate</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_freight_type_date</span><span class="idx-def">(vessel_type, rate_date DESC) — rate history per vessel type</span></div>
+  </div>
+
+  <h3 class="market">market.valuation</h3>
+  <div class="purpose"><strong>Purpose:</strong> Vessel valuations from various methodologies (market, scrap, insurance, book). One row per vessel per date per type per source. Unique constraint prevents duplicate valuations. Used for fleet value reporting and market analytics.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">val_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel being valued</td></tr>
+        <tr><td class="col">val_date</td><td class="typ">DATE</td><td>NOT NULL</td><td>—</td><td>Valuation date</td></tr>
+        <tr><td class="col">val_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>MARKET | SCRAP | INSURANCE | BOOK</td></tr>
+        <tr><td class="col">value_usd</td><td class="typ">NUMERIC(16,2)</td><td>NOT NULL</td><td>—</td><td>Valuation amount in USD (high precision for large vessels)</td></tr>
+        <tr><td class="col">currency</td><td class="typ">CHAR(3)</td><td>NOT NULL</td><td>'USD'</td><td>Currency code (ISO 4217) — USD is default for maritime valuations</td></tr>
+        <tr><td class="col">methodology</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Valuation methodology description (e.g. 'Broker Estimate', 'Depreciated Replacement Cost')</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Valuation provider (Clarksons, VesselsValue, etc.)</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+        <tr><td class="col">—</td><td class="typ">—</td><td><div class="cc"><span class="uq">UNIQUE(imo_number, val_date, val_type, source_id)</span></div></td><td>—</td><td>One valuation per vessel/date/type/source</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_val_imo_date</span><span class="idx-def">(imo_number, val_date DESC) — valuation history per vessel</span></div>
+  </div>
+
+  <h3 class="market">market.fixture</h3>
+  <div class="purpose"><strong>Purpose:</strong> Chartering fixture reports — one row per reported fixture (voyage charter, spot deal). Directly mirrors fixtures.json. external_id matches the JSON "id" (e.g. 'F001'). rate_text is stored as received (e.g. 'WS 82', '$14.50/MT', '$85,000/day TC'). load_port and discharge_port are free text since fixture reports often use informal names not aligned with UNLOCODE.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">fixture_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">external_id</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NULLABLE <span class="uq">UNIQUE</span></div></td><td>NULL</td><td>Source fixture ID — matches fixtures.json "id" (e.g. 'F001')</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NULLABLE <span class="fk">FK→vessel.entity</span></div></td><td>NULL</td><td>Vessel fixed (NULL if vessel not yet IMO-identified in our registry)</td></tr>
+        <tr><td class="col">vessel_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Vessel name from fixture report (denormalised)</td></tr>
+        <tr><td class="col">vessel_type</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>'VLCC', 'Suezmax', 'Capesize', 'LNG', 'Product', etc.</td></tr>
+        <tr><td class="col">dwt</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>DWT from fixture report</td></tr>
+        <tr><td class="col">charterer</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Chartering company</td></tr>
+        <tr><td class="col">owner</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Vessel owner</td></tr>
+        <tr><td class="col">cargo</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Cargo description (e.g. 'Crude Oil', 'Iron Ore', 'LNG')</td></tr>
+        <tr><td class="col">cargo_qty</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Display string from fixture: '2,000,000 BBL' or '175,000 MT'</td></tr>
+        <tr><td class="col">load_port / discharge_port</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Free text port names from fixture report (not always UNLOCODE-resolvable)</td></tr>
+        <tr><td class="col">laycan</td><td class="typ">VARCHAR(40)</td><td>NULLABLE</td><td>NULL</td><td>Laycan date range (e.g. '05-08 May 2025')</td></tr>
+        <tr><td class="col">rate_text</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Rate as reported: 'WS 82', '$14.50/MT', '$85,000/day TC'. Matches fixtures.json "rate"</td></tr>
+        <tr><td class="col">tce_usd</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>Time-charter equivalent in $/day (computed from rate + voyage costs)</td></tr>
+        <tr><td class="col">fixture_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'Fixed'</td><td>Fixed | On Subjects | Rumoured | Failed | Withdrawn</td></tr>
+        <tr><td class="col">broker</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Broking house that reported the fixture</td></tr>
+        <tr><td class="col">fixture_date</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Date fixture was agreed</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Clarksons, internal broker intelligence</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on market.fixture</h4>
+    <div class="idx-row"><span class="idx-name">idx_fixture_imo</span><span class="idx-def">(imo_number) WHERE imo_number IS NOT NULL — fixtures per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_fixture_status</span><span class="idx-def">(fixture_status, fixture_date DESC) — active fixtures filter</span></div>
+    <div class="idx-row"><span class="idx-name">idx_fixture_date</span><span class="idx-def">(fixture_date DESC) — recent fixtures feed</span></div>
+  </div>
+
+  <h3 class="market">market.tc_contract</h3>
+  <div class="purpose"><strong>Purpose:</strong> Time charter and bareboat charter contracts. Mirrors tc_contracts.json. Each row is one long-term chartering arrangement. options_text stores optional extension/purchase option description as free text.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">contract_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NULLABLE <span class="fk">FK→vessel.entity</span></div></td><td>NULL</td><td>Vessel on charter (NULL if vessel not in registry)</td></tr>
+        <tr><td class="col">vessel_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Vessel name (denormalised)</td></tr>
+        <tr><td class="col">charter_type</td><td class="typ">VARCHAR(30)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>Time Charter | Bareboat Charter | Demise Charter</td></tr>
+        <tr><td class="col">term_text</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Charter term description (tc_contracts.json "term": '12 months', '15 years')</td></tr>
+        <tr><td class="col">start_date / end_date</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Charter period</td></tr>
+        <tr><td class="col">daily_rate_usd</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>Daily hire rate in USD (tc_contracts.json "rate")</td></tr>
+        <tr><td class="col">charterer</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Chartering party</td></tr>
+        <tr><td class="col">redelivery_zone</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Redelivery area (e.g. 'Worldwide', 'Pacific', 'DWWD')</td></tr>
+        <tr><td class="col">options_text</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Extension/purchase options (e.g. '2×6M at $23,000/day', 'Purchase option at $45M')</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Clarksons or broker</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes</h4>
+    <div class="idx-row"><span class="idx-name">idx_tc_imo</span><span class="idx-def">(imo_number) WHERE imo_number IS NOT NULL — TC history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_tc_dates</span><span class="idx-def">(start_date, end_date) — active charter monitoring</span></div>
+  </div>
+
+  <h3 class="market">market.route_benchmark &amp; market.route_benchmark_value</h3>
+  <div class="purpose"><strong>Purpose:</strong> Published Baltic Exchange benchmark route definitions and their daily values. Mirrors freight_routes.json. route_benchmark defines the route (e.g. 'TD3C — AG/China (VLCC)'); route_benchmark_value stores each day's WS and TCE values with 52-week range.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Table</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">benchmark_id</td><td style="font-size:10px;color:#5A7AAA">route_benchmark</td><td class="typ">SERIAL PK</td><td>Surrogate key</td></tr>
+        <tr><td class="col">route_code</td><td style="font-size:10px;color:#5A7AAA">route_benchmark</td><td class="typ">VARCHAR(30) UQ</td><td>Baltic Exchange code: 'TD3C', '5TC', 'TC2', 'C5TC'. Matches freight_routes.json "route"</td></tr>
+        <tr><td class="col">route_label</td><td style="font-size:10px;color:#5A7AAA">route_benchmark</td><td class="typ">VARCHAR(120)</td><td>Full description: 'TD3C — AG/China (VLCC)'</td></tr>
+        <tr><td class="col">segment</td><td style="font-size:10px;color:#5A7AAA">route_benchmark</td><td class="typ">VARCHAR(20) CK</td><td>VLCC | Suezmax | Aframax | Product | Capesize | Panamax | Supramax | LNG | LPG</td></tr>
+        <tr><td class="col">value_id</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">BIGSERIAL PK</td><td>Surrogate key</td></tr>
+        <tr><td class="col">benchmark_id</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">INTEGER FK</td><td>Parent benchmark</td></tr>
+        <tr><td class="col">value_date</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">DATE UQ(bm,date)</td><td>Observation date</td></tr>
+        <tr><td class="col">ws</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">NUMERIC(8,2)</td><td>Worldscale points (NULL for dry bulk TC routes)</td></tr>
+        <tr><td class="col">tce_usd</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">INTEGER NOT NULL</td><td>TCE $/day. Matches freight_routes.json "tce"</td></tr>
+        <tr><td class="col">prev_tce_usd / lo_52w / hi_52w</td><td style="font-size:10px;color:#5A7AAA">route_benchmark_value</td><td class="typ">INTEGER</td><td>Previous TCE and 52-week low/high. Matches freight_routes.json prev_tce/lo/hi</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_rbv_benchmark_date</span><span class="idx-def">(benchmark_id, value_date DESC) — time-series chart data per benchmark route</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ geo ═══════ -->
+  <h2><span class="sc geo">geo</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Maritime chokepoints &amp; MOU patrol zones</span></h2>
+
+  <h3 class="geo">geo.choke_point</h3>
+  <div class="purpose geo"><strong>Purpose:</strong> Quasi-static reference table for the world's major maritime chokepoints. Mirrors choke_points.json. GENERATED ALWAYS AS columns extract lat/lon from the PostGIS point geometry. Not EAV — geometry changes are rare and updated directly. Seeded with 8–12 chokepoints: Suez, Hormuz, Malacca, Bab-el-Mandeb, Panama, Turkish Straits, Cape of Good Hope, Danish Straits.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col geo">choke_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col geo">name</td><td class="typ">VARCHAR(120)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>Chokepoint name (e.g. 'Suez Canal', 'Strait of Hormuz'). Matches choke_points.json "name"</td></tr>
+        <tr><td class="col geo">geom</td><td class="typ">GEOMETRY(Point, 4326)</td><td>NOT NULL</td><td>—</td><td>PostGIS WGS-84 point. GIST indexed for spatial queries (which vessels are near this chokepoint?)</td></tr>
+        <tr><td class="col geo">latitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc"><span class="gen">GENERATED ALWAYS AS (ST_Y(geom)) STORED</span></div></td><td>—</td><td>Computed from geom — matches choke_points.json "latitude"</td></tr>
+        <tr><td class="col geo">longitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc"><span class="gen">GENERATED ALWAYS AS (ST_X(geom)) STORED</span></div></td><td>—</td><td>Computed from geom — matches choke_points.json "longitude"</td></tr>
+        <tr><td class="col geo">volume_label</td><td class="typ">VARCHAR(40)</td><td>NULLABLE</td><td>NULL</td><td>Traffic volume label (choke_points.json "volume_label", e.g. '~18.5M bbl/day')</td></tr>
+        <tr><td class="col geo">risk_level</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>High | Medium | Low — drives GIS map icon colour</td></tr>
+        <tr><td class="col geo">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Soft-delete (e.g. during temporary closure)</td></tr>
+        <tr><td class="col geo">updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Last update timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_choke_geom</span><span class="idx-def">GIST (geom) — spatial queries: vessels approaching chokepoint, radius alerts</span></div>
+  </div>
+
+  <h3 class="geo">geo.mou_zone</h3>
+  <div class="purpose geo"><strong>Purpose:</strong> PSC MOU patrol zone polygons for map overlay rendering. Mirrors mou_zones.json. The "bounds" array in JSON (array of [lat,lon] pairs) is converted to a PostGIS Polygon geometry on ingest. Color drives the semi-transparent fill on the GIS map. Not EAV — these zones change very rarely (treaty boundary updates).</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col geo">zone_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col geo">name</td><td class="typ">VARCHAR(120)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>MOU zone name: 'Paris MOU', 'Tokyo MOU', 'Indian Ocean MOU'. Matches mou_zones.json "name"</td></tr>
+        <tr><td class="col geo">color</td><td class="typ">VARCHAR(7)</td><td>NOT NULL</td><td>—</td><td>Hex color for map fill overlay (e.g. '#4A9EFF'). Matches mou_zones.json "color"</td></tr>
+        <tr><td class="col geo">geom</td><td class="typ">GEOMETRY(Polygon, 4326)</td><td>NULLABLE</td><td>NULL</td><td>PostGIS polygon representing the MOU patrol zone boundary. NULL until populated from JSON bounds.</td></tr>
+        <tr><td class="col geo">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Controls whether zone appears on GIS map</td></tr>
+        <tr><td class="col geo">updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Last update timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_mou_zone_geom</span><span class="idx-def">GIST (geom) — ST_Within / ST_Intersects for vessel-in-zone queries</span></div>
+  </div>
+
+  <!-- Utility Functions -->
+  <div class="divider"></div>
+  <h2 style="margin-top:0">Utility Functions (registry schema)</h2>
+
+  <div class="function-box">
+    <h4>registry.attr_at(p_entity_schema, p_entity_id, p_attr_key, p_valid_at, p_sys_at)</h4>
+    <pre>-- Point-in-time attribute lookup for ANY entity following the standardized schema template.
+-- Returns the highest-confidence APPROVED value for the given entity + attribute at a historical moment.
+
+<span>Example usage:</span>
+SELECT * FROM registry.attr_at(
+    <span>'vessel'</span>,      -- entity schema: 'vessel' | 'port' | 'company'
+    <span>'9234567'</span>,     -- entity ID (imo_number / unlocode / company_id)
+    <span>'deadweight'</span>,   -- attr_key from registry.attribute_def
+    <span>'2024-06-01'</span>,   -- p_valid_at: real-world time to query
+    NOW()            -- p_sys_at: system time (for bi-temporal as-recorded query)
+);
+
+<span>Returns:</span> value_text, value_numeric, value_boolean, value_date, value_json,
+         confidence, source_code, valid_from, sys_from</pre>
+  </div>
+
+  <div class="function-box">
+    <h4>registry.refresh_all_current_views()</h4>
+    <pre>-- Call after each ingest run to refresh all current-state materialized views.
+-- CONCURRENTLY = zero-downtime refresh (reads continue during refresh).
+
+<span>Refreshes (in order):</span>
+  1. vessel.latest_position   — deduplicated latest AIS position per vessel
+  2. vessel.v_current         — full attribute pivot for all vessels
+  3. port.v_current           — full attribute pivot for all ports
+  4. company.v_current        — full attribute pivot for all companies
+
+<span>geo.choke_point</span> and <span>geo.mou_zone</span> are base tables — no refresh needed.</pre>
+  </div>
+
+  <!-- Final ER overview -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — market &amp; geo Schemas</h4>
+    <svg width="900" height="380" viewBox="0 0 900 380" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- vessel.entity ref -->
+      <rect x="360" y="10" width="180" height="35" rx="4" fill="#0D3A2E" stroke="#34D399" stroke-width="1"/>
+      <text x="450" y="27" text-anchor="middle" fill="#34D399" font-size="10" font-weight="700">vessel.entity</text>
+      <text x="450" y="39" text-anchor="middle" fill="#93B8D8" font-size="8">PK: imo_number CHAR(7)</text>
+      <!-- port.entity ref -->
+      <rect x="560" y="10" width="160" height="35" rx="4" fill="#1A2040" stroke="#60A5FA" stroke-width="1"/>
+      <text x="640" y="27" text-anchor="middle" fill="#60A5FA" font-size="10" font-weight="700">port.entity</text>
+      <text x="640" y="39" text-anchor="middle" fill="#93B8D8" font-size="8">PK: unlocode VARCHAR(5)</text>
+
+      <!-- index_definition -->
+      <g>
+        <rect x="20" y="80" width="180" height="85" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1.5"/>
+        <text x="110" y="98" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.index_definition</text>
+        <text x="30" y="115" fill="#FF9900" font-size="9">PK</text><text x="50" y="115" fill="#93B8D8">index_id SERIAL</text>
+        <text x="30" y="129" fill="#34D399" font-size="9">UQ</text><text x="50" y="129" fill="#93B8D8">index_code VARCHAR(20)</text>
+        <text x="30" y="143" fill="#93B8D8" font-size="9">   index_type CK · color · description</text>
+        <text x="30" y="157" fill="#93B8D8" font-size="9">   provider · unit · is_active</text>
+      </g>
+      <!-- index_value -->
+      <g>
+        <rect x="20" y="195" width="180" height="100" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1"/>
+        <text x="110" y="213" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.index_value</text>
+        <text x="30" y="232" fill="#60A5FA" font-size="9">FK</text><text x="50" y="232" fill="#93B8D8">index_id → index_definition</text>
+        <text x="30" y="246" fill="#93B8D8" font-size="9">   value_date DATE UQ(id,date)</text>
+        <text x="30" y="260" fill="#93B8D8" font-size="9">   value · prev_value</text>
+        <text x="30" y="274" fill="#93B8D8" font-size="9">   w52_low / w52_high</text>
+        <text x="30" y="288" fill="#93B8D8" font-size="9">   sparkline NUMERIC[] · direction CK</text>
+      </g>
+      <!-- fixture -->
+      <g>
+        <rect x="230" y="80" width="200" height="120" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1.5"/>
+        <text x="330" y="98" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.fixture</text>
+        <text x="240" y="116" fill="#FF9900" font-size="9">PK</text><text x="260" y="116" fill="#93B8D8">fixture_id BIGSERIAL</text>
+        <text x="240" y="130" fill="#34D399" font-size="9">UQ</text><text x="260" y="130" fill="#93B8D8">external_id (fixtures.json "id")</text>
+        <text x="240" y="144" fill="#60A5FA" font-size="9">FK</text><text x="260" y="144" fill="#93B8D8">imo_number (NULLABLE)</text>
+        <text x="240" y="158" fill="#93B8D8" font-size="9">   vessel_name / type / dwt</text>
+        <text x="240" y="172" fill="#93B8D8" font-size="9">   rate_text · tce_usd</text>
+        <text x="240" y="186" fill="#93B8D8" font-size="9">   fixture_status CK · laycan</text>
+      </g>
+      <!-- tc_contract -->
+      <g>
+        <rect x="230" y="230" width="200" height="100" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1"/>
+        <text x="330" y="248" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.tc_contract</text>
+        <text x="240" y="266" fill="#60A5FA" font-size="9">FK</text><text x="260" y="266" fill="#93B8D8">imo_number (NULLABLE)</text>
+        <text x="240" y="280" fill="#93B8D8" font-size="9">   charter_type CK · daily_rate_usd</text>
+        <text x="240" y="294" fill="#93B8D8" font-size="9">   start_date / end_date</text>
+        <text x="240" y="308" fill="#93B8D8" font-size="9">   redelivery_zone · options_text</text>
+        <text x="240" y="322" fill="#93B8D8" font-size="9">   charterer / owner</text>
+      </g>
+      <!-- route_benchmark -->
+      <g>
+        <rect x="460" y="80" width="200" height="90" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1.5"/>
+        <text x="560" y="98" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.route_benchmark</text>
+        <text x="470" y="116" fill="#FF9900" font-size="9">PK</text><text x="490" y="116" fill="#93B8D8">benchmark_id SERIAL</text>
+        <text x="470" y="130" fill="#34D399" font-size="9">UQ</text><text x="490" y="130" fill="#93B8D8">route_code (e.g. 'TD3C')</text>
+        <text x="470" y="144" fill="#93B8D8" font-size="9">   route_label · segment CK</text>
+        <text x="470" y="158" fill="#93B8D8" font-size="9">   is_active BOOLEAN</text>
+      </g>
+      <!-- route_benchmark_value -->
+      <g>
+        <rect x="460" y="200" width="200" height="100" rx="6" fill="#0D200D" stroke="#34D399" stroke-width="1"/>
+        <text x="560" y="218" text-anchor="middle" fill="#34D399" font-size="11" font-weight="700">market.route_benchmark_value</text>
+        <text x="470" y="236" fill="#60A5FA" font-size="9">FK</text><text x="490" y="236" fill="#93B8D8">benchmark_id → route_benchmark</text>
+        <text x="470" y="250" fill="#93B8D8" font-size="9">   value_date UQ(bm,date)</text>
+        <text x="470" y="264" fill="#93B8D8" font-size="9">   ws NUMERIC · tce_usd INTEGER</text>
+        <text x="470" y="278" fill="#93B8D8" font-size="9">   prev_tce_usd</text>
+        <text x="470" y="292" fill="#93B8D8" font-size="9">   lo_52w / hi_52w</text>
+      </g>
+      <!-- geo boxes -->
+      <g>
+        <rect x="690" y="80" width="200" height="95" rx="6" fill="#0D2030" stroke="#38BDF8" stroke-width="1.5"/>
+        <text x="790" y="98" text-anchor="middle" fill="#38BDF8" font-size="11" font-weight="700">geo.choke_point</text>
+        <text x="700" y="116" fill="#FF9900" font-size="9">PK</text><text x="720" y="116" fill="#93B8D8">choke_id SERIAL</text>
+        <text x="700" y="130" fill="#93B8D8" font-size="9">   name UQ · risk_level CK</text>
+        <text x="700" y="144" fill="#93B8D8" font-size="9">   geom GEOMETRY(Point) ← GIST</text>
+        <text x="700" y="158" fill="#FB923C" font-size="9">GEN</text><text x="730" y="158" fill="#93B8D8">lat/lon from geom</text>
+        <text x="700" y="172" fill="#93B8D8" font-size="9">   volume_label · is_active</text>
+      </g>
+      <g>
+        <rect x="690" y="200" width="200" height="90" rx="6" fill="#0D2030" stroke="#38BDF8" stroke-width="1.5"/>
+        <text x="790" y="218" text-anchor="middle" fill="#38BDF8" font-size="11" font-weight="700">geo.mou_zone</text>
+        <text x="700" y="236" fill="#FF9900" font-size="9">PK</text><text x="720" y="236" fill="#93B8D8">zone_id SERIAL</text>
+        <text x="700" y="250" fill="#93B8D8" font-size="9">   name UQ · color VARCHAR(7)</text>
+        <text x="700" y="264" fill="#93B8D8" font-size="9">   geom GEOMETRY(Polygon) ← GIST</text>
+        <text x="700" y="278" fill="#93B8D8" font-size="9">   is_active · updated_at</text>
+      </g>
+      <!-- Arrows -->
+      <line x1="110" y1="165" x2="110" y2="195" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrM)"/>
+      <line x1="330" y1="45" x2="330" y2="80" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrM)"/>
+      <line x1="330" y1="200" x2="330" y2="230" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrM)"/>
+      <line x1="560" y1="170" x2="560" y2="200" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrM)"/>
+      <defs>
+        <marker id="arrM" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#34D399" opacity=".7"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_voyage.html">← Voyage &amp; Compliance</a>
+    <a class="nav-btn btn-pri" href="index.html">← DB Schema Hub</a>
+    <a class="nav-btn btn-sec" href="../aws_index.html">AWS Architecture Hub →</a>
+  </div>
+</div>
+</body>
+</html>

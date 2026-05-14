@@ -135,8 +135,9 @@ CREATE TABLE registry.source_attr_weight (
     source_id       SMALLINT        NOT NULL REFERENCES registry.source_def (source_id),
     attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
     weight          NUMERIC(4,3)    NOT NULL CHECK (weight BETWEEN 0 AND 1),
-    effective_from  DATE            NOT NULL DEFAULT CURRENT_DATE,
-    effective_to    DATE,
+    effective_from          DATE        NOT NULL DEFAULT CURRENT_DATE,
+    effective_to            DATE,
+    auto_promote_to_master  BOOLEAN     NOT NULL DEFAULT FALSE,
     PRIMARY KEY (source_id, attr_id, effective_from)
 );
 
@@ -303,6 +304,40 @@ CREATE TABLE workflow.draft_transition (
     reason          TEXT,
     transitioned_at TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
+
+-- Explicit promotion gate between the vendor layer (*.attr_value) and master layer (*.master_value).
+-- The ETL pipeline creates a PENDING request for every new or changed vendor value that differs
+-- from the current master. Conflict resolution and manual triggers also create requests here.
+-- No value enters *.master_value without either:
+--   (a) an APPROVED promotion_request  (vendor-sourced path)
+--   (b) an APPROVED edit_draft         (manual entry / backdated path)
+-- The only exception is sources where registry.source_attr_weight.auto_promote_to_master = TRUE,
+-- in which case the pipeline may approve the request programmatically.
+CREATE TABLE workflow.promotion_request (
+    pr_id           BIGSERIAL       PRIMARY KEY,
+    entity_type     VARCHAR(30)     NOT NULL,
+    entity_id       TEXT            NOT NULL,
+    attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
+    av_id           BIGINT          NOT NULL,   -- *.attr_value.av_id — no FK, table is partitioned
+    source_id       SMALLINT        NOT NULL REFERENCES registry.source_def (source_id),
+    candidate_value TEXT,                       -- denormalised snapshot for the review UI
+    confidence      NUMERIC(4,3),              -- composite score from source_attr_weight at creation time
+    trigger_type    VARCHAR(20)     NOT NULL
+                    CHECK (trigger_type IN ('NEW_VALUE','CHANGED_VALUE','CONFLICT_RESOLVED','MANUAL_TRIGGER')),
+    cq_id           BIGINT          REFERENCES ingest.conflict_queue (conflict_id),
+    wf_conflict_id  BIGINT          REFERENCES workflow.conflict (conflict_id),
+    draft_id        BIGINT          REFERENCES workflow.edit_draft (draft_id),
+    state           VARCHAR(20)     NOT NULL DEFAULT 'PENDING'
+                    CHECK (state IN ('PENDING','APPROVED','REJECTED','SUPERSEDED','WITHDRAWN')),
+    reviewed_by     INTEGER,                    -- auth.app_user.user_id (no FK — auth schema defined later)
+    reviewed_at     TIMESTAMPTZ,
+    rejection_note  TEXT,
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_pr_entity  ON workflow.promotion_request (entity_type, entity_id, attr_id) WHERE state = 'PENDING';
+CREATE INDEX idx_pr_pending ON workflow.promotion_request (created_at DESC)                 WHERE state = 'PENDING';
+CREATE INDEX idx_pr_source  ON workflow.promotion_request (source_id, state);
 
 
 -- ─── audit — immutable change log ────────────────────────────────────────────
@@ -502,6 +537,72 @@ CREATE INDEX idx_vav_run       ON vessel.attr_value (run_id) WHERE run_id IS NOT
 CREATE RULE vessel_av_no_update AS ON UPDATE TO vessel.attr_value DO INSTEAD NOTHING;
 CREATE RULE vessel_av_no_delete AS ON DELETE TO vessel.attr_value DO INSTEAD NOTHING;
 
+-- Gold layer — explicitly curated master record for vessel attributes.
+-- A row enters here only via:
+--   (a) APPROVED workflow.promotion_request  → entry_type VENDOR_PROMOTED or CONFLICT_RESOLVED
+--   (b) APPROVED workflow.edit_draft         → entry_type MANUAL_ENTRY or BACKDATED
+-- Insert-only: supersede a row by setting its sys_to / valid_to before inserting the replacement.
+-- workflow_state = APPROVED means this row IS the current master for the given attribute period.
+CREATE TABLE vessel.master_value (
+    mv_id           BIGSERIAL       NOT NULL,
+    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
+    value_text      TEXT,
+    value_numeric   NUMERIC(20,6),
+    value_boolean   BOOLEAN,
+    value_date      DATE,
+    value_json      JSONB,
+    entry_type      VARCHAR(20)     NOT NULL
+                    CHECK (entry_type IN (
+                        'VENDOR_PROMOTED',   -- approved promotion_request from a vendor row
+                        'MANUAL_ENTRY',      -- user-entered value with no vendor source
+                        'BACKDATED',         -- manual entry where valid_from is in the past
+                        'CONFLICT_RESOLVED'  -- resolved via workflow.conflict
+                    )),
+    source_av_id    BIGINT,                     -- vessel.attr_value.av_id when VENDOR_PROMOTED (no FK — partitioned)
+    source_id       SMALLINT        REFERENCES registry.source_def (source_id),
+    pr_id           BIGINT          REFERENCES workflow.promotion_request (pr_id),
+    draft_id        BIGINT          REFERENCES workflow.edit_draft (draft_id),
+    entered_by      INTEGER,                    -- auth.app_user.user_id
+    approved_by     INTEGER,                    -- auth.app_user.user_id
+    valid_from      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    valid_to        TIMESTAMPTZ,
+    sys_from        TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    sys_to          TIMESTAMPTZ,
+    workflow_state  VARCHAR(20)     NOT NULL DEFAULT 'APPROVED'
+                    CHECK (workflow_state IN ('APPROVED','SUPERSEDED','REJECTED')),
+    PRIMARY KEY (mv_id)
+) PARTITION BY RANGE (sys_from);
+
+CREATE TABLE vessel.master_value_2020 PARTITION OF vessel.master_value FOR VALUES FROM ('2020-01-01') TO ('2021-01-01');
+CREATE TABLE vessel.master_value_2021 PARTITION OF vessel.master_value FOR VALUES FROM ('2021-01-01') TO ('2022-01-01');
+CREATE TABLE vessel.master_value_2022 PARTITION OF vessel.master_value FOR VALUES FROM ('2022-01-01') TO ('2023-01-01');
+CREATE TABLE vessel.master_value_2023 PARTITION OF vessel.master_value FOR VALUES FROM ('2023-01-01') TO ('2024-01-01');
+CREATE TABLE vessel.master_value_2024 PARTITION OF vessel.master_value FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+CREATE TABLE vessel.master_value_2025 PARTITION OF vessel.master_value FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+CREATE TABLE vessel.master_value_2026 PARTITION OF vessel.master_value FOR VALUES FROM ('2026-01-01') TO ('2027-01-01');
+CREATE TABLE vessel.master_value_2027 PARTITION OF vessel.master_value FOR VALUES FROM ('2027-01-01') TO ('2028-01-01');
+CREATE TABLE vessel.master_value_2028 PARTITION OF vessel.master_value FOR VALUES FROM ('2028-01-01') TO ('2029-01-01');
+CREATE TABLE vessel.master_value_2029 PARTITION OF vessel.master_value FOR VALUES FROM ('2029-01-01') TO ('2030-01-01');
+CREATE TABLE vessel.master_value_overflow PARTITION OF vessel.master_value DEFAULT;
+
+CREATE INDEX idx_vmv_imo_attr ON vessel.master_value (imo_number, attr_id);
+CREATE INDEX idx_vmv_current  ON vessel.master_value (imo_number, attr_id)
+    WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state = 'APPROVED';
+
+-- Vessel-level source preference — feeds the confidence scoring engine when generating
+-- promotion_requests. Does NOT auto-promote. Overrides the global source_attr_weight for
+-- this specific vessel+attribute combination.
+CREATE TABLE vessel.attr_source_preference (
+    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
+    source_id       SMALLINT        NOT NULL REFERENCES registry.source_def (source_id),
+    weight_override NUMERIC(4,3)    NOT NULL DEFAULT 1.0 CHECK (weight_override BETWEEN 0 AND 1),
+    set_by          INTEGER,                    -- auth.app_user.user_id
+    set_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (imo_number, attr_id)
+);
+
 -- Bronze layer — raw feed payloads
 CREATE TABLE vessel.raw_ingest (
     raw_id          BIGSERIAL       NOT NULL,
@@ -576,69 +677,70 @@ CREATE INDEX ON vessel.latest_position USING GIST (geom);
 -- Current-state wide view — column aliases match vessels.js VESSELS property names
 -- so the API layer can serve this view directly without field remapping.
 -- Attribute keys align with attribute_definitions.json "key" values.
+-- Source: vessel.master_value (gold layer) — only explicitly approved master values appear here.
 CREATE MATERIALIZED VIEW vessel.v_current AS
 SELECT
     e.imo_number,
     -- Identity (vessels.js fields: nm, imo, mmsi, cs, fn, fl, flag, ty, st, up)
-    MAX(CASE WHEN ad.attr_key = 'vessel_name'        THEN av.value_text    END) AS nm,
-    MAX(CASE WHEN ad.attr_key = 'imo_number'         THEN av.value_text    END) AS imo,
-    MAX(CASE WHEN ad.attr_key = 'mmsi_number'        THEN av.value_text    END) AS mmsi,
-    MAX(CASE WHEN ad.attr_key = 'call_sign'          THEN av.value_text    END) AS cs,
-    MAX(CASE WHEN ad.attr_key = 'flag_name'          THEN av.value_text    END) AS fn,
-    MAX(CASE WHEN ad.attr_key = 'flag_code'          THEN av.value_text    END) AS fl,
-    MAX(CASE WHEN ad.attr_key = 'vessel_type'        THEN av.value_text    END) AS ty,
-    MAX(CASE WHEN ad.attr_key = 'vessel_status'      THEN av.value_text    END) AS st,
-    MAX(CASE WHEN ad.attr_key = 'last_updated'       THEN av.value_text    END) AS up,
+    MAX(CASE WHEN ad.attr_key = 'vessel_name'        THEN mv.value_text    END) AS nm,
+    MAX(CASE WHEN ad.attr_key = 'imo_number'         THEN mv.value_text    END) AS imo,
+    MAX(CASE WHEN ad.attr_key = 'mmsi_number'        THEN mv.value_text    END) AS mmsi,
+    MAX(CASE WHEN ad.attr_key = 'call_sign'          THEN mv.value_text    END) AS cs,
+    MAX(CASE WHEN ad.attr_key = 'flag_name'          THEN mv.value_text    END) AS fn,
+    MAX(CASE WHEN ad.attr_key = 'flag_code'          THEN mv.value_text    END) AS fl,
+    MAX(CASE WHEN ad.attr_key = 'vessel_type'        THEN mv.value_text    END) AS ty,
+    MAX(CASE WHEN ad.attr_key = 'vessel_status'      THEN mv.value_text    END) AS st,
+    MAX(CASE WHEN ad.attr_key = 'last_updated'       THEN mv.value_text    END) AS up,
     -- Dimensions (vessels.js: loa, lbp, beam, depth, maxDraft, sumDraft)
-    MAX(CASE WHEN ad.attr_key = 'length_overall'     THEN av.value_numeric END) AS loa_m,
-    MAX(CASE WHEN ad.attr_key = 'length_bp'          THEN av.value_numeric END) AS lbp_m,
-    MAX(CASE WHEN ad.attr_key = 'beam'               THEN av.value_numeric END) AS beam_m,
-    MAX(CASE WHEN ad.attr_key = 'depth_moulded'      THEN av.value_numeric END) AS depth_m,
-    MAX(CASE WHEN ad.attr_key = 'max_draft'          THEN av.value_numeric END) AS max_draft_m,
-    MAX(CASE WHEN ad.attr_key = 'summer_draft'       THEN av.value_numeric END) AS summer_draft_m,
+    MAX(CASE WHEN ad.attr_key = 'length_overall'     THEN mv.value_numeric END) AS loa_m,
+    MAX(CASE WHEN ad.attr_key = 'length_bp'          THEN mv.value_numeric END) AS lbp_m,
+    MAX(CASE WHEN ad.attr_key = 'beam'               THEN mv.value_numeric END) AS beam_m,
+    MAX(CASE WHEN ad.attr_key = 'depth_moulded'      THEN mv.value_numeric END) AS depth_m,
+    MAX(CASE WHEN ad.attr_key = 'max_draft'          THEN mv.value_numeric END) AS max_draft_m,
+    MAX(CASE WHEN ad.attr_key = 'summer_draft'       THEN mv.value_numeric END) AS summer_draft_m,
     -- Tonnage (vessels.js: dwt, gt, nt — stored as formatted strings; raw numerics below)
-    MAX(CASE WHEN ad.attr_key = 'deadweight'         THEN av.value_numeric END) AS dwt_mt,
-    MAX(CASE WHEN ad.attr_key = 'gross_tonnage'      THEN av.value_numeric END) AS gt,
-    MAX(CASE WHEN ad.attr_key = 'net_tonnage'        THEN av.value_numeric END) AS nt,
+    MAX(CASE WHEN ad.attr_key = 'deadweight'         THEN mv.value_numeric END) AS dwt_mt,
+    MAX(CASE WHEN ad.attr_key = 'gross_tonnage'      THEN mv.value_numeric END) AS gt,
+    MAX(CASE WHEN ad.attr_key = 'net_tonnage'        THEN mv.value_numeric END) AS nt,
     -- Construction (vessels.js: yr, yard, hn, builtYard)
-    MAX(CASE WHEN ad.attr_key = 'year_built'         THEN av.value_numeric END) AS yr,
-    MAX(CASE WHEN ad.attr_key = 'shipyard'           THEN av.value_text    END) AS yard,
-    MAX(CASE WHEN ad.attr_key = 'hull_number'        THEN av.value_text    END) AS hn,
-    MAX(CASE WHEN ad.attr_key = 'build_country_code' THEN av.value_text    END) AS built_yard_cc,
+    MAX(CASE WHEN ad.attr_key = 'year_built'         THEN mv.value_numeric END) AS yr,
+    MAX(CASE WHEN ad.attr_key = 'shipyard'           THEN mv.value_text    END) AS yard,
+    MAX(CASE WHEN ad.attr_key = 'hull_number'        THEN mv.value_text    END) AS hn,
+    MAX(CASE WHEN ad.attr_key = 'build_country_code' THEN mv.value_text    END) AS built_yard_cc,
     -- Machinery (vessels.js: eng, mcr, spd, fuel, prp)
-    MAX(CASE WHEN ad.attr_key = 'main_engine'        THEN av.value_text    END) AS eng,
-    MAX(CASE WHEN ad.attr_key = 'mcr_kw'             THEN av.value_numeric END) AS mcr_kw,
-    MAX(CASE WHEN ad.attr_key = 'service_speed'      THEN av.value_numeric END) AS spd_kn,
-    MAX(CASE WHEN ad.attr_key = 'fuel_type'          THEN av.value_text    END) AS fuel,
-    MAX(CASE WHEN ad.attr_key = 'propulsion_type'    THEN av.value_text    END) AS prp,
+    MAX(CASE WHEN ad.attr_key = 'main_engine'        THEN mv.value_text    END) AS eng,
+    MAX(CASE WHEN ad.attr_key = 'mcr_kw'             THEN mv.value_numeric END) AS mcr_kw,
+    MAX(CASE WHEN ad.attr_key = 'service_speed'      THEN mv.value_numeric END) AS spd_kn,
+    MAX(CASE WHEN ad.attr_key = 'fuel_type'          THEN mv.value_text    END) AS fuel,
+    MAX(CASE WHEN ad.attr_key = 'propulsion_type'    THEN mv.value_text    END) AS prp,
     -- Classification (vessels.js: cls, clsNot, ice, dp)
-    MAX(CASE WHEN ad.attr_key = 'class_society'      THEN av.value_text    END) AS cls,
-    MAX(CASE WHEN ad.attr_key = 'class_notation'     THEN av.value_text    END) AS cls_not,
-    MAX(CASE WHEN ad.attr_key = 'ice_class'          THEN av.value_text    END) AS ice,
-    MAX(CASE WHEN ad.attr_key = 'dp_class'           THEN av.value_text    END) AS dp,
+    MAX(CASE WHEN ad.attr_key = 'class_society'      THEN mv.value_text    END) AS cls,
+    MAX(CASE WHEN ad.attr_key = 'class_notation'     THEN mv.value_text    END) AS cls_not,
+    MAX(CASE WHEN ad.attr_key = 'ice_class'          THEN mv.value_text    END) AS ice,
+    MAX(CASE WHEN ad.attr_key = 'dp_class'           THEN mv.value_text    END) AS dp,
     -- Ownership (vessels.js: ow, bo, op, mg, pi)
-    MAX(CASE WHEN ad.attr_key = 'registered_owner'   THEN av.value_text    END) AS ow,
-    MAX(CASE WHEN ad.attr_key = 'beneficial_owner'   THEN av.value_text    END) AS bo,
-    MAX(CASE WHEN ad.attr_key = 'commercial_operator'THEN av.value_text    END) AS op,
-    MAX(CASE WHEN ad.attr_key = 'technical_manager'  THEN av.value_text    END) AS mg,
-    MAX(CASE WHEN ad.attr_key = 'pi_club'            THEN av.value_text    END) AS pi,
+    MAX(CASE WHEN ad.attr_key = 'registered_owner'   THEN mv.value_text    END) AS ow,
+    MAX(CASE WHEN ad.attr_key = 'beneficial_owner'   THEN mv.value_text    END) AS bo,
+    MAX(CASE WHEN ad.attr_key = 'commercial_operator'THEN mv.value_text    END) AS op,
+    MAX(CASE WHEN ad.attr_key = 'technical_manager'  THEN mv.value_text    END) AS mg,
+    MAX(CASE WHEN ad.attr_key = 'pi_club'            THEN mv.value_text    END) AS pi,
     -- Safety & Green Tech (vessels.js: scrubberFitted, igs, cow, bowDisch, sternDisch, heli, bwmp, ffCap)
-    MAX(CASE WHEN ad.attr_key = 'scrubber_type'      THEN av.value_text    END) AS scrubber_fitted,
-    MAX(CASE WHEN ad.attr_key = 'igs_fitted'         THEN av.value_boolean END) AS igs,
-    MAX(CASE WHEN ad.attr_key = 'crude_oil_washing'  THEN av.value_boolean END) AS cow,
-    MAX(CASE WHEN ad.attr_key = 'bow_discharge'      THEN av.value_boolean END) AS bow_disch,
-    MAX(CASE WHEN ad.attr_key = 'stern_discharge'    THEN av.value_boolean END) AS stern_disch,
-    MAX(CASE WHEN ad.attr_key = 'helideck'           THEN av.value_boolean END) AS heli,
-    MAX(CASE WHEN ad.attr_key = 'bwmp_fitted'        THEN av.value_boolean END) AS bwmp,
-    MAX(CASE WHEN ad.attr_key = 'firefighting_cap'   THEN av.value_boolean END) AS ff_cap,
+    MAX(CASE WHEN ad.attr_key = 'scrubber_type'      THEN mv.value_text    END) AS scrubber_fitted,
+    MAX(CASE WHEN ad.attr_key = 'igs_fitted'         THEN mv.value_boolean END) AS igs,
+    MAX(CASE WHEN ad.attr_key = 'crude_oil_washing'  THEN mv.value_boolean END) AS cow,
+    MAX(CASE WHEN ad.attr_key = 'bow_discharge'      THEN mv.value_boolean END) AS bow_disch,
+    MAX(CASE WHEN ad.attr_key = 'stern_discharge'    THEN mv.value_boolean END) AS stern_disch,
+    MAX(CASE WHEN ad.attr_key = 'helideck'           THEN mv.value_boolean END) AS heli,
+    MAX(CASE WHEN ad.attr_key = 'bwmp_fitted'        THEN mv.value_boolean END) AS bwmp,
+    MAX(CASE WHEN ad.attr_key = 'firefighting_cap'   THEN mv.value_boolean END) AS ff_cap,
     -- Cargo (vessels.js: teu, teu_r, ceu, pax, holds, hatches, lanm)
-    MAX(CASE WHEN ad.attr_key = 'teu_nominal'        THEN av.value_numeric END) AS teu,
-    MAX(CASE WHEN ad.attr_key = 'teu_reefer'         THEN av.value_numeric END) AS teu_r,
-    MAX(CASE WHEN ad.attr_key = 'car_units'          THEN av.value_numeric END) AS ceu,
-    MAX(CASE WHEN ad.attr_key = 'passengers'         THEN av.value_numeric END) AS pax,
-    MAX(CASE WHEN ad.attr_key = 'cargo_holds'        THEN av.value_numeric END) AS holds,
-    MAX(CASE WHEN ad.attr_key = 'cargo_hatches'      THEN av.value_numeric END) AS hatches,
-    MAX(CASE WHEN ad.attr_key = 'lane_metres'        THEN av.value_numeric END) AS lanm,
+    MAX(CASE WHEN ad.attr_key = 'teu_nominal'        THEN mv.value_numeric END) AS teu,
+    MAX(CASE WHEN ad.attr_key = 'teu_reefer'         THEN mv.value_numeric END) AS teu_r,
+    MAX(CASE WHEN ad.attr_key = 'car_units'          THEN mv.value_numeric END) AS ceu,
+    MAX(CASE WHEN ad.attr_key = 'passengers'         THEN mv.value_numeric END) AS pax,
+    MAX(CASE WHEN ad.attr_key = 'cargo_holds'        THEN mv.value_numeric END) AS holds,
+    MAX(CASE WHEN ad.attr_key = 'cargo_hatches'      THEN mv.value_numeric END) AS hatches,
+    MAX(CASE WHEN ad.attr_key = 'lane_metres'        THEN mv.value_numeric END) AS lanm,
     -- Current position (vessels.js: lat, lon, sog, cog)
     lp.latitude                                                                  AS lat,
     lp.longitude                                                                 AS lon,
@@ -649,12 +751,12 @@ SELECT
     lp.eta,
     lp.position_ts  AS last_position_ts
 FROM vessel.entity e
-LEFT JOIN vessel.attr_value av
-    ON  av.imo_number     = e.imo_number
-    AND av.valid_to       IS NULL
-    AND av.sys_to         IS NULL
-    AND av.workflow_state = 'APPROVED'
-LEFT JOIN registry.attribute_def ad ON ad.attr_id = av.attr_id
+LEFT JOIN vessel.master_value mv
+    ON  mv.imo_number     = e.imo_number
+    AND mv.valid_to       IS NULL
+    AND mv.sys_to         IS NULL
+    AND mv.workflow_state = 'APPROVED'
+LEFT JOIN registry.attribute_def ad ON ad.attr_id = mv.attr_id
 LEFT JOIN vessel.latest_position  lp ON lp.imo_number = e.imo_number
 GROUP BY e.imo_number,
          lp.latitude, lp.longitude, lp.speed_kn, lp.course_deg,
@@ -721,6 +823,42 @@ CREATE INDEX idx_pav_current ON port.attr_value (unlocode, attr_id, confidence D
 CREATE RULE port_av_no_update AS ON UPDATE TO port.attr_value DO INSTEAD NOTHING;
 CREATE RULE port_av_no_delete AS ON DELETE TO port.attr_value DO INSTEAD NOTHING;
 
+-- Gold layer — explicitly approved master record for port attributes.
+CREATE TABLE port.master_value (
+    mv_id           BIGSERIAL       NOT NULL,
+    unlocode        VARCHAR(5)      NOT NULL REFERENCES port.entity (unlocode),
+    attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
+    value_text      TEXT,
+    value_numeric   NUMERIC(20,6),
+    value_boolean   BOOLEAN,
+    value_date      DATE,
+    value_json      JSONB,
+    entry_type      VARCHAR(20)     NOT NULL
+                    CHECK (entry_type IN ('VENDOR_PROMOTED','MANUAL_ENTRY','BACKDATED','CONFLICT_RESOLVED')),
+    source_av_id    BIGINT,
+    source_id       SMALLINT        REFERENCES registry.source_def (source_id),
+    pr_id           BIGINT          REFERENCES workflow.promotion_request (pr_id),
+    draft_id        BIGINT          REFERENCES workflow.edit_draft (draft_id),
+    entered_by      INTEGER,
+    approved_by     INTEGER,
+    valid_from      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    valid_to        TIMESTAMPTZ,
+    sys_from        TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    sys_to          TIMESTAMPTZ,
+    workflow_state  VARCHAR(20)     NOT NULL DEFAULT 'APPROVED'
+                    CHECK (workflow_state IN ('APPROVED','SUPERSEDED','REJECTED')),
+    PRIMARY KEY (mv_id)
+) PARTITION BY RANGE (sys_from);
+
+CREATE TABLE port.master_value_2024 PARTITION OF port.master_value FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+CREATE TABLE port.master_value_2025 PARTITION OF port.master_value FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+CREATE TABLE port.master_value_2026 PARTITION OF port.master_value FOR VALUES FROM ('2026-01-01') TO ('2027-01-01');
+CREATE TABLE port.master_value_overflow PARTITION OF port.master_value DEFAULT;
+
+CREATE INDEX idx_pmv_unlocode_attr ON port.master_value (unlocode, attr_id);
+CREATE INDEX idx_pmv_current       ON port.master_value (unlocode, attr_id)
+    WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state = 'APPROVED';
+
 -- Port geometry — NOT EAV
 CREATE TABLE port.location (
     unlocode        VARCHAR(5)      PRIMARY KEY REFERENCES port.entity (unlocode),
@@ -760,62 +898,63 @@ CREATE TABLE port.raw_ingest_overflow PARTITION OF port.raw_ingest DEFAULT;
 -- Current-state view — columns mirror ports_detail.json top-level and nested fields
 -- Nested JSON objects (harbour, channel, berths, etc.) are flattened to named columns
 -- with the same dot-path naming as ports.js accessor functions (po-* attribute IDs)
+-- Source: port.master_value (gold layer) — only explicitly approved master values appear here.
 CREATE MATERIALIZED VIEW port.v_current AS
 SELECT
     e.unlocode,
     -- Identity (ports_detail.json: name, fullName, country, region, type, mou, status)
-    MAX(CASE WHEN ad.attr_key = 'port_name'          THEN av.value_text    END) AS name,
-    MAX(CASE WHEN ad.attr_key = 'port_full_name'     THEN av.value_text    END) AS full_name,
-    MAX(CASE WHEN ad.attr_key = 'country'            THEN av.value_text    END) AS country,
-    MAX(CASE WHEN ad.attr_key = 'region'             THEN av.value_text    END) AS region,
-    MAX(CASE WHEN ad.attr_key = 'port_type'          THEN av.value_text    END) AS type,
-    MAX(CASE WHEN ad.attr_key = 'port_status'        THEN av.value_text    END) AS status,
-    MAX(CASE WHEN ad.attr_key = 'psc_mou'            THEN av.value_text    END) AS mou,
-    MAX(CASE WHEN ad.attr_key = 'wpi_number'         THEN av.value_text    END) AS wpi,
-    MAX(CASE WHEN ad.attr_key = 'port_authority'     THEN av.value_text    END) AS authority,
-    MAX(CASE WHEN ad.attr_key = 'year_established'   THEN av.value_numeric END) AS established,
-    MAX(CASE WHEN ad.attr_key = 'eca_zone'           THEN av.value_boolean END) AS eca_zone,
-    MAX(CASE WHEN ad.attr_key = 'seca_zone'          THEN av.value_boolean END) AS seca_zone,
+    MAX(CASE WHEN ad.attr_key = 'port_name'          THEN mv.value_text    END) AS name,
+    MAX(CASE WHEN ad.attr_key = 'port_full_name'     THEN mv.value_text    END) AS full_name,
+    MAX(CASE WHEN ad.attr_key = 'country'            THEN mv.value_text    END) AS country,
+    MAX(CASE WHEN ad.attr_key = 'region'             THEN mv.value_text    END) AS region,
+    MAX(CASE WHEN ad.attr_key = 'port_type'          THEN mv.value_text    END) AS type,
+    MAX(CASE WHEN ad.attr_key = 'port_status'        THEN mv.value_text    END) AS status,
+    MAX(CASE WHEN ad.attr_key = 'psc_mou'            THEN mv.value_text    END) AS mou,
+    MAX(CASE WHEN ad.attr_key = 'wpi_number'         THEN mv.value_text    END) AS wpi,
+    MAX(CASE WHEN ad.attr_key = 'port_authority'     THEN mv.value_text    END) AS authority,
+    MAX(CASE WHEN ad.attr_key = 'year_established'   THEN mv.value_numeric END) AS established,
+    MAX(CASE WHEN ad.attr_key = 'eca_zone'           THEN mv.value_boolean END) AS eca_zone,
+    MAX(CASE WHEN ad.attr_key = 'seca_zone'          THEN mv.value_boolean END) AS seca_zone,
     -- Channel limits (ports_detail.json: channel.maxDraft, maxLoa, maxBeam, nightEntry)
-    MAX(CASE WHEN ad.attr_key = 'ch_max_draft'       THEN av.value_numeric END) AS ch_max_draft_m,
-    MAX(CASE WHEN ad.attr_key = 'ch_max_loa'         THEN av.value_numeric END) AS ch_max_loa_m,
-    MAX(CASE WHEN ad.attr_key = 'ch_max_beam'        THEN av.value_numeric END) AS ch_max_beam_m,
-    MAX(CASE WHEN ad.attr_key = 'ch_max_dwt'         THEN av.value_text    END) AS ch_max_dwt,
-    MAX(CASE WHEN ad.attr_key = 'ch_max_air_draft'   THEN av.value_numeric END) AS ch_max_air_draft_m,
-    MAX(CASE WHEN ad.attr_key = 'night_entry'        THEN av.value_boolean END) AS night_entry,
+    MAX(CASE WHEN ad.attr_key = 'ch_max_draft'       THEN mv.value_numeric END) AS ch_max_draft_m,
+    MAX(CASE WHEN ad.attr_key = 'ch_max_loa'         THEN mv.value_numeric END) AS ch_max_loa_m,
+    MAX(CASE WHEN ad.attr_key = 'ch_max_beam'        THEN mv.value_numeric END) AS ch_max_beam_m,
+    MAX(CASE WHEN ad.attr_key = 'ch_max_dwt'         THEN mv.value_text    END) AS ch_max_dwt,
+    MAX(CASE WHEN ad.attr_key = 'ch_max_air_draft'   THEN mv.value_numeric END) AS ch_max_air_draft_m,
+    MAX(CASE WHEN ad.attr_key = 'night_entry'        THEN mv.value_boolean END) AS night_entry,
     -- Berths (ports_detail.json: berths.count, maxLoa, maxDraft)
-    MAX(CASE WHEN ad.attr_key = 'berth_count'        THEN av.value_numeric END) AS berth_count,
-    MAX(CASE WHEN ad.attr_key = 'berth_max_loa'      THEN av.value_numeric END) AS berth_max_loa_m,
-    MAX(CASE WHEN ad.attr_key = 'berth_max_draft'    THEN av.value_numeric END) AS berth_max_draft_m,
+    MAX(CASE WHEN ad.attr_key = 'berth_count'        THEN mv.value_numeric END) AS berth_count,
+    MAX(CASE WHEN ad.attr_key = 'berth_max_loa'      THEN mv.value_numeric END) AS berth_max_loa_m,
+    MAX(CASE WHEN ad.attr_key = 'berth_max_draft'    THEN mv.value_numeric END) AS berth_max_draft_m,
     -- Services (ports_detail.json: services.*)
-    MAX(CASE WHEN ad.attr_key = 'pilotage'           THEN av.value_boolean END) AS pilotage,
-    MAX(CASE WHEN ad.attr_key = 'pilotage_compulsory'THEN av.value_boolean END) AS pilotage_compulsory,
-    MAX(CASE WHEN ad.attr_key = 'towage'             THEN av.value_boolean END) AS towage,
-    MAX(CASE WHEN ad.attr_key = 'tug_count'          THEN av.value_numeric END) AS tugs,
-    MAX(CASE WHEN ad.attr_key = 'freshwater'         THEN av.value_boolean END) AS freshwater,
-    MAX(CASE WHEN ad.attr_key = 'drydock'            THEN av.value_boolean END) AS drydock,
-    MAX(CASE WHEN ad.attr_key = 'drydock_count'      THEN av.value_numeric END) AS drydock_count,
-    MAX(CASE WHEN ad.attr_key = 'vts_available'      THEN av.value_boolean END) AS vts,
+    MAX(CASE WHEN ad.attr_key = 'pilotage'           THEN mv.value_boolean END) AS pilotage,
+    MAX(CASE WHEN ad.attr_key = 'pilotage_compulsory'THEN mv.value_boolean END) AS pilotage_compulsory,
+    MAX(CASE WHEN ad.attr_key = 'towage'             THEN mv.value_boolean END) AS towage,
+    MAX(CASE WHEN ad.attr_key = 'tug_count'          THEN mv.value_numeric END) AS tugs,
+    MAX(CASE WHEN ad.attr_key = 'freshwater'         THEN mv.value_boolean END) AS freshwater,
+    MAX(CASE WHEN ad.attr_key = 'drydock'            THEN mv.value_boolean END) AS drydock,
+    MAX(CASE WHEN ad.attr_key = 'drydock_count'      THEN mv.value_numeric END) AS drydock_count,
+    MAX(CASE WHEN ad.attr_key = 'vts_available'      THEN mv.value_boolean END) AS vts,
     -- Bunkering (ports_detail.json: bunker.*)
-    MAX(CASE WHEN ad.attr_key = 'bunker_available'   THEN av.value_boolean END) AS bunker_available,
-    MAX(CASE WHEN ad.attr_key = 'bunker_hfo'         THEN av.value_boolean END) AS bunker_hfo,
-    MAX(CASE WHEN ad.attr_key = 'bunker_vlsfo'       THEN av.value_boolean END) AS bunker_vlsfo,
-    MAX(CASE WHEN ad.attr_key = 'bunker_mgo'         THEN av.value_boolean END) AS bunker_mgo,
-    MAX(CASE WHEN ad.attr_key = 'bunker_lng'         THEN av.value_boolean END) AS bunker_lng,
-    MAX(CASE WHEN ad.attr_key = 'bunker_methanol'    THEN av.value_boolean END) AS bunker_methanol,
+    MAX(CASE WHEN ad.attr_key = 'bunker_available'   THEN mv.value_boolean END) AS bunker_available,
+    MAX(CASE WHEN ad.attr_key = 'bunker_hfo'         THEN mv.value_boolean END) AS bunker_hfo,
+    MAX(CASE WHEN ad.attr_key = 'bunker_vlsfo'       THEN mv.value_boolean END) AS bunker_vlsfo,
+    MAX(CASE WHEN ad.attr_key = 'bunker_mgo'         THEN mv.value_boolean END) AS bunker_mgo,
+    MAX(CASE WHEN ad.attr_key = 'bunker_lng'         THEN mv.value_boolean END) AS bunker_lng,
+    MAX(CASE WHEN ad.attr_key = 'bunker_methanol'    THEN mv.value_boolean END) AS bunker_methanol,
     -- Traffic & Congestion (ports_detail.json: traffic.*, congestion.*)
-    MAX(CASE WHEN ad.attr_key = 'annual_calls'       THEN av.value_numeric END) AS annual_calls,
-    MAX(CASE WHEN ad.attr_key = 'annual_cargo_mt'    THEN av.value_text    END) AS annual_cargo,
-    MAX(CASE WHEN ad.attr_key = 'annual_teu'         THEN av.value_text    END) AS teu,
-    MAX(CASE WHEN ad.attr_key = 'world_rank'         THEN av.value_numeric END) AS world_rank,
-    MAX(CASE WHEN ad.attr_key = 'avg_waiting_hrs'    THEN av.value_numeric END) AS avg_waiting_hrs,
-    MAX(CASE WHEN ad.attr_key = 'avg_turnaround_hrs' THEN av.value_numeric END) AS avg_turnaround_hrs,
-    MAX(CASE WHEN ad.attr_key = 'congestion_risk'    THEN av.value_text    END) AS congestion_risk,
+    MAX(CASE WHEN ad.attr_key = 'annual_calls'       THEN mv.value_numeric END) AS annual_calls,
+    MAX(CASE WHEN ad.attr_key = 'annual_cargo_mt'    THEN mv.value_text    END) AS annual_cargo,
+    MAX(CASE WHEN ad.attr_key = 'annual_teu'         THEN mv.value_text    END) AS teu,
+    MAX(CASE WHEN ad.attr_key = 'world_rank'         THEN mv.value_numeric END) AS world_rank,
+    MAX(CASE WHEN ad.attr_key = 'avg_waiting_hrs'    THEN mv.value_numeric END) AS avg_waiting_hrs,
+    MAX(CASE WHEN ad.attr_key = 'avg_turnaround_hrs' THEN mv.value_numeric END) AS avg_turnaround_hrs,
+    MAX(CASE WHEN ad.attr_key = 'congestion_risk'    THEN mv.value_text    END) AS congestion_risk,
     -- PSC (ports_detail.json: psc.*)
-    MAX(CASE WHEN ad.attr_key = 'psc_total_insp'     THEN av.value_numeric END) AS psc_total_insp,
-    MAX(CASE WHEN ad.attr_key = 'psc_detentions'     THEN av.value_numeric END) AS psc_detentions,
-    MAX(CASE WHEN ad.attr_key = 'psc_det_rate'       THEN av.value_numeric END) AS psc_det_rate_pct,
-    MAX(CASE WHEN ad.attr_key = 'psc_avg_def'        THEN av.value_numeric END) AS psc_avg_def,
+    MAX(CASE WHEN ad.attr_key = 'psc_total_insp'     THEN mv.value_numeric END) AS psc_total_insp,
+    MAX(CASE WHEN ad.attr_key = 'psc_detentions'     THEN mv.value_numeric END) AS psc_detentions,
+    MAX(CASE WHEN ad.attr_key = 'psc_det_rate'       THEN mv.value_numeric END) AS psc_det_rate_pct,
+    MAX(CASE WHEN ad.attr_key = 'psc_avg_def'        THEN mv.value_numeric END) AS psc_avg_def,
     -- Location
     pl.latitude,
     pl.longitude,
@@ -824,12 +963,12 @@ SELECT
     pl.utc_offset,
     pl.coastline
 FROM port.entity e
-LEFT JOIN port.attr_value av
-    ON  av.unlocode       = e.unlocode
-    AND av.valid_to       IS NULL
-    AND av.sys_to         IS NULL
-    AND av.workflow_state = 'APPROVED'
-LEFT JOIN registry.attribute_def ad ON ad.attr_id = av.attr_id
+LEFT JOIN port.master_value mv
+    ON  mv.unlocode       = e.unlocode
+    AND mv.valid_to       IS NULL
+    AND mv.sys_to         IS NULL
+    AND mv.workflow_state = 'APPROVED'
+LEFT JOIN registry.attribute_def ad ON ad.attr_id = mv.attr_id
 LEFT JOIN port.location          pl ON pl.unlocode = e.unlocode
 GROUP BY e.unlocode,
          pl.latitude, pl.longitude, pl.geom, pl.timezone, pl.utc_offset, pl.coastline;
@@ -901,6 +1040,42 @@ CREATE INDEX idx_cav_current ON company.attr_value (company_id, attr_id, confide
 CREATE RULE company_av_no_update AS ON UPDATE TO company.attr_value DO INSTEAD NOTHING;
 CREATE RULE company_av_no_delete AS ON DELETE TO company.attr_value DO INSTEAD NOTHING;
 
+-- Gold layer — explicitly approved master record for company attributes.
+CREATE TABLE company.master_value (
+    mv_id           BIGSERIAL       NOT NULL,
+    company_id      VARCHAR(20)     NOT NULL REFERENCES company.entity (company_id),
+    attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
+    value_text      TEXT,
+    value_numeric   NUMERIC(20,6),
+    value_boolean   BOOLEAN,
+    value_date      DATE,
+    value_json      JSONB,
+    entry_type      VARCHAR(20)     NOT NULL
+                    CHECK (entry_type IN ('VENDOR_PROMOTED','MANUAL_ENTRY','BACKDATED','CONFLICT_RESOLVED')),
+    source_av_id    BIGINT,
+    source_id       SMALLINT        REFERENCES registry.source_def (source_id),
+    pr_id           BIGINT          REFERENCES workflow.promotion_request (pr_id),
+    draft_id        BIGINT          REFERENCES workflow.edit_draft (draft_id),
+    entered_by      INTEGER,
+    approved_by     INTEGER,
+    valid_from      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    valid_to        TIMESTAMPTZ,
+    sys_from        TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    sys_to          TIMESTAMPTZ,
+    workflow_state  VARCHAR(20)     NOT NULL DEFAULT 'APPROVED'
+                    CHECK (workflow_state IN ('APPROVED','SUPERSEDED','REJECTED')),
+    PRIMARY KEY (mv_id)
+) PARTITION BY RANGE (sys_from);
+
+CREATE TABLE company.master_value_2024 PARTITION OF company.master_value FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+CREATE TABLE company.master_value_2025 PARTITION OF company.master_value FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
+CREATE TABLE company.master_value_2026 PARTITION OF company.master_value FOR VALUES FROM ('2026-01-01') TO ('2027-01-01');
+CREATE TABLE company.master_value_overflow PARTITION OF company.master_value DEFAULT;
+
+CREATE INDEX idx_cmv_company_attr ON company.master_value (company_id, attr_id);
+CREATE INDEX idx_cmv_current      ON company.master_value (company_id, attr_id)
+    WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state = 'APPROVED';
+
 -- Bronze layer
 CREATE TABLE company.raw_ingest (
     raw_id          BIGSERIAL       NOT NULL,
@@ -922,6 +1097,7 @@ CREATE TABLE company.raw_ingest_overflow PARTITION OF company.raw_ingest DEFAULT
 
 -- Current-state view — columns mirror companies_detail.json field names
 -- Nested objects (fleet, doc, ism, psc, financial, credit, sanctions, kyc, esg) flattened
+-- Source: company.master_value (gold layer) — only explicitly approved master values appear here.
 CREATE MATERIALIZED VIEW company.v_current AS
 SELECT
     e.company_id,
@@ -930,54 +1106,54 @@ SELECT
     e.lei,
     e.duns,
     -- Core identity (companies_detail.json: name, fullName, country, city, type, status)
-    MAX(CASE WHEN ad.attr_key = 'company_name'        THEN av.value_text    END) AS name,
-    MAX(CASE WHEN ad.attr_key = 'company_full_name'   THEN av.value_text    END) AS full_name,
-    MAX(CASE WHEN ad.attr_key = 'company_type'        THEN av.value_text    END) AS type,
-    MAX(CASE WHEN ad.attr_key = 'company_status'      THEN av.value_text    END) AS status,
-    MAX(CASE WHEN ad.attr_key = 'country_of_control'  THEN av.value_text    END) AS country,
-    MAX(CASE WHEN ad.attr_key = 'city'                THEN av.value_text    END) AS city,
-    MAX(CASE WHEN ad.attr_key = 'company_roles'       THEN av.value_text    END) AS roles,
-    MAX(CASE WHEN ad.attr_key = 'established_year'    THEN av.value_numeric END) AS established,
+    MAX(CASE WHEN ad.attr_key = 'company_name'        THEN mv.value_text    END) AS name,
+    MAX(CASE WHEN ad.attr_key = 'company_full_name'   THEN mv.value_text    END) AS full_name,
+    MAX(CASE WHEN ad.attr_key = 'company_type'        THEN mv.value_text    END) AS type,
+    MAX(CASE WHEN ad.attr_key = 'company_status'      THEN mv.value_text    END) AS status,
+    MAX(CASE WHEN ad.attr_key = 'country_of_control'  THEN mv.value_text    END) AS country,
+    MAX(CASE WHEN ad.attr_key = 'city'                THEN mv.value_text    END) AS city,
+    MAX(CASE WHEN ad.attr_key = 'company_roles'       THEN mv.value_text    END) AS roles,
+    MAX(CASE WHEN ad.attr_key = 'established_year'    THEN mv.value_numeric END) AS established,
     -- Fleet (companies_detail.json: fleet.owned, fleet.managed, fleet.totalDwt)
-    MAX(CASE WHEN ad.attr_key = 'fleet_owned'         THEN av.value_numeric END) AS vessels_owned,
-    MAX(CASE WHEN ad.attr_key = 'fleet_managed'       THEN av.value_numeric END) AS vessels_managed,
-    MAX(CASE WHEN ad.attr_key = 'fleet_total_dwt'     THEN av.value_numeric END) AS total_dwt_mt,
-    MAX(CASE WHEN ad.attr_key = 'fleet_avg_age'       THEN av.value_numeric END) AS avg_fleet_age,
+    MAX(CASE WHEN ad.attr_key = 'fleet_owned'         THEN mv.value_numeric END) AS vessels_owned,
+    MAX(CASE WHEN ad.attr_key = 'fleet_managed'       THEN mv.value_numeric END) AS vessels_managed,
+    MAX(CASE WHEN ad.attr_key = 'fleet_total_dwt'     THEN mv.value_numeric END) AS total_dwt_mt,
+    MAX(CASE WHEN ad.attr_key = 'fleet_avg_age'       THEN mv.value_numeric END) AS avg_fleet_age,
     -- DOC & ISM (companies_detail.json: doc.*, ism.*)
-    MAX(CASE WHEN ad.attr_key = 'doc_issued'          THEN av.value_text    END) AS doc_issued,
-    MAX(CASE WHEN ad.attr_key = 'doc_expiry'          THEN av.value_text    END) AS doc_expiry,
-    MAX(CASE WHEN ad.attr_key = 'ism_audit_date'      THEN av.value_text    END) AS ism_audit_date,
-    MAX(CASE WHEN ad.attr_key = 'ism_status'          THEN av.value_text    END) AS ism_status,
+    MAX(CASE WHEN ad.attr_key = 'doc_issued'          THEN mv.value_text    END) AS doc_issued,
+    MAX(CASE WHEN ad.attr_key = 'doc_expiry'          THEN mv.value_text    END) AS doc_expiry,
+    MAX(CASE WHEN ad.attr_key = 'ism_audit_date'      THEN mv.value_text    END) AS ism_audit_date,
+    MAX(CASE WHEN ad.attr_key = 'ism_status'          THEN mv.value_text    END) AS ism_status,
     -- PSC record (companies_detail.json: psc.*)
-    MAX(CASE WHEN ad.attr_key = 'psc_inspections'     THEN av.value_numeric END) AS psc_total_insp,
-    MAX(CASE WHEN ad.attr_key = 'psc_detentions'      THEN av.value_numeric END) AS psc_detentions,
-    MAX(CASE WHEN ad.attr_key = 'psc_det_rate'        THEN av.value_numeric END) AS psc_det_rate_pct,
+    MAX(CASE WHEN ad.attr_key = 'psc_inspections'     THEN mv.value_numeric END) AS psc_total_insp,
+    MAX(CASE WHEN ad.attr_key = 'psc_detentions'      THEN mv.value_numeric END) AS psc_detentions,
+    MAX(CASE WHEN ad.attr_key = 'psc_det_rate'        THEN mv.value_numeric END) AS psc_det_rate_pct,
     -- Financial (companies_detail.json: financial.*)
-    MAX(CASE WHEN ad.attr_key = 'revenue_usd'         THEN av.value_numeric END) AS revenue_usd_m,
-    MAX(CASE WHEN ad.attr_key = 'ebitda_usd'          THEN av.value_numeric END) AS ebitda_usd_m,
-    MAX(CASE WHEN ad.attr_key = 'net_profit_usd'      THEN av.value_numeric END) AS net_profit_usd_m,
+    MAX(CASE WHEN ad.attr_key = 'revenue_usd'         THEN mv.value_numeric END) AS revenue_usd_m,
+    MAX(CASE WHEN ad.attr_key = 'ebitda_usd'          THEN mv.value_numeric END) AS ebitda_usd_m,
+    MAX(CASE WHEN ad.attr_key = 'net_profit_usd'      THEN mv.value_numeric END) AS net_profit_usd_m,
     -- Credit (companies_detail.json: credit.*)
-    MAX(CASE WHEN ad.attr_key = 'credit_rating'       THEN av.value_text    END) AS credit_rating,
-    MAX(CASE WHEN ad.attr_key = 'credit_agency'       THEN av.value_text    END) AS credit_agency,
-    MAX(CASE WHEN ad.attr_key = 'credit_outlook'      THEN av.value_text    END) AS credit_outlook,
+    MAX(CASE WHEN ad.attr_key = 'credit_rating'       THEN mv.value_text    END) AS credit_rating,
+    MAX(CASE WHEN ad.attr_key = 'credit_agency'       THEN mv.value_text    END) AS credit_agency,
+    MAX(CASE WHEN ad.attr_key = 'credit_outlook'      THEN mv.value_text    END) AS credit_outlook,
     -- Sanctions (companies_detail.json: sanctions.*)
-    MAX(CASE WHEN ad.attr_key = 'sanctions_clear'     THEN av.value_boolean END) AS sanctions_clear,
-    MAX(CASE WHEN ad.attr_key = 'sanctions_screened'  THEN av.value_text    END) AS sanctions_screened_at,
+    MAX(CASE WHEN ad.attr_key = 'sanctions_clear'     THEN mv.value_boolean END) AS sanctions_clear,
+    MAX(CASE WHEN ad.attr_key = 'sanctions_screened'  THEN mv.value_text    END) AS sanctions_screened_at,
     -- KYC (companies_detail.json: kyc.*)
-    MAX(CASE WHEN ad.attr_key = 'kyc_status'          THEN av.value_text    END) AS kyc_status,
-    MAX(CASE WHEN ad.attr_key = 'kyc_reviewed'        THEN av.value_text    END) AS kyc_reviewed_at,
-    MAX(CASE WHEN ad.attr_key = 'kyc_risk_level'      THEN av.value_text    END) AS kyc_risk_level,
+    MAX(CASE WHEN ad.attr_key = 'kyc_status'          THEN mv.value_text    END) AS kyc_status,
+    MAX(CASE WHEN ad.attr_key = 'kyc_reviewed'        THEN mv.value_text    END) AS kyc_reviewed_at,
+    MAX(CASE WHEN ad.attr_key = 'kyc_risk_level'      THEN mv.value_text    END) AS kyc_risk_level,
     -- ESG (companies_detail.json: esg.*)
-    MAX(CASE WHEN ad.attr_key = 'esg_score'           THEN av.value_numeric END) AS esg_score,
-    MAX(CASE WHEN ad.attr_key = 'esg_env_score'       THEN av.value_numeric END) AS esg_env_score,
-    MAX(CASE WHEN ad.attr_key = 'esg_rating'          THEN av.value_text    END) AS esg_rating
+    MAX(CASE WHEN ad.attr_key = 'esg_score'           THEN mv.value_numeric END) AS esg_score,
+    MAX(CASE WHEN ad.attr_key = 'esg_env_score'       THEN mv.value_numeric END) AS esg_env_score,
+    MAX(CASE WHEN ad.attr_key = 'esg_rating'          THEN mv.value_text    END) AS esg_rating
 FROM company.entity e
-LEFT JOIN company.attr_value av
-    ON  av.company_id     = e.company_id
-    AND av.valid_to       IS NULL
-    AND av.sys_to         IS NULL
-    AND av.workflow_state = 'APPROVED'
-LEFT JOIN registry.attribute_def ad ON ad.attr_id = av.attr_id
+LEFT JOIN company.master_value mv
+    ON  mv.company_id     = e.company_id
+    AND mv.valid_to       IS NULL
+    AND mv.sys_to         IS NULL
+    AND mv.workflow_state = 'APPROVED'
+LEFT JOIN registry.attribute_def ad ON ad.attr_id = mv.attr_id
 GROUP BY e.company_id, e.id_type, e.lrno, e.lei, e.duns;
 
 CREATE UNIQUE INDEX ON company.v_current (company_id);

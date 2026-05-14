@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript Data Wrappers — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+
+/* NAV */
+nav{background:#0D1F3C;padding:0 32px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(13,31,60,.25)}
+.nav-brand{font-size:11.5px;font-weight:700;color:#8AACCC;letter-spacing:.12em;text-transform:uppercase;padding:14px 20px 14px 0;border-right:1px solid rgba(200,216,236,.18);margin-right:8px;white-space:nowrap}
+.nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.nav-links a{font-size:12px;font-weight:500;color:#C8D8EC;text-decoration:none;padding:14px 14px;border-radius:4px;transition:background .15s,color .15s;white-space:nowrap}
+.nav-links a:hover{background:rgba(21,88,214,.35);color:#fff}
+.nav-links a.active{background:#1558d6;color:#fff;font-weight:600}
+.nav-links a.hub{color:#E07000;font-weight:600}
+.nav-links a.hub:hover{background:rgba(224,112,0,.18);color:#E07000}
+
+/* PAGE */
+.page{max-width:1160px;margin:0 auto;padding:52px 32px 72px}
+
+/* HEADER */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:12px}
+h1{font-size:38px;font-weight:800;line-height:1.1;margin-bottom:10px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.subtitle{font-size:14px;color:#3A5070;margin-bottom:44px;line-height:1.65;max-width:820px}
+
+/* SECTION HEADINGS */
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:2px solid #E07000;margin-bottom:28px;margin-top:56px}
+.section-title:first-of-type{margin-top:0}
+
+/* WRAPPER CARDS */
+.wrapper-card{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:24px}
+.wrapper-header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid #C8D8EC;background:#fff}
+.wrapper-accent{width:5px;min-width:5px;border-radius:3px;align-self:stretch;background:#E07000}
+.wrapper-num{font-size:10px;font-weight:800;color:#8AACCC;letter-spacing:.1em;padding:3px 8px;background:#F0F4FA;border:1px solid #C8D8EC;border-radius:6px;white-space:nowrap}
+.wrapper-name{font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#E07000}
+.wrapper-desc{font-size:12px;color:#5A7AAA;margin-left:auto;font-style:italic;text-align:right}
+
+.wrapper-body{padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+
+/* META ROWS */
+.meta-grid{display:grid;grid-template-columns:140px 1fr;gap:0}
+.meta-row{display:contents}
+.meta-label{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;padding:7px 14px 7px 0;display:flex;align-items:flex-start;border-bottom:1px solid #F0F4FA}
+.meta-val{font-size:12.5px;color:#0D1F3C;padding:7px 0;border-bottom:1px solid #F0F4FA;line-height:1.6}
+.meta-val em{font-style:italic;color:#5A7AAA}
+
+/* IMPORTS / EXPORTS */
+.pill-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.imp-pill{font-family:'Courier New',monospace;font-size:11px;background:#FEF3E6;color:#E07000;border:1px solid rgba(224,112,0,.2);border-radius:4px;padding:2px 7px}
+.exp-pill{font-family:'Courier New',monospace;font-size:11px;background:#EEF2FF;color:#1558d6;border:1px solid rgba(21,88,214,.18);border-radius:4px;padding:2px 7px}
+.exp-row{display:flex;flex-direction:column;gap:3px;padding:6px 0;border-bottom:1px solid #F4F6FB}
+.exp-row:last-child{border-bottom:none}
+.exp-row-inner{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.exp-name{font-family:'Courier New',monospace;font-size:12.5px;font-weight:700;color:#1558d6;background:#EEF2FF;padding:1px 6px;border-radius:3px}
+.exp-type{font-size:10.5px;font-weight:600;color:#8AACCC;background:#F0F4FA;padding:1px 6px;border-radius:10px;white-space:nowrap}
+.exp-by{font-size:11px;color:#5A7AAA;font-style:italic}
+
+/* FIELD MAPPING TABLES */
+.map-table-wrap{border:1px solid #C8D8EC;border-radius:8px;overflow:hidden}
+.map-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.map-table thead tr{background:#0D1F3C}
+.map-table thead th{color:#fff;font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:9px 12px;text-align:left;border-right:1px solid rgba(255,255,255,.08)}
+.map-table thead th:last-child{border-right:none}
+.map-table tbody tr:nth-child(odd){background:#fff}
+.map-table tbody tr:nth-child(even){background:#F8FAFC}
+.map-table tbody tr:hover{background:#EBF2FD}
+.map-table td{padding:7px 12px;border-bottom:1px solid #EEF2F8;vertical-align:top;line-height:1.5}
+.map-table td:last-child{border-right:none;color:#5A7AAA;font-size:11px}
+.map-table td code,.map-table td .field{font-family:'Courier New',monospace;font-size:10.5px;background:#EEF2FF;color:#1558d6;border-radius:3px;padding:1px 4px;white-space:nowrap}
+.map-table td .json-field{font-family:'Courier New',monospace;font-size:10.5px;background:#FEF3E6;color:#E07000;border-radius:3px;padding:1px 4px;white-space:nowrap}
+.map-table td .type-tag{font-size:10px;font-weight:600;color:#8AACCC;background:#F0F4FA;border-radius:10px;padding:1px 6px;white-space:nowrap}
+
+/* INLINE CODE */
+code{font-family:'Courier New',monospace;font-size:11px;background:#EEF2FF;color:#1558d6;border-radius:3px;padding:1px 4px;white-space:nowrap}
+
+/* GOTCHA BOX */
+.gotcha{background:#FEF3E6;border:1px solid rgba(224,112,0,.35);border-radius:8px;padding:12px 16px;font-size:12px;line-height:1.6;color:#5C3400}
+.gotcha strong{color:#E07000}
+.note-box{background:#F0F4FA;border:1px solid #C8D8EC;border-radius:8px;padding:12px 16px;font-size:12px;line-height:1.6;color:#3A5070}
+.note-box strong{color:#0D1F3C}
+
+/* DEPENDENCY TABLE */
+.table-wrap{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:#0D1F3C}
+thead th{color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:12px 16px;text-align:left;border-right:1px solid rgba(255,255,255,.08)}
+thead th:last-child{border-right:none}
+tbody tr:nth-child(odd){background:#fff}
+tbody tr:nth-child(even){background:#F8FAFC}
+tbody tr:hover{background:#E8F0FC}
+td{padding:10px 16px;border-bottom:1px solid #E8EFF8;color:#0D1F3C;vertical-align:middle;line-height:1.55}
+td:first-child{font-family:'Courier New',monospace;font-size:12px;color:#1558d6;font-weight:600}
+
+/* BADGE */
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px}
+.badge{background:#fff;border:1px solid #C8D8EC;border-radius:14px;padding:5px 12px;font-size:10.5px;font-weight:600;color:#1558d6}
+
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:20px;margin-top:56px;border-top:1px solid #C8D8EC}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Maritime Intel · Data Model</div>
+  <div class="nav-links">
+    <a href="datamodel_index.html" class="hub">&#8592; Hub</a>
+    <a href="datamodel_entities.html">Entity Relationships</a>
+    <a href="datamodel_schema.html">Schema Reference</a>
+    <a href="datamodel_json.html">JSON Files</a>
+    <a href="datamodel_wrappers.html" class="active">JS Wrappers</a>
+    <a href="datamodel_flow.html">Data Flow</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>JavaScript <span>Data Wrappers</span></h1>
+  <p class="subtitle">10 data wrapper modules in <code>src/data/</code> transform JSON files into typed, UI-ready arrays and maps consumed by React pages. All wrappers run at Vite module initialization time &mdash; no lazy loading.</p>
+  <div class="badge-row">
+    <div class="badge">10 Wrapper Modules</div>
+    <div class="badge">30 JSON Inputs</div>
+    <div class="badge">Vite Module Init</div>
+    <div class="badge">No Lazy Loading</div>
+    <div class="badge">O(1) Lookup Maps</div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 1: vessels.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 1 &mdash; vessels.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-01</span>
+      <span class="wrapper-name">vessels.js</span>
+      <span class="wrapper-desc">Core vessel master data &mdash; flattens deeply nested JSON into short-keyed objects</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">vessels.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row">
+          <div class="exp-row-inner"><span class="exp-name">VESSELS[]</span><span class="exp-type">array[25]</span></div>
+          <span class="exp-by">Consumed by: Vessels.jsx, VesselImages.jsx, useVesselFilter.js, SourceBadge, StatusBadge, VesselCard, FieldEditPanel</span>
+        </div>
+        <div class="exp-row">
+          <div class="exp-row-inner"><span class="exp-name">STATUS_CLASSES{}</span><span class="exp-type">object</span></div>
+          <span class="exp-by">Maps status &rarr; CSS class: 'In Service':'stA', 'Detained':'stR', 'In Drydock':'stD', 'Laid Up':'stI', 'Total Loss':'stR'</span>
+        </div>
+        <div class="exp-row">
+          <div class="exp-row-inner"><span class="exp-name">SRC_SHORT_CLASSES{}</span><span class="exp-type">object</span></div>
+          <span class="exp-by">Maps source code &rarr; CSS class for source badge coloring</span>
+        </div>
+        <div class="exp-row">
+          <div class="exp-row-inner"><span class="exp-name">srcBadgeClass(src)</span><span class="exp-type">&rarr; string</span></div>
+          <span class="exp-by">Returns CSS class for source badge given a source code</span>
+        </div>
+        <div class="exp-row">
+          <div class="exp-row-inner"><span class="exp-name">srcBadgeLabel(src)</span><span class="exp-type">&rarr; string</span></div>
+          <span class="exp-by">Returns short display label for a source code</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">VESSELS[] Field Mapping</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead>
+              <tr><th>JSON Field (source)</th><th>JS Property</th><th>Type</th><th>Transform / Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="json-field">id</span></td><td><span class="field">id</span></td><td><span class="type-tag">integer</span></td><td>Passthrough</td></tr>
+              <tr><td><span class="json-field">name</span></td><td><span class="field">nm</span></td><td><span class="type-tag">string</span></td><td>Vessel name, abbreviated key for table columns</td></tr>
+              <tr><td><span class="json-field">imo_number</span></td><td><span class="field">imo</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">mmsi_number</span></td><td><span class="field">mmsi</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">call_sign</span></td><td><span class="field">cs</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">flag_code</span></td><td><span class="field">fl</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">flag_name</span></td><td><span class="field">fn</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">flag_emoji</span></td><td><span class="field">flag</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">vessel_type</span></td><td><span class="field">ty</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">status</span></td><td><span class="field">st</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">last_updated</span></td><td><span class="field">up</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">dimensions.length_overall_m</span></td><td><span class="field">loa</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">dimensions.length_between_perp_m</span></td><td><span class="field">lbp</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">dimensions.beam_m</span></td><td><span class="field">beam</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">dimensions.depth_m</span></td><td><span class="field">depth</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">dimensions.max_draft_m</span></td><td><span class="field">maxDraft</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">dimensions.summer_draft_m</span></td><td><span class="field">sumDraft</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value}m"</code></td></tr>
+              <tr><td><span class="json-field">tonnage.deadweight_t</span></td><td><span class="field">dwt</span></td><td><span class="type-tag">string</span></td><td><code>toLocaleString()</code> formatted</td></tr>
+              <tr><td><span class="json-field">tonnage.deadweight_t</span></td><td><span class="field">dwtNum</span></td><td><span class="type-tag">number</span></td><td>Raw number for filter range comparisons</td></tr>
+              <tr><td><span class="json-field">tonnage.gross_t</span></td><td><span class="field">gt</span></td><td><span class="type-tag">string</span></td><td><code>toLocaleString()</code> formatted</td></tr>
+              <tr><td><span class="json-field">tonnage.gross_t</span></td><td><span class="field">gtNum</span></td><td><span class="type-tag">number</span></td><td>Raw number</td></tr>
+              <tr><td><span class="json-field">tonnage.net_t</span></td><td><span class="field">nt</span></td><td><span class="type-tag">string</span></td><td><code>toLocaleString()</code> formatted</td></tr>
+              <tr><td><span class="json-field">tonnage.net_t</span></td><td><span class="field">ntNum</span></td><td><span class="type-tag">number</span></td><td>Raw number</td></tr>
+              <tr><td><span class="json-field">construction.year_built</span></td><td><span class="field">yr</span></td><td><span class="type-tag">integer</span></td><td></td></tr>
+              <tr><td><span class="json-field">construction.shipyard</span></td><td><span class="field">yard</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">construction.hull_number</span></td><td><span class="field">hn</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">construction.build_country_code</span></td><td><span class="field">builtYard</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">machinery.main_engine</span></td><td><span class="field">eng</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">machinery.mcr_kw</span></td><td><span class="field">mcr</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value.toLocaleString()} kW"</code></td></tr>
+              <tr><td><span class="json-field">machinery.mcr_kw</span></td><td><span class="field">mcrNum</span></td><td><span class="type-tag">number</span></td><td>Raw number</td></tr>
+              <tr><td><span class="json-field">machinery.service_speed_kn</span></td><td><span class="field">spd</span></td><td><span class="type-tag">string</span></td><td>Formatted as <code>"${value} kn"</code></td></tr>
+              <tr><td><span class="json-field">machinery.service_speed_kn</span></td><td><span class="field">spdNum</span></td><td><span class="type-tag">number</span></td><td>Raw number</td></tr>
+              <tr><td><span class="json-field">machinery.fuel_type</span></td><td><span class="field">fuel</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">machinery.propulsion_type</span></td><td><span class="field">prp</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">cargo.teu_nominal</span></td><td><span class="field">teu</span></td><td><span class="type-tag">string|null</span></td><td><code>toLocaleString()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.teu_reefer</span></td><td><span class="field">teu_r</span></td><td><span class="type-tag">string|null</span></td><td><code>toLocaleString()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.car_equivalent_units</span></td><td><span class="field">ceu</span></td><td><span class="type-tag">string|null</span></td><td><code>toLocaleString()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.passengers</span></td><td><span class="field">pax</span></td><td><span class="type-tag">string|null</span></td><td><code>toLocaleString()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.cargo_holds</span></td><td><span class="field">holds</span></td><td><span class="type-tag">string|null</span></td><td><code>String()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.cargo_hatches</span></td><td><span class="field">hatches</span></td><td><span class="type-tag">string|null</span></td><td><code>String()</code> or null</td></tr>
+              <tr><td><span class="json-field">cargo.lane_metres</span></td><td><span class="field">lanm</span></td><td><span class="type-tag">string|null</span></td><td>Formatted or null</td></tr>
+              <tr><td><span class="json-field">ownership.registered_owner</span></td><td><span class="field">ow</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">ownership.beneficial_owner</span></td><td><span class="field">bo</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">ownership.commercial_operator</span></td><td><span class="field">op</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">ownership.technical_manager</span></td><td><span class="field">mg</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">ownership.pi_club</span></td><td><span class="field">pi</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">classification.class_society</span></td><td><span class="field">cls</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">classification.class_notation</span></td><td><span class="field">clsNot</span></td><td><span class="type-tag">string</span></td><td></td></tr>
+              <tr><td><span class="json-field">classification.ice_class</span></td><td><span class="field">ice</span></td><td><span class="type-tag">string</span></td><td>Defaults to <code>'None'</code> if absent</td></tr>
+              <tr><td><span class="json-field">classification.dp_class</span></td><td><span class="field">dp</span></td><td><span class="type-tag">string|null</span></td><td>null if not fitted</td></tr>
+              <tr><td><span class="json-field">safety.firefighting_capacity</span></td><td><span class="field">ffCap</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.bow_discharge</span></td><td><span class="field">bowDisch</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.stern_discharge</span></td><td><span class="field">sternDisch</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.crude_oil_washing</span></td><td><span class="field">cow</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.inert_gas_system</span></td><td><span class="field">igs</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.scrubber_type</span></td><td><span class="field">scrubberFitted</span></td><td><span class="type-tag">string|null</span></td><td>null if no scrubber fitted</td></tr>
+              <tr><td><span class="json-field">safety.helideck</span></td><td><span class="field">heli</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">safety.ballast_water_mgmt_plan</span></td><td><span class="field">bwmp</span></td><td><span class="type-tag">boolean</span></td><td></td></tr>
+              <tr><td><span class="json-field">current_position?.latitude</span></td><td><span class="field">lat</span></td><td><span class="type-tag">number|null</span></td><td>Optional chaining — nullable</td></tr>
+              <tr><td><span class="json-field">current_position?.longitude</span></td><td><span class="field">lon</span></td><td><span class="type-tag">number|null</span></td><td>Optional chaining — nullable</td></tr>
+              <tr><td><span class="json-field">current_position?.speed_over_ground</span></td><td><span class="field">sog</span></td><td><span class="type-tag">number|null</span></td><td>Optional chaining — nullable</td></tr>
+              <tr><td><span class="json-field">current_position?.course_over_ground</span></td><td><span class="field">cog</span></td><td><span class="type-tag">number|null</span></td><td>Optional chaining — nullable</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 2: mapData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 2 &mdash; mapData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-02</span>
+      <span class="wrapper-name">mapData.js</span>
+      <span class="wrapper-desc">GeoJSON and map layer builder &mdash; powers LiveMapCard and GIS/AIS page</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">vessels.json</span><span class="imp-pill">routes.json</span><span class="imp-pill">ports.json</span><span class="imp-pill">choke_points.json</span><span class="imp-pill">ais_positions.json</span><span class="imp-pill">gis_ports.json</span><span class="imp-pill">gis_companies.json</span><span class="imp-pill">mou_zones.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">VESSEL_GEO</span><span class="exp-type">GeoJSON FeatureCollection</span></div><span class="exp-by">From vessels.json &rarr; DashboardGrid LiveMapCard</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ROUTE_GEO</span><span class="exp-type">GeoJSON FeatureCollection</span></div><span class="exp-by">Passthrough from routes.json &rarr; DashboardGrid LiveMapCard</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PORT_GEO</span><span class="exp-type">GeoJSON FeatureCollection</span></div><span class="exp-by">Built from ports.json &rarr; DashboardGrid LiveMapCard</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">CHOKE_POINTS[]</span><span class="exp-type">array[7]</span></div><span class="exp-by">From choke_points.json &rarr; DashboardGrid LiveMapCard</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">AIS_VESSELS[]</span><span class="exp-type">array[25]</span></div><span class="exp-by">From ais_positions.json &rarr; GisAis.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">GIS_PORTS[]</span><span class="exp-type">array[12]</span></div><span class="exp-by">From gis_ports.json &rarr; GisAis.jsx, Movements.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">GIS_COMPANIES[]</span><span class="exp-type">array[12]</span></div><span class="exp-by">From gis_companies.json &rarr; GisAis.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">AIS_ROUTES[]</span><span class="exp-type">array (coordinate-swapped)</span></div><span class="exp-by">From routes.json with [lon,lat] &rarr; [lat,lon] swap &rarr; GisAis.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">AIS_CHOKE[]</span><span class="exp-type">array[7]</span></div><span class="exp-by">From choke_points.json &rarr; GisAis.jsx, Movements.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">MOU_ZONES[]</span><span class="exp-type">array[5]</span></div><span class="exp-by">From mou_zones.json &rarr; GisAis.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">AIS_STATUS_COLORS{}</span><span class="exp-type">object</span></div><span class="exp-by">Hardcoded status&rarr;color map &rarr; GisAis.jsx, Movements.jsx</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Special Logic &amp; Gotchas</div>
+        <div class="gotcha" style="margin-bottom:10px">
+          <strong>Coordinate swap for AIS_ROUTES:</strong> GeoJSON stores coordinates as [longitude, latitude] but Leaflet expects [latitude, longitude]. mapData.js converts:<br>
+          <code style="display:block;margin-top:6px;background:rgba(0,0,0,.08);color:#5C3400;padding:6px 10px;border-radius:4px">routeData.features.map(f => f.geometry.coordinates.map(([lon,lat]) => [lat,lon]))</code>
+        </div>
+        <div class="note-box" style="margin-bottom:10px">
+          <strong>VESSEL_GEO properties contain dual keys:</strong> Both short keys (<code>nm</code>/<code>ty</code>/<code>st</code>/<code>sog</code> for GisAis sidebar) AND long keys (<code>name</code>/<code>type</code>/<code>status</code>/<code>speed</code> for DashboardGrid popup and <code>vesselColor()</code>).
+        </div>
+        <div class="note-box" style="margin-bottom:10px">
+          <strong>PORT_GEO type derivation from global_rank:</strong> rank &le; 3 &rarr; <code>'mega'</code>, rank &le; 7 &rarr; <code>'major'</code>, else <code>'regional'</code>. Also derives <code>calls</code> from <code>throughput_teu</code> for popup display.
+        </div>
+        <div class="note-box" style="margin-bottom:10px">
+          <strong>choke_points.json uses <code>latitude</code>/<code>longitude</code> (not <code>lat</code>/<code>lon</code>):</strong> mapData.js reads <code>cp.latitude</code>, <code>cp.longitude</code> explicitly.
+        </div>
+        <div class="note-box">
+          <strong>gis_companies.json uses <code>hq_lat</code>/<code>hq_lon</code>:</strong> mapData.js reads <code>c.hq_lat</code>, <code>c.hq_lon</code> (not the generic lat/lon pattern).
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 3: pscData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 3 &mdash; pscData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-03</span>
+      <span class="wrapper-name">pscData.js</span>
+      <span class="wrapper-desc">Port State Control inspection data &mdash; flattens nested deficiencies and normalises MOU labels</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">psc_inspections.json</span><span class="imp-pill">psc_summary.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">INSPECTIONS[]</span><span class="exp-type">array[10]</span></div><span class="exp-by">Consumed by Psc.jsx and dashboardData.js &rarr; PSC_DATA[]</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PSC_KPIS</span><span class="exp-type">array</span></div><span class="exp-by">From psc_summary.json kpis[]</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">MOU_STATS</span><span class="exp-type">array</span></div><span class="exp-by">From psc_summary.json mou_stats[]</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">DEF_CATS</span><span class="exp-type">array</span></div><span class="exp-by">From psc_summary.json deficiency_categories[]</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">INSPECTIONS[] Field Mapping</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead>
+              <tr><th>JSON Field (source)</th><th>JS Property</th><th>Transform / Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="json-field">id</span></td><td><span class="field">id</span></td><td>Passthrough</td></tr>
+              <tr><td><span class="json-field">vessel_name</span></td><td><span class="field">v</span></td><td></td></tr>
+              <tr><td><span class="json-field">imo_number</span></td><td><span class="field">imo</span></td><td></td></tr>
+              <tr><td><span class="json-field">flag_display ?? ''</span></td><td><span class="field">flag</span></td><td>Nullish coalescing to empty string</td></tr>
+              <tr><td><span class="json-field">port_name</span></td><td><span class="field">port</span></td><td></td></tr>
+              <tr><td><span class="json-field">inspection_date</span></td><td><span class="field">date</span></td><td></td></tr>
+              <tr><td><span class="json-field">total_deficiencies</span></td><td><span class="field">defs</span></td><td></td></tr>
+              <tr><td><span class="json-field">detained ? 'DETENTION' : 'No detention'</span></td><td><span class="field">res</span></td><td>Boolean &rarr; string label</td></tr>
+              <tr><td><span class="json-field">deficiencies[].code</span></td><td><span class="field">codes[]</span></td><td>Extracted into flat array</td></tr>
+              <tr><td><span class="json-field">deficiencies[].description</span></td><td><span class="field">descs[]</span></td><td>Extracted into flat array</td></tr>
+              <tr><td><span class="json-field">deficiencies[].category ?? severity</span></td><td><span class="field">cats[]</span></td><td>Falls back to severity if category absent</td></tr>
+              <tr><td><span class="json-field">mou_region</span></td><td><span class="field">mou</span></td><td>See critical gotcha below</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="gotcha">
+        <strong>Critical gotcha &mdash; mou_region special case:</strong> If <code>mou_region === 'USCG'</code> then <code>mou = 'USCG'</code>, else <code>mou = `${mou_region} MOU`</code>. Without this fix, filters and MOU tabs in <code>Psc.jsx</code> break because the select option is "USCG" (plain) but the template literal would produce "USCG MOU".
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 4: movementsData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 4 &mdash; movementsData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-04</span>
+      <span class="wrapper-name">movementsData.js</span>
+      <span class="wrapper-desc">Voyage tracking data &mdash; vessel movements and port call history</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">movements.json</span><span class="imp-pill">port_calls.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">MOVEMENT_VESSELS[]</span><span class="exp-type">array[8]</span></div><span class="exp-by">Consumed by Movements.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PORT_CALLS[]</span><span class="exp-type">array[7]</span></div><span class="exp-by">Consumed by Movements.jsx</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">MOVEMENT_VESSELS[] Field Mapping</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>JSON Field</th><th>JS Property</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="json-field">id</span></td><td><span class="field">id</span></td><td></td></tr>
+              <tr><td><span class="json-field">name</span></td><td><span class="field">name</span></td><td></td></tr>
+              <tr><td><span class="json-field">imo</span></td><td><span class="field">imo</span></td><td></td></tr>
+              <tr><td><span class="json-field">type</span></td><td><span class="field">type</span></td><td></td></tr>
+              <tr><td><span class="json-field">flag</span></td><td><span class="field">flag</span></td><td></td></tr>
+              <tr><td><span class="json-field">status</span></td><td><span class="field">status</span></td><td></td></tr>
+              <tr><td><span class="json-field">speed_kn</span></td><td><span class="field">spd</span></td><td></td></tr>
+              <tr><td><span class="json-field">heading_deg</span></td><td><span class="field">hdg</span></td><td></td></tr>
+              <tr><td><span class="json-field">latitude</span></td><td><span class="field">lat</span></td><td></td></tr>
+              <tr><td><span class="json-field">longitude</span></td><td><span class="field">lon</span></td><td></td></tr>
+              <tr><td><span class="json-field">destination</span></td><td><span class="field">dest</span></td><td></td></tr>
+              <tr><td><span class="json-field">eta</span></td><td><span class="field">eta</span></td><td></td></tr>
+              <tr><td><span class="json-field">last_port</span></td><td><span class="field">lastPort</span></td><td></td></tr>
+              <tr><td><span class="json-field">ata ?? null</span></td><td><span class="field">ata</span></td><td>Nullish coalescing</td></tr>
+              <tr><td><span class="json-field">atd ?? null</span></td><td><span class="field">atd</span></td><td>Nullish coalescing</td></tr>
+              <tr><td><span class="json-field">cargo</span></td><td><span class="field">cargo</span></td><td></td></tr>
+              <tr><td><span class="json-field">dwt</span></td><td><span class="field">dwt</span></td><td></td></tr>
+              <tr><td><span class="json-field">route</span></td><td><span class="field">route</span></td><td>Route array passed through; each element has port, locode, lat, lon, ata/atd/eta, type (done/current/future)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">PORT_CALLS[] Field Mapping</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>JSON Field</th><th>JS Property</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="json-field">vessel</span></td><td><span class="field">vessel</span></td><td></td></tr>
+              <tr><td><span class="json-field">imo</span></td><td><span class="field">imo</span></td><td></td></tr>
+              <tr><td><span class="json-field">port</span></td><td><span class="field">port</span></td><td></td></tr>
+              <tr><td><span class="json-field">locode</span></td><td><span class="field">locode</span></td><td></td></tr>
+              <tr><td><span class="json-field">ata</span></td><td><span class="field">ata</span></td><td></td></tr>
+              <tr><td><span class="json-field">atd</span></td><td><span class="field">atd</span></td><td></td></tr>
+              <tr><td><span class="json-field">purpose</span></td><td><span class="field">purpose</span></td><td>Free text (e.g. 'Transit / Suez Canal')</td></tr>
+              <tr><td><span class="json-field">volume</span></td><td><span class="field">vol</span></td><td>Maps to cargo_volume in DB</td></tr>
+              <tr><td><span class="json-field">berth</span></td><td><span class="field">berth</span></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 5: fixturesData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 5 &mdash; fixturesData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-05</span>
+      <span class="wrapper-name">fixturesData.js</span>
+      <span class="wrapper-desc">Market &amp; freight data &mdash; indices, freight routes, fixtures, TC contracts</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">fixtures.json</span><span class="imp-pill">freight_routes.json</span><span class="imp-pill">tc_contracts.json</span><span class="imp-pill">market_indices.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FIXTURES[]</span><span class="exp-type">array[10] — passthrough</span></div><span class="exp-by">Consumed by Fixtures.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">INDICES[]</span><span class="exp-type">array[6]</span></div><span class="exp-by">Transformed from market_indices.json &rarr; Fixtures.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ROUTES[]</span><span class="exp-type">array[10]</span></div><span class="exp-by">Transformed from freight_routes.json &rarr; Fixtures.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">TC_CONTRACTS[]</span><span class="exp-type">array[5] — passthrough</span></div><span class="exp-by">Consumed by Fixtures.jsx</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">INDICES[] Field Mapping (from market_indices.json)</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>JSON Field</th><th>JS Property</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="json-field">code</span></td><td><span class="field">name</span></td><td>e.g. BDI, BDTI, BCI</td></tr>
+              <tr><td><span class="json-field">name</span></td><td><span class="field">full</span></td><td>Full index name</td></tr>
+              <tr><td><span class="json-field">value</span></td><td><span class="field">val</span></td><td></td></tr>
+              <tr><td><span class="json-field">prev</span></td><td><span class="field">prev</span></td><td></td></tr>
+              <tr><td><span class="json-field">w52_low</span></td><td><span class="field">w52lo</span></td><td></td></tr>
+              <tr><td><span class="json-field">w52_high</span></td><td><span class="field">w52hi</span></td><td></td></tr>
+              <tr><td><span class="json-field">color</span></td><td><span class="field">col</span></td><td></td></tr>
+              <tr><td><span class="json-field">description</span></td><td><span class="field">desc</span></td><td></td></tr>
+              <tr><td><span class="json-field">sparkline</span></td><td><span class="field">bars</span></td><td>15-element numeric array</td></tr>
+              <tr><td><span class="json-field">delta</span></td><td><em style="color:#c8102e">NOT MAPPED</em></td><td>delta is dropped here — only formatted in dashboardData.js &rarr; MARKET[]</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">ROUTES[] Field Mapping (from freight_routes.json)</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>JSON Field</th><th>JS Property</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="json-field">route</span></td><td><span class="field">route</span></td><td>e.g. TD3C, 5TC, TC2</td></tr>
+              <tr><td><span class="json-field">ws</span></td><td><span class="field">ws</span></td><td>Worldscale points — NULL for dry bulk</td></tr>
+              <tr><td><span class="json-field">tce</span></td><td><span class="field">tceDollar</span></td><td>$/day</td></tr>
+              <tr><td><span class="json-field">prev_tce</span></td><td><span class="field">prev</span></td><td>Previous TCE</td></tr>
+              <tr><td><span class="json-field">lo</span></td><td><span class="field">lo</span></td><td>52-week low</td></tr>
+              <tr><td><span class="json-field">hi</span></td><td><span class="field">hi</span></td><td>52-week high</td></tr>
+              <tr><td><span class="json-field">segment</span></td><td><span class="field">seg</span></td><td>e.g. VLCC, Suezmax, Capesize</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 6: dashboardData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 6 &mdash; dashboardData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-06</span>
+      <span class="wrapper-name">dashboardData.js</span>
+      <span class="wrapper-desc">Dashboard feed data &mdash; KPIs, fleet stats, market summary, live activity pool</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">fleet_kpis.json</span><span class="imp-pill">psc_inspections.json</span><span class="imp-pill">certificates.json</span><span class="imp-pill">market_indices.json</span><span class="imp-pill">activity_feed.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">KPIS[]</span></div><span class="exp-by">Fleet KPI cards &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FLEET_TYPES[]</span></div><span class="exp-by">Fleet-by-type chart &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FLAGS[]</span></div><span class="exp-by">Top flag states widget &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">CERTS[]</span></div><span class="exp-by">Certificate compliance summary &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PSC_DATA[]</span></div><span class="exp-by">Recent PSC detentions widget &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">MARKET[]</span></div><span class="exp-by">Market snapshot widget &rarr; DashboardGrid</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ACT_POOL[]</span></div><span class="exp-by">Activity pool (all 10 items) &rarr; LiveActivityCard (shuffled, 14 shown, refreshed every 30s)</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ACT_TIMES[]</span></div><span class="exp-by">Relative timestamp strings derived from activity timestamps</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">CERTS_EXPIRING[]</span></div><span class="exp-by">Certificates with days_until_expiry &le; 60 &rarr; CertsExpiringCard</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Key Transforms</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>Export</th><th>Transform Logic</th></tr></thead>
+            <tbody>
+              <tr><td><span class="field">MARKET[].delta</span></td><td><code>m.delta &gt; 0 ? `+${m.delta}` : String(m.delta)</code> — formats numeric delta as signed string. This is the ONLY place delta is formatted (fixturesData.js drops it).</td></tr>
+              <tr><td><span class="field">CERTS_EXPIRING</span></td><td>Filtered: <code>certificates.filter(c =&gt; c.days_until_expiry &lt;= 60)</code></td></tr>
+              <tr><td><span class="field">ACT_TIMES[]</span></td><td>Derived by comparing each activity timestamp to <code>activityData[0].timestamp</code> (the most recent). Outputs human strings: "Just now", "Xm ago", "Xh Ym ago".</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 7: attributeRegistry.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 7 &mdash; attributeRegistry.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-07</span>
+      <span class="wrapper-name">attributeRegistry.js</span>
+      <span class="wrapper-desc">Most complex wrapper &mdash; builds the attribute tree, filter configs, column map and applyFilters() from 650+ attribute definitions</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">attribute_definitions.json</span><span class="imp-pill">vesselTimeline.js (internal)</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ATTRIBUTE_TREE</span><span class="exp-type">nested object</span></div><span class="exp-by">= buildAttrTree('vessel') — section &rarr; group &rarr; attribute hierarchy for the AttrTreeSidebar</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FILTER_GROUPS</span><span class="exp-type">array</span></div><span class="exp-by">Filter group definitions with display order</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FILTER_CONFIGS[]</span><span class="exp-type">array</span></div><span class="exp-by">All filterable attributes, sorted by filter_group display order. Each config has: id, label, group, filterType, getValues(vessels), describe(f), apply(vessels, f)</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">FILTER_MAP{}</span><span class="exp-type">object</span></div><span class="exp-by">Keyed by attribute key for O(1) filter lookup</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ALL_VESSEL_COLUMNS[]</span><span class="exp-type">array</span></div><span class="exp-by">All is_column attributes with col_id mapping via COL_ID_MAP</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">COLUMN_GROUPS{}</span><span class="exp-type">object</span></div><span class="exp-by">Column group definitions keyed by group key</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">applyFilters(vessels, activeFilters)</span><span class="exp-type">function</span></div><span class="exp-by">Applies all active filters in sequence using reduce(). Returns filtered vessel array.</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">flattenFilterable(nodes)</span><span class="exp-type">function</span></div><span class="exp-by">Utility — flattens tree to filterable attributes only</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">flattenAll(nodes)</span><span class="exp-type">function</span></div><span class="exp-by">Utility — flattens entire tree</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">hasAnyFilterable(node)</span><span class="exp-type">function</span></div><span class="exp-by">Returns true if any descendant is filterable</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">getAttrDefs(entityType)</span><span class="exp-type">function</span></div><span class="exp-by">Returns raw attribute definitions for an entity type</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">buildAttrTree(entityType)</span><span class="exp-type">function</span></div><span class="exp-by">Builds the nested section &rarr; group &rarr; attribute structure</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Filter Types Supported</div>
+        <div class="map-table-wrap">
+          <table class="map-table">
+            <thead><tr><th>Filter Type</th><th>Match Strategy</th><th>Boolean Handling</th></tr></thead>
+            <tbody>
+              <tr><td><span class="field">typeahead</span></td><td>Substring match; exact match for IMO/MMSI fields</td><td>&mdash;</td></tr>
+              <tr><td><span class="field">multiselect</span></td><td>Exact value match from selected set</td><td>Yes/No &rarr; true/false; supports flag emoji values</td></tr>
+              <tr><td><span class="field">range</span></td><td>Numeric min/max comparison</td><td>Optional numOf/parseFloat transforms for string-formatted numbers</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="note-box">
+        <strong>COL_ID_MAP bridges attribute IDs to short column IDs:</strong> <code>attributeRegistry.js</code> maintains a <code>COL_ID_MAP</code> that translates <code>af-*</code> attribute IDs (e.g. <code>'af-dwt'</code>) to the short column IDs stored in <code>personas.json</code> vessel_columns arrays (e.g. <code>'dwt'</code>). This bridge is required because personas store column preferences using short IDs but the attribute tree uses prefixed IDs.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 8: personas.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 8 &mdash; personas.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-08</span>
+      <span class="wrapper-name">personas.js</span>
+      <span class="wrapper-desc">User persona definitions &mdash; dashboard card layouts, vessel column sets, attribute sections per persona</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list"><span class="imp-pill">personas.json</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PERSONAS{}</span><span class="exp-type">object</span></div><span class="exp-by">personas.json array transformed into keyed object by persona id &rarr; PreferencesContext, all pages</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">PERSONA_LIST[]</span><span class="exp-type">array[5]</span></div><span class="exp-by">Ordered array of all personas for picker UI</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">DEFAULT_PERSONA_ID</span><span class="exp-type">string</span></div><span class="exp-by">ID from personas.json.default_persona_id &rarr; PreferencesContext initial state</span></div>
+      </div>
+
+      <div class="note-box">
+        5 system personas: <strong>Ship Owner</strong>, <strong>Charterer</strong>, <strong>Compliance Officer</strong>, <strong>Port Agent</strong>, <strong>Analyst</strong>. Each persona defines: <code>vessel_columns[]</code> (short col IDs matching COL_ID_MAP), <code>attr_sections[]</code> (which sections show in vessel detail), and <code>dashboard_cards[]</code> with card_id/width pairs. dashboardCards are mapped from card_id/width pairs defined in personas.json.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 9: dashboardCards.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 9 &mdash; dashboardCards.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-09</span>
+      <span class="wrapper-name">dashboardCards.js</span>
+      <span class="wrapper-desc">Card catalog for the configurable dashboard &mdash; metadata for all available dashboard card types</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list"><span class="imp-pill">dashboard_cards.json</span></div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">CARD_CATALOG{}</span><span class="exp-type">object</span></div><span class="exp-by">dashboard_cards.json transformed into object keyed by card_id &rarr; CardCatalog component, DashboardCustomizer</span></div>
+      </div>
+
+      <div class="note-box">
+        <code>CARD_CATALOG</code> provides metadata for all renderable card types. card_id values include: <code>'kpi-row'</code>, <code>'live-map'</code>, <code>'live-activity'</code>, <code>'fleet-types'</code>, <code>'flag-states'</code>, <code>'certs-expiring'</code>, <code>'psc-detentions'</code>, <code>'market-snapshot'</code>, plus individual KPI cards <code>'kpi-{id}'</code>. Each entry carries title, description, category, defaultW (grid width), and icon.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER 10: etlData.js ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper 10 &mdash; etlData.js</div>
+
+  <div class="wrapper-card">
+    <div class="wrapper-header">
+      <div class="wrapper-accent"></div>
+      <span class="wrapper-num">W-10</span>
+      <span class="wrapper-name">etlData.js</span>
+      <span class="wrapper-desc">ETL monitoring data &mdash; feed configs, run history, conflict queue (all passthroughs)</span>
+    </div>
+    <div class="wrapper-body">
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Imports</div>
+        <div class="pill-list">
+          <span class="imp-pill">etl_feeds.json</span><span class="imp-pill">etl_runs.json</span><span class="imp-pill">etl_conflicts.json</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px">Exports</div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ETL_FEEDS[]</span><span class="exp-type">array[15] — passthrough</span></div><span class="exp-by">Consumed by ETL.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ETL_RUNS[]</span><span class="exp-type">array[10] — passthrough</span></div><span class="exp-by">Consumed by ETLRuns.jsx</span></div>
+        <div class="exp-row"><div class="exp-row-inner"><span class="exp-name">ETL_CONFLICTS[]</span><span class="exp-type">array[20] — passthrough</span></div><span class="exp-by">Consumed by ETL.jsx conflict queue tab</span></div>
+      </div>
+
+      <div class="note-box">
+        All three exports are simple passthroughs of their respective JSON arrays — no field renaming or transformation is applied. The JSON files already match the shape consumed by the ETL UI components.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WRAPPER DEPENDENCY GRAPH ═══════════════════════════════════ -->
+  <div class="section-title">Wrapper Dependency Graph</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Page / Consumer</th>
+          <th>Wrappers Used</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dashboard.jsx</td>
+          <td><code>dashboardData.js</code>, <code>mapData.js</code>, <code>dashboardCards.js</code>, <code>personas.js</code> (via PreferencesContext)</td>
+        </tr>
+        <tr>
+          <td>Vessels.jsx</td>
+          <td><code>vessels.js</code>, <code>attributeRegistry.js</code>, <code>personas.js</code></td>
+        </tr>
+        <tr>
+          <td>GisAis.jsx</td>
+          <td><code>mapData.js</code>, <code>attributeRegistry.js</code></td>
+        </tr>
+        <tr>
+          <td>Movements.jsx</td>
+          <td><code>movementsData.js</code>, <code>mapData.js</code></td>
+        </tr>
+        <tr>
+          <td>Psc.jsx</td>
+          <td><code>pscData.js</code></td>
+        </tr>
+        <tr>
+          <td>Fixtures.jsx</td>
+          <td><code>fixturesData.js</code></td>
+        </tr>
+        <tr>
+          <td>Ports.jsx</td>
+          <td><code>ports.js</code></td>
+        </tr>
+        <tr>
+          <td>Companies.jsx</td>
+          <td><code>companies.js</code></td>
+        </tr>
+        <tr>
+          <td>ETL.jsx / ETLRuns.jsx</td>
+          <td><code>etlData.js</code></td>
+        </tr>
+        <tr>
+          <td>All pages</td>
+          <td><code>personas.js</code> (via PreferencesContext provider wrapping the entire app)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    S&amp;P Global &middot; Maritime Intelligence Platform &middot; Data Model Documentation &middot; 2025
+  </footer>
+
+</div><!-- /page -->
+</body>
+</html>

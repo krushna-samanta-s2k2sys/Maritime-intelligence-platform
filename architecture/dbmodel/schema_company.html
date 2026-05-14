@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Schema — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#1A1040);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#A78BFA;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#A78BFA}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:760px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;color:#A78BFA}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;color:#C4B5FD;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(167,139,250,.07);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(167,139,250,.15);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(167,139,250,.04)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#C4B5FD;font-weight:600}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(167,139,250,.04);border-left:3px solid #A78BFA;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose strong{color:#fff}
+.rule-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:12px 16px;font-size:11px;color:#FCA5A5;margin:8px 0 16px;font-family:'JetBrains Mono',monospace}
+.rule-box strong{color:#F87171}
+.partition-box{background:rgba(251,146,60,.05);border:1px solid rgba(251,146,60,.2);border-radius:6px;padding:14px 16px;margin:8px 0 16px}
+.partition-box h4{font-size:10px;font-weight:700;color:#FB923C;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.partition-table{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.8}
+.partition-table span{color:#A78BFA}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:240px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.mv-box{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:16px;margin-bottom:20px}
+.mv-box h4{font-size:12px;font-weight:700;color:#A78BFA;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.mv-col-group{margin-bottom:10px}
+.mv-col-group strong{font-size:10px;font-weight:700;color:#60A5FA;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.mv-cols{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.9}
+.mv-cols span{color:#A78BFA}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#A78BFA;color:#000}.btn-pri:hover{background:#C4B5FD}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Company Schema</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_port.html">← Port</a>
+    <a href="schema_voyage.html">Next: Voyage &amp; Compliance →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Core Entity</div>
+  <h1>Company <span>Schema</span></h1>
+  <p class="sub">Three-layer architecture: Bronze (<code>raw_ingest</code>) → Silver (<code>attr_value</code>, vendor data, insert-only) → Gold (<code>master_value</code>, explicitly approved) → <code>v_current</code> materialized view. Covers fleet composition, financial metrics, credit ratings, KYC status, ESG scores and sanctions status. Supports multiple company ID systems (LRNO, LEI, DUNS). Vendor data requires explicit promotion approval before reaching the master layer.</p>
+</div>
+
+<div class="main">
+  <div class="badge-row">
+    <span class="badge">5 tables + 1 mat. view</span>
+    <span class="badge">Multi-ID: LRNO · LEI · DUNS</span>
+    <span class="badge">attr_value: 4 annual partitions</span>
+    <span class="badge">insert-only attr_value (RULE)</span>
+    <span class="badge">KYC + ESG + sanctions columns</span>
+    <span class="badge">CONCURRENT refresh</span>
+  </div>
+
+  <h2><span class="sc">company</span> Schema Tables</h2>
+
+  <h3>company.entity</h3>
+  <div class="purpose"><strong>Purpose:</strong> Anchor table — one row per maritime company. Supports three external ID systems in addition to the internal company_id: <strong>LRNO</strong> (Lloyd's Register Number), <strong>LEI</strong> (Legal Entity Identifier, 20 chars, ISO 17442), <strong>DUNS</strong> (Dun &amp; Bradstreet, 9 digits). All external IDs are unique-indexed for fast cross-system resolution. Mirrors gis_companies.json "id" field.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">company_id</td><td class="typ">VARCHAR(20)</td><td><span class="pk">PK</span></td><td>—</td><td>Internal company identifier. Format: 'COMP-001', 'OP-042'. Universal join key.</td></tr>
+        <tr><td class="col">id_type</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'INTERNAL'</td><td>Primary ID type: LRNO | LEI | DUNS | INTERNAL</td></tr>
+        <tr><td class="col">lrno</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NULLABLE <span class="uq">UNIQUE</span></div></td><td>NULL</td><td>Lloyd's Register Number — authoritative maritime company ID</td></tr>
+        <tr><td class="col">lei</td><td class="typ">CHAR(20)</td><td><div class="cc">NULLABLE <span class="uq">UNIQUE</span></div></td><td>NULL</td><td>ISO 17442 Legal Entity Identifier — used for sanctions and financial reporting</td></tr>
+        <tr><td class="col">duns</td><td class="typ">VARCHAR(9)</td><td><div class="cc">NULLABLE <span class="uq">UNIQUE</span></div></td><td>NULL</td><td>D&amp;B DUNS Number — used for credit and business intelligence</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When company was first added</td></tr>
+        <tr><td class="col">first_seen_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>First data received for this company</td></tr>
+        <tr><td class="col">first_source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Data source that first reported this company</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on company.entity</h4>
+    <div class="idx-row"><span class="idx-name">idx_company_lrno</span><span class="idx-def">(lrno) WHERE lrno IS NOT NULL — cross-system LRNO lookup</span></div>
+    <div class="idx-row"><span class="idx-name">idx_company_lei</span><span class="idx-def">(lei) WHERE lei IS NOT NULL — sanctions/LEI resolution</span></div>
+  </div>
+
+  <h3>company.attr_value — Silver Layer (vendor data)</h3>
+  <div class="purpose"><strong>Purpose:</strong> <strong>Silver layer</strong> — bi-temporal EAV for all inbound vendor company attributes. Insert-only by RULE. Records every data point as received from external providers (Clarksons, OFAC, KYC vendors, credit agencies). Does <strong>NOT</strong> drive the UI directly. Data must pass through <code>workflow.promotion_request</code> and be explicitly approved before it is written to <code>company.master_value</code> (gold layer). Covers all attributes in companies_detail.json: identity, fleet metrics, DOC/ISM certification, PSC history, financial KPIs, credit ratings, sanctions screening, KYC status and ESG scores.</div>
+  <div class="rule-box">
+    <strong>INSERT-ONLY RULES:</strong><br>
+    CREATE RULE company_av_no_update AS ON UPDATE TO company.attr_value DO INSTEAD NOTHING;<br>
+    CREATE RULE company_av_no_delete AS ON DELETE TO company.attr_value DO INSTEAD NOTHING;
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">av_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">company_id</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="fk">FK→company.entity</span></div></td><td>—</td><td>Company this value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Attribute: fleet_owned, revenue_usd, kyc_status, esg_score, etc.</td></tr>
+        <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">varied</td><td>NULLABLE</td><td>NULL</td><td>Typed value columns</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>COMMERCIAL_DATA, SANCTIONS, MANUAL, INTERNAL etc.</td></tr>
+        <tr><td class="col">confidence</td><td class="typ">NUMERIC(4,3)</td><td><div class="cc">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>0.5</td><td>Higher for authoritative sources (OFAC=1.0, Clarksons=0.90)</td></tr>
+        <tr><td class="col">valid_from / valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>Real-world temporal bounds</td></tr>
+        <tr><td class="col">sys_from / sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>System temporal bounds (sys_from = partition key)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>PENDING | APPROVED | REJECTED | SUPERSEDED</td></tr>
+        <tr><td class="col">draft_id / run_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK</span></div></td><td>NULL</td><td>Lineage: draft or ETL run</td></tr>
+        <tr><td class="col">qc_flags / qc_passed</td><td class="typ">TEXT[] / BOOLEAN</td><td>NULLABLE / NOT NULL</td><td>NULL / TRUE</td><td>QC ingest results</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (sys_from) — annual)</h4>
+    <div class="partition-table">
+      <span>company.attr_value_2024</span> → 2024-01-01 TO 2025-01-01<br>
+      <span>company.attr_value_2025</span> → 2025-01-01 TO 2026-01-01<br>
+      <span>company.attr_value_2026</span> → 2026-01-01 TO 2027-01-01<br>
+      <span>company.attr_value_overflow</span> → DEFAULT
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on company.attr_value</h4>
+    <div class="idx-row"><span class="idx-name">idx_cav_company_attr</span><span class="idx-def">(company_id, attr_id) — baseline lookup per company+attribute</span></div>
+    <div class="idx-row"><span class="idx-name">idx_cav_current</span><span class="idx-def">(company_id, attr_id, confidence DESC) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED'</span></div>
+  </div>
+
+  <h3>company.master_value — Gold Layer (approved master data)</h3>
+  <div class="purpose"><strong>Purpose:</strong> <strong>Gold layer</strong> — holds only explicitly approved company attribute values. Written by four paths: (1) <strong>Vendor promotion</strong> — approved <code>workflow.promotion_request</code>; (2) <strong>Manual entry</strong> — reviewer approves an <code>workflow.edit_draft</code> with source_type='MANUAL'; (3) <strong>Backdated insert</strong> — any of the above with <code>valid_from</code> set to a past date; (4) <strong>Auto-promotion</strong> — when <code>registry.source_attr_weight.auto_promote_to_master = TRUE</code> for fully trusted source+attribute pairs (e.g. OFAC sanctions flag). <code>v_current</code> reads exclusively from this table, never from <code>attr_value</code>.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">mv_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">company_id</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="fk">FK→company.entity</span></div></td><td>—</td><td>Company this value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Attribute being stored</td></tr>
+        <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">varied</td><td>NULLABLE</td><td>NULL</td><td>Typed value columns — same layout as attr_value</td></tr>
+        <tr><td class="col">entry_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>VENDOR_PROMOTED | MANUAL_ENTRY | BACKDATED | CONFLICT_RESOLVED</td></tr>
+        <tr><td class="col">source_av_id</td><td class="typ">BIGINT</td><td>NULLABLE</td><td>NULL</td><td>Back-link to originating attr_value row (no FK — cross-partition)</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Originating vendor source (NULL for manual entries)</td></tr>
+        <tr><td class="col">pr_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.promotion_request</span></div></td><td>NULL</td><td>Promotion request that created this master record</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.edit_draft</span></div></td><td>NULL</td><td>Edit draft for manual-entry path</td></tr>
+        <tr><td class="col">entered_by / approved_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>User IDs for audit trail</td></tr>
+        <tr><td class="col">valid_from / valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>Real-world temporal bounds (valid_from can be past date for backdating)</td></tr>
+        <tr><td class="col">sys_from / sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>System temporal bounds (sys_from = partition key)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>APPROVED | SUPERSEDED | REJECTED</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (sys_from) — annual)</h4>
+    <div class="partition-table">
+      <span>company.master_value_2024</span> → 2024-01-01 TO 2025-01-01<br>
+      <span>company.master_value_2025</span> → 2025-01-01 TO 2026-01-01<br>
+      <span>company.master_value_2026</span> → 2026-01-01 TO 2027-01-01<br>
+      <span>company.master_value_overflow</span> → DEFAULT
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on company.master_value</h4>
+    <div class="idx-row"><span class="idx-name">idx_cmv_company_attr</span><span class="idx-def">(company_id, attr_id) — baseline lookup per company+attribute</span></div>
+    <div class="idx-row"><span class="idx-name">idx_cmv_current</span><span class="idx-def">(company_id, attr_id) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — current master values</span></div>
+    <div class="idx-row"><span class="idx-name">idx_cmv_entry_type</span><span class="idx-def">(entry_type) — filter by promotion path</span></div>
+    <div class="idx-row"><span class="idx-name">idx_cmv_pr</span><span class="idx-def">(pr_id) WHERE pr_id IS NOT NULL — join back to promotion_request</span></div>
+  </div>
+
+  <h3>company.raw_ingest</h3>
+  <div class="purpose"><strong>Purpose:</strong> Bronze layer for company feed payloads (Clarksons fleet reports, OFAC SDN list snapshots, KYC provider exports). Annual partitions.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">raw_id + received_at</td><td class="typ">BIGSERIAL + TIMESTAMPTZ</td><td><span class="pk">PK</span> (composite)</td><td>—</td><td>Composite partition key</td></tr>
+        <tr><td class="col">feed_id / run_id</td><td class="typ">INTEGER / BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK</span></div></td><td>—</td><td>Feed and run lineage</td></tr>
+        <tr><td class="col">company_id</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>NULL</td><td>Company ID extracted from payload (NULL if parsing failed)</td></tr>
+        <tr><td class="col">raw_payload</td><td class="typ">JSONB</td><td>NOT NULL</td><td>—</td><td>Complete raw payload</td></tr>
+        <tr><td class="col">parse_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | MAPPED | PARTIAL | REJECTED</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (received_at) — annual)</h4>
+    <div class="partition-table">
+      <span>company.raw_ingest_2024</span> · <span>company.raw_ingest_2025</span> · <span>company.raw_ingest_2026</span> · <span>company.raw_ingest_overflow</span>
+    </div>
+  </div>
+
+  <h2><span class="sc">company</span> Materialized View</h2>
+
+  <h3>company.v_current (Materialized View)</h3>
+  <div class="purpose"><strong>Purpose:</strong> Wide current-state view — one row per company with all approved attributes pivoted into named columns. Reads exclusively from <code>company.master_value</code> (gold layer) — only explicitly promoted or manually entered values appear here. Also includes the entity-level multi-ID fields (id_type, lrno, lei, duns) directly from company.entity. Column names match companies_detail.json field paths. Refreshed CONCURRENTLY. Serves the company detail panel, GIS company layer and compliance analytics.</div>
+  <div class="mv-box">
+    <h4>company.v_current Column Groups — pivoted from master_value (gold layer)</h4>
+    <div class="mv-col-group">
+      <strong>Entity IDs (from company.entity directly)</strong>
+      <div class="mv-cols">
+        <span>company_id</span> · <span>id_type</span> · <span>lrno</span> · <span>lei</span> · <span>duns</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Identity (companies_detail.json: name, fullName, country, city, type, status, roles)</strong>
+      <div class="mv-cols">
+        <span>name</span> = company_name &nbsp;·&nbsp; <span>full_name</span> = company_full_name &nbsp;·&nbsp; <span>type</span> = company_type &nbsp;·&nbsp; <span>status</span> = company_status &nbsp;·&nbsp; <span>country</span> = country_of_control &nbsp;·&nbsp; <span>city</span> &nbsp;·&nbsp; <span>roles</span> = company_roles &nbsp;·&nbsp; <span>established</span> = established_year
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Fleet (companies_detail.json: fleet.owned, fleet.managed, fleet.totalDwt, fleet.avgAge)</strong>
+      <div class="mv-cols">
+        <span>vessels_owned</span> = fleet_owned &nbsp;·&nbsp; <span>vessels_managed</span> = fleet_managed &nbsp;·&nbsp; <span>total_dwt_mt</span> = fleet_total_dwt &nbsp;·&nbsp; <span>avg_fleet_age</span> = fleet_avg_age
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>DOC &amp; ISM Certification (companies_detail.json: doc.*, ism.*)</strong>
+      <div class="mv-cols">
+        <span>doc_issued</span> &nbsp;·&nbsp; <span>doc_expiry</span> &nbsp;·&nbsp; <span>ism_audit_date</span> &nbsp;·&nbsp; <span>ism_status</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>PSC Record (companies_detail.json: psc.*)</strong>
+      <div class="mv-cols">
+        <span>psc_total_insp</span> &nbsp;·&nbsp; <span>psc_detentions</span> &nbsp;·&nbsp; <span>psc_det_rate_pct</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Financial (companies_detail.json: financial.revenue, ebitda, netProfit)</strong>
+      <div class="mv-cols">
+        <span>revenue_usd_m</span> = revenue_usd &nbsp;·&nbsp; <span>ebitda_usd_m</span> = ebitda_usd &nbsp;·&nbsp; <span>net_profit_usd_m</span> = net_profit_usd
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Credit (companies_detail.json: credit.rating, agency, outlook)</strong>
+      <div class="mv-cols">
+        <span>credit_rating</span> &nbsp;·&nbsp; <span>credit_agency</span> &nbsp;·&nbsp; <span>credit_outlook</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Sanctions (companies_detail.json: sanctions.clear, screenedAt)</strong>
+      <div class="mv-cols">
+        <span>sanctions_clear</span> (BOOLEAN) &nbsp;·&nbsp; <span>sanctions_screened_at</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>KYC (companies_detail.json: kyc.status, reviewedAt, riskLevel)</strong>
+      <div class="mv-cols">
+        <span>kyc_status</span> &nbsp;·&nbsp; <span>kyc_reviewed_at</span> &nbsp;·&nbsp; <span>kyc_risk_level</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>ESG (companies_detail.json: esg.score, envScore, rating)</strong>
+      <div class="mv-cols">
+        <span>esg_score</span> &nbsp;·&nbsp; <span>esg_env_score</span> &nbsp;·&nbsp; <span>esg_rating</span>
+      </div>
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on company.v_current</h4>
+    <div class="idx-row"><span class="idx-name">UNIQUE (company_id)</span><span class="idx-def">— enables CONCURRENT refresh</span></div>
+    <div class="idx-row"><span class="idx-name">(name)</span><span class="idx-def">— company name search</span></div>
+    <div class="idx-row"><span class="idx-name">(country)</span><span class="idx-def">— country of control filter</span></div>
+    <div class="idx-row"><span class="idx-name">(type)</span><span class="idx-def">— company type filter (Owner, Operator, Manager, etc.)</span></div>
+    <div class="idx-row"><span class="idx-name">(status)</span><span class="idx-def">— active/inactive filter</span></div>
+    <div class="idx-row"><span class="idx-name">(kyc_risk_level)</span><span class="idx-def">— compliance risk queue filter</span></div>
+    <div class="idx-row"><span class="idx-name">(sanctions_clear)</span><span class="idx-def">— sanctions screening filter</span></div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — company Schema (Three-Layer Architecture)</h4>
+    <svg width="1060" height="520" viewBox="0 0 1060 520" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <defs>
+        <marker id="arrC" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#A78BFA" opacity=".8"/>
+        </marker>
+        <marker id="arrCOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#FB923C" opacity=".8"/>
+        </marker>
+        <marker id="arrCBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#4A9EFF" opacity=".8"/>
+        </marker>
+        <marker id="arrCGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#34D399" opacity=".8"/>
+        </marker>
+      </defs>
+
+      <!-- Layer labels -->
+      <text x="14" y="18" fill="#FB923C" font-size="9" font-weight="700" opacity=".7">BRONZE</text>
+      <text x="14" y="178" fill="#A78BFA" font-size="9" font-weight="700" opacity=".7">SILVER</text>
+      <text x="14" y="318" fill="#34D399" font-size="9" font-weight="700" opacity=".7">GOLD</text>
+      <text x="14" y="458" fill="#4A9EFF" font-size="9" font-weight="700" opacity=".7">VIEW</text>
+
+      <!-- Bronze layer bg -->
+      <rect x="0" y="22" width="1060" height="120" rx="4" fill="#FB923C" fill-opacity=".03" stroke="#FB923C" stroke-width=".5" stroke-opacity=".15"/>
+      <!-- Silver layer bg -->
+      <rect x="0" y="155" width="1060" height="135" rx="4" fill="#A78BFA" fill-opacity=".03" stroke="#A78BFA" stroke-width=".5" stroke-opacity=".15"/>
+      <!-- Gold layer bg -->
+      <rect x="0" y="298" width="1060" height="135" rx="4" fill="#34D399" fill-opacity=".03" stroke="#34D399" stroke-width=".5" stroke-opacity=".15"/>
+      <!-- View layer bg -->
+      <rect x="0" y="442" width="1060" height="70" rx="4" fill="#4A9EFF" fill-opacity=".03" stroke="#4A9EFF" stroke-width=".5" stroke-opacity=".15"/>
+
+      <!-- company.raw_ingest (Bronze) -->
+      <g>
+        <rect x="50" y="35" width="220" height="95" rx="6" fill="#1A1040" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="50" y="35" width="220" height="24" rx="6" fill="#FB923C" fill-opacity=".15"/>
+        <text x="160" y="52" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">company.raw_ingest</text>
+        <text x="60" y="74" fill="#FF9900" font-size="9">PK</text><text x="80" y="74" fill="#93B8D8">raw_id + received_at</text>
+        <text x="60" y="88" fill="#60A5FA" font-size="9">FK</text><text x="80" y="88" fill="#93B8D8">feed_id, run_id</text>
+        <text x="60" y="102" fill="#93B8D8" font-size="9">   company_id (nullable)</text>
+        <text x="60" y="116" fill="#FB923C" font-size="9">   4 annual partitions</text>
+      </g>
+
+      <!-- company.entity (anchor, spans Silver) -->
+      <g>
+        <rect x="400" y="170" width="220" height="110" rx="6" fill="#1A1040" stroke="#A78BFA" stroke-width="2"/>
+        <rect x="400" y="170" width="220" height="24" rx="6" fill="#A78BFA" fill-opacity=".2"/>
+        <text x="510" y="187" text-anchor="middle" fill="#A78BFA" font-weight="700" font-size="12">company.entity</text>
+        <text x="410" y="209" fill="#FF9900" font-size="9">PK</text><text x="430" y="209" fill="#93B8D8">company_id VARCHAR(20)</text>
+        <text x="410" y="223" fill="#34D399" font-size="9">UQ</text><text x="430" y="223" fill="#93B8D8">lrno · lei · duns</text>
+        <text x="410" y="237" fill="#93B8D8" font-size="9">   id_type CK: LRNO|LEI|DUNS</text>
+        <text x="410" y="251" fill="#60A5FA" font-size="9">FK</text><text x="430" y="251" fill="#93B8D8">first_source_id → source_def</text>
+        <text x="410" y="265" fill="#7A9CBB" font-size="9">   LRNO · LEI · DUNS indexes</text>
+      </g>
+
+      <!-- company.attr_value (Silver) -->
+      <g>
+        <rect x="50" y="168" width="250" height="112" rx="6" fill="#1A1040" stroke="#A78BFA" stroke-width="1.5"/>
+        <rect x="50" y="168" width="250" height="24" rx="6" fill="#A78BFA" fill-opacity=".15"/>
+        <text x="175" y="185" text-anchor="middle" fill="#A78BFA" font-weight="700" font-size="11">company.attr_value</text>
+        <text x="55" y="206" fill="#7A9CBB" font-size="8" font-style="italic">SILVER — vendor data (insert-only)</text>
+        <text x="55" y="220" fill="#FF9900" font-size="9">PK</text><text x="75" y="220" fill="#93B8D8">av_id BIGSERIAL</text>
+        <text x="55" y="234" fill="#60A5FA" font-size="9">FK</text><text x="75" y="234" fill="#93B8D8">company_id, attr_id, source_id</text>
+        <text x="55" y="248" fill="#93B8D8" font-size="9">   value_* · valid/sys · confidence</text>
+        <text x="55" y="262" fill="#F87171" font-size="9">   INSERT-ONLY (RULE) · 4 partitions</text>
+      </g>
+
+      <!-- workflow.promotion_request (Silver→Gold gate) -->
+      <g>
+        <rect x="680" y="168" width="240" height="112" rx="6" fill="#1A1040" stroke="#FBBF24" stroke-width="1.5"/>
+        <rect x="680" y="168" width="240" height="24" rx="6" fill="#FBBF24" fill-opacity=".12"/>
+        <text x="800" y="185" text-anchor="middle" fill="#FBBF24" font-weight="700" font-size="11">workflow.promotion_request</text>
+        <text x="690" y="206" fill="#7A9CBB" font-size="8" font-style="italic">Explicit approval gate (Silver→Gold)</text>
+        <text x="690" y="220" fill="#FF9900" font-size="9">PK</text><text x="710" y="220" fill="#93B8D8">pr_id BIGSERIAL</text>
+        <text x="690" y="234" fill="#60A5FA" font-size="9">FK</text><text x="710" y="234" fill="#93B8D8">attr_id, source_id, draft_id</text>
+        <text x="690" y="248" fill="#93B8D8" font-size="9">   entity_type + entity_id</text>
+        <text x="690" y="262" fill="#FBBF24" font-size="9">   state: PENDING→APPROVED|REJECTED</text>
+      </g>
+
+      <!-- company.master_value (Gold) -->
+      <g>
+        <rect x="50" y="308" width="280" height="112" rx="6" fill="#0D2A1F" stroke="#34D399" stroke-width="2"/>
+        <rect x="50" y="308" width="280" height="24" rx="6" fill="#34D399" fill-opacity=".15"/>
+        <text x="190" y="325" text-anchor="middle" fill="#34D399" font-weight="700" font-size="11">company.master_value</text>
+        <text x="60" y="346" fill="#7A9CBB" font-size="8" font-style="italic">GOLD — approved master data</text>
+        <text x="60" y="360" fill="#FF9900" font-size="9">PK</text><text x="80" y="360" fill="#93B8D8">mv_id BIGSERIAL</text>
+        <text x="60" y="374" fill="#60A5FA" font-size="9">FK</text><text x="80" y="374" fill="#93B8D8">company_id, attr_id, pr_id, draft_id</text>
+        <text x="60" y="388" fill="#93B8D8" font-size="9">   entry_type: VENDOR_PROMOTED|MANUAL|BACKDATED</text>
+        <text x="60" y="402" fill="#34D399" font-size="9">   4 annual partitions</text>
+      </g>
+
+      <!-- company.v_current (View) -->
+      <g>
+        <rect x="300" y="452" width="320" height="55" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="460" y="470" text-anchor="middle" fill="#4A9EFF" font-size="11" font-weight="700">company.v_current (MAT VIEW)</text>
+        <text x="310" y="486" fill="#93B8D8" font-size="9">   Reads from master_value (gold) · id from entity</text>
+        <text x="310" y="499" fill="#4A9EFF" font-size="9">   Pivots all attrs: fleet, ESG, KYC, financial, sanctions · 7 indexes</text>
+      </g>
+
+      <!-- Downstream refs box -->
+      <g>
+        <rect x="750" y="308" width="265" height="130" rx="6" fill="#0D1F3C" stroke="#5A7AAA" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="882" y="326" text-anchor="middle" fill="#5A7AAA" font-size="10" font-weight="700">Referenced by:</text>
+        <text x="760" y="348" fill="#7A9CBB" font-size="9">vessel.master_value:</text>
+        <text x="760" y="362" fill="#7A9CBB" font-size="9">  registered_owner, beneficial_owner</text>
+        <text x="760" y="376" fill="#7A9CBB" font-size="9">  commercial_operator, tech_manager</text>
+        <text x="760" y="396" fill="#7A9CBB" font-size="9">compliance.sanction:</text>
+        <text x="760" y="410" fill="#7A9CBB" font-size="9">  entity_type='company' + company_id</text>
+        <text x="760" y="428" fill="#7A9CBB" font-size="9">gis_companies.json → GIS layer</text>
+      </g>
+
+      <!-- Arrows: raw_ingest → attr_value (ETL parse) -->
+      <line x1="160" y1="130" x2="160" y2="168" stroke="#FB923C" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrCOrange)"/>
+      <!-- attr_value → entity -->
+      <line x1="300" y1="224" x2="400" y2="224" stroke="#A78BFA" stroke-width="1.5" marker-end="url(#arrC)"/>
+      <!-- attr_value → promotion_request -->
+      <line x1="300" y1="210" x2="680" y2="210" stroke="#FBBF24" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrC)"/>
+      <!-- promotion_request → master_value (approval) -->
+      <line x1="800" y1="280" x2="800" y2="310" stroke="#34D399" stroke-width="1.5" marker-end="url(#arrCGreen)"/>
+      <line x1="800" y1="310" x2="330" y2="360" stroke="#34D399" stroke-width="1.5" marker-end="url(#arrCGreen)"/>
+      <!-- entity → master_value -->
+      <line x1="510" y1="280" x2="510" y2="308" stroke="#A78BFA" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrC)"/>
+      <line x1="510" y1="308" x2="330" y2="360" stroke="#A78BFA" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arrC)"/>
+      <!-- master_value → v_current -->
+      <line x1="190" y1="420" x2="420" y2="452" stroke="#4A9EFF" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrCBlue)"/>
+      <!-- entity → v_current (direct IDs) -->
+      <line x1="510" y1="280" x2="510" y2="452" stroke="#4A9EFF" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrCBlue)"/>
+      <!-- master_value → downstream refs -->
+      <line x1="330" y1="380" x2="750" y2="380" stroke="#5A7AAA" stroke-width="1" stroke-dasharray="3,2"/>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_port.html">← Port Schema</a>
+    <a class="nav-btn btn-pri" href="schema_voyage.html">Next: Voyage &amp; Compliance →</a>
+  </div>
+</div>
+</body>
+</html>

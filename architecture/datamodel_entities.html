@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entity Relationships — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+
+/* NAV */
+nav{background:#0D1F3C;padding:0 32px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(13,31,60,.25)}
+.nav-brand{font-size:11.5px;font-weight:700;color:#8AACCC;letter-spacing:.12em;text-transform:uppercase;padding:14px 20px 14px 0;border-right:1px solid rgba(200,216,236,.18);margin-right:8px;white-space:nowrap}
+.nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.nav-links a{font-size:12px;font-weight:500;color:#C8D8EC;text-decoration:none;padding:14px 14px;border-radius:4px;transition:background .15s,color .15s;white-space:nowrap}
+.nav-links a:hover{background:rgba(21,88,214,.35);color:#fff}
+.nav-links a.active{background:#1558d6;color:#fff;font-weight:600}
+.nav-links a.hub{color:#E07000;font-weight:600}
+.nav-links a.hub:hover{background:rgba(224,112,0,.18);color:#E07000}
+
+/* PAGE */
+.page{max-width:1140px;margin:0 auto;padding:52px 32px 72px}
+
+/* HEADER */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:12px}
+h1{font-size:38px;font-weight:800;line-height:1.1;margin-bottom:10px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.subtitle{font-size:14px;color:#3A5070;margin-bottom:44px;line-height:1.65;max-width:780px}
+
+/* SECTION HEADINGS */
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:2px solid #E07000;margin-bottom:28px;margin-top:56px}
+.section-title:first-of-type{margin-top:0}
+
+/* ENTITY CARDS */
+.entity-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:8px}
+.ecard{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.06)}
+.ecard-header{padding:18px 22px 16px;border-bottom:1px solid #C8D8EC}
+.ecard-accent-bar{height:4px;margin:-18px -22px 14px;background:var(--accent)}
+.ecard-title{font-size:17px;font-weight:800;color:#0D1F3C;margin-bottom:4px}
+.ecard-pk{font-family:'Courier New',monospace;font-size:11.5px;color:var(--accent);background:rgba(0,0,0,.04);padding:3px 8px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.07)}
+.ecard-body{padding:18px 22px}
+.ecard-row{margin-bottom:13px}
+.ecard-row:last-child{margin-bottom:0}
+.ecard-label{font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#8AACCC;margin-bottom:5px}
+.ecard-val{font-size:12px;color:#0D1F3C;line-height:1.6}
+.ecard-val code{font-family:'Courier New',monospace;font-size:11px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:var(--accent);border:1px solid #C8D8EC}
+.ecard-val ul{list-style:none;padding:0}
+.ecard-val ul li{font-size:11.5px;color:#3A5070;padding:2px 0;padding-left:12px;position:relative}
+.ecard-val ul li::before{content:'·';position:absolute;left:0;color:#8AACCC}
+.vessel-card{--accent:#1558d6}
+.port-card{--accent:#137333}
+.company-card{--accent:#6200ea}
+
+/* FK TABLE */
+.fk-table-wrap{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:8px}
+.fk-table{width:100%;border-collapse:collapse;font-size:12px}
+.fk-table thead tr{background:#0D1F3C}
+.fk-table thead th{color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:12px 14px;text-align:left;border-right:1px solid rgba(255,255,255,.1)}
+.fk-table thead th:last-child{border-right:none}
+.fk-table tbody tr:nth-child(even){background:#F0F4FA}
+.fk-table tbody tr:nth-child(odd){background:#fff}
+.fk-table tbody tr:hover{background:#E8F0FC}
+.fk-table td{padding:9px 14px;border-bottom:1px solid #E8EFF8;color:#0D1F3C;vertical-align:top;line-height:1.5}
+.fk-table td:last-child{border-right:none}
+.fk-table td code{font-family:'Courier New',monospace;font-size:10.5px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:#1558d6;border:1px solid #C8D8EC;white-space:nowrap}
+.fk-arrow{color:#E07000;font-weight:700;font-size:13px;white-space:nowrap;text-align:center}
+.card-n1{display:inline-block;font-size:10px;font-weight:600;background:#EBF2FD;color:#1558d6;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.row-num{font-size:10px;color:#8AACCC;font-weight:700;min-width:24px;display:inline-block}
+
+/* SCHEMA DOMAIN MAP */
+.domain-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:8px}
+.domain-row-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8AACCC;margin-bottom:8px}
+.domain-chips-row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+.domain-chip{border-radius:10px;padding:16px 20px;border:1px solid transparent;flex:1;min-width:160px}
+.domain-chip h4{font-size:12px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.domain-chip h4 .schema-name{font-family:'Courier New',monospace;font-size:13px;font-weight:800}
+.domain-chip .tables{font-size:11px;opacity:.82;line-height:1.65}
+.domain-chip .note{font-size:10.5px;opacity:.7;margin-top:6px;font-style:italic}
+
+.dc-blue{background:#EBF2FD;border-color:#B8D0F5;color:#0D1F3C}
+.dc-blue h4{color:#1558d6}
+.dc-green{background:#E8F5EE;border-color:#A8D8BC;color:#0D1F3C}
+.dc-green h4{color:#137333}
+.dc-red{background:#FDECED;border-color:#F5B8BC;color:#0D1F3C}
+.dc-red h4{color:#c8102e}
+.dc-orange{background:#FEF3E6;border-color:#F5D08C;color:#0D1F3C}
+.dc-orange h4{color:#E07000}
+.dc-purple{background:#F3EAFD;border-color:#C9A8F5;color:#0D1F3C}
+.dc-purple h4{color:#6200ea}
+.dc-slate{background:#E8EFF8;border-color:#B8CCDF;color:#0D1F3C}
+.dc-slate h4{color:#0D1F3C}
+.dc-teal{background:#E5F5F5;border-color:#A8D8D8;color:#0D1F3C}
+.dc-teal h4{color:#007A7A}
+
+.domain-row-band{background:#fff;border:1px solid #C8D8EC;border-radius:12px;padding:18px 22px}
+.domain-row-band + .domain-row-band{margin-top:0}
+
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:20px;margin-top:56px;border-top:1px solid #C8D8EC}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Maritime Intel · Data Model</div>
+  <div class="nav-links">
+    <a href="datamodel_index.html" class="hub">&#8592; Hub</a>
+    <a href="datamodel_entities.html" class="active">Entity Relationships</a>
+    <a href="datamodel_schema.html">Schema Reference</a>
+    <a href="datamodel_json.html">JSON Files</a>
+    <a href="datamodel_wrappers.html">JS Wrappers</a>
+    <a href="datamodel_flow.html">Data Flow</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>Entity <span>Relationships</span></h1>
+  <p class="subtitle">Core entity graph, primary keys, foreign key relationships, and domain classification across all 12 PostgreSQL schemas.</p>
+
+  <!-- SECTION 1: CORE ENTITIES -->
+  <div class="section-title">Core Entities</div>
+
+  <div class="entity-cards">
+
+    <!-- VESSEL -->
+    <div class="ecard vessel-card">
+      <div class="ecard-header">
+        <div class="ecard-accent-bar"></div>
+        <div class="ecard-title">Vessel</div>
+        <div class="ecard-pk">imo_number CHAR(7)</div>
+      </div>
+      <div class="ecard-body">
+        <div class="ecard-row">
+          <div class="ecard-label">Source Files</div>
+          <div class="ecard-val"><ul>
+            <li><code>vessels.json</code> — 25 vessels</li>
+            <li><code>ais_positions.json</code> — 25 AIS records</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">JS Wrappers</div>
+          <div class="ecard-val"><ul>
+            <li><code>vessels.js</code> → <code>VESSELS[]</code></li>
+            <li><code>mapData.js</code> → <code>AIS_VESSELS[]</code></li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">DB Tables &amp; Views</div>
+          <div class="ecard-val"><ul>
+            <li><code>vessel.entity</code></li>
+            <li><code>vessel.attr_value</code> — EAV, partitioned</li>
+            <li><code>vessel.position</code> — AIS, partitioned</li>
+            <li><code>vessel.raw_ingest</code> — bronze</li>
+            <li><code>vessel.v_current</code> — materialized view</li>
+            <li><code>vessel.latest_position</code> — materialized view</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">Key Attributes</div>
+          <div class="ecard-val"><ul>
+            <li>Name, IMO, MMSI, flag, type, status</li>
+            <li>Dimensions: LOA / beam / draft</li>
+            <li>Tonnage: DWT / GT / NT</li>
+            <li>Machinery &amp; classification</li>
+            <li>Ownership: owner / operator / manager</li>
+            <li>Safety equipment, cargo capacity</li>
+            <li>Current position (lat / lon / speed)</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORT -->
+    <div class="ecard port-card">
+      <div class="ecard-header">
+        <div class="ecard-accent-bar"></div>
+        <div class="ecard-title">Port</div>
+        <div class="ecard-pk">unlocode VARCHAR(5)</div>
+      </div>
+      <div class="ecard-body">
+        <div class="ecard-row">
+          <div class="ecard-label">Source Files</div>
+          <div class="ecard-val"><ul>
+            <li><code>ports.json</code> — 12 ports GeoJSON</li>
+            <li><code>ports_detail.json</code> — 5 detailed</li>
+            <li><code>gis_ports.json</code> — 12 GIS layer</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">JS Wrappers</div>
+          <div class="ecard-val"><ul>
+            <li><code>ports.js</code> → <code>PORTS[]</code></li>
+            <li><code>mapData.js</code> → <code>GIS_PORTS[]</code>, <code>PORT_GEO</code></li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">DB Tables &amp; Views</div>
+          <div class="ecard-val"><ul>
+            <li><code>port.entity</code></li>
+            <li><code>port.attr_value</code> — EAV, partitioned</li>
+            <li><code>port.location</code> — geometry</li>
+            <li><code>port.raw_ingest</code> — bronze</li>
+            <li><code>port.v_current</code> — materialized view</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">Key Attributes</div>
+          <div class="ecard-val"><ul>
+            <li>Name, UNLOCODE, country, MOU region</li>
+            <li>Port type, channel limits (max draft/LOA/beam)</li>
+            <li>Berth count, services (pilotage/towage/bunker/drydock)</li>
+            <li>PSC stats, congestion risk</li>
+            <li>Annual calls / TEU, world rank</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANY -->
+    <div class="ecard company-card">
+      <div class="ecard-header">
+        <div class="ecard-accent-bar"></div>
+        <div class="ecard-title">Company</div>
+        <div class="ecard-pk">company_id VARCHAR(20)</div>
+      </div>
+      <div class="ecard-body">
+        <div class="ecard-row">
+          <div class="ecard-label">Source Files</div>
+          <div class="ecard-val"><ul>
+            <li><code>companies.json</code> — 15 companies</li>
+            <li><code>companies_detail.json</code> — 5 detailed</li>
+            <li><code>gis_companies.json</code> — 12 GIS layer</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">JS Wrappers</div>
+          <div class="ecard-val"><ul>
+            <li><code>companies.js</code> → <code>COMPANIES[]</code></li>
+            <li><code>mapData.js</code> → <code>GIS_COMPANIES[]</code></li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">DB Tables &amp; Views</div>
+          <div class="ecard-val"><ul>
+            <li><code>company.entity</code> — unique on lrno, lei, duns</li>
+            <li><code>company.attr_value</code> — EAV, partitioned</li>
+            <li><code>company.raw_ingest</code> — bronze</li>
+            <li><code>company.v_current</code> — materialized view</li>
+          </ul></div>
+        </div>
+        <div class="ecard-row">
+          <div class="ecard-label">Key Attributes</div>
+          <div class="ecard-val"><ul>
+            <li>Name, LR number, LEI, DUNS, type, country</li>
+            <li>Roles, fleet size / DWT, DOC / ISM status</li>
+            <li>PSC detention rate, financial (revenue / EBITDA)</li>
+            <li>Credit rating, sanctions status, KYC tier</li>
+            <li>ESG score</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /entity-cards -->
+
+  <!-- SECTION 2: FK RELATIONSHIPS -->
+  <div class="section-title">Foreign Key Relationships</div>
+
+  <div class="fk-table-wrap">
+    <table class="fk-table">
+      <thead>
+        <tr>
+          <th style="width:32px">#</th>
+          <th>From Table</th>
+          <th>Column</th>
+          <th style="width:28px;text-align:center"></th>
+          <th>To Table</th>
+          <th>Column</th>
+          <th>Cardinality</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="row-num">1</span></td>
+          <td><code>vessel.attr_value</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>EAV rows per vessel</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">2</span></td>
+          <td><code>vessel.attr_value</code></td>
+          <td><code>attr_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.attribute_def</code></td>
+          <td><code>attr_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Attribute catalog</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">3</span></td>
+          <td><code>vessel.attr_value</code></td>
+          <td><code>source_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.source_def</code></td>
+          <td><code>source_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Data provenance</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">4</span></td>
+          <td><code>vessel.attr_value</code></td>
+          <td><code>run_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>ingest.feed_run</code></td>
+          <td><code>run_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Ingest lineage</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">5</span></td>
+          <td><code>vessel.position</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>AIS position stream</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">6</span></td>
+          <td><code>vessel.raw_ingest</code></td>
+          <td><code>feed_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>ingest.feed_config</code></td>
+          <td><code>feed_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Feed source</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">7</span></td>
+          <td><code>port.attr_value</code></td>
+          <td><code>unlocode</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>EAV rows per port</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">8</span></td>
+          <td><code>port.location</code></td>
+          <td><code>unlocode</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">1:1</span></td>
+          <td>Geometry record</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">9</span></td>
+          <td><code>company.attr_value</code></td>
+          <td><code>company_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>company.entity</code></td>
+          <td><code>company_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>EAV rows per company</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">10</span></td>
+          <td><code>voyage.voyage</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Vessel voyages</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">11</span></td>
+          <td><code>voyage.voyage</code></td>
+          <td><code>departure_port</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Departure port</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">12</span></td>
+          <td><code>voyage.voyage</code></td>
+          <td><code>arrival_port</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Arrival port</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">13</span></td>
+          <td><code>voyage.port_call</code></td>
+          <td><code>voyage_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>voyage.voyage</code></td>
+          <td><code>voyage_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Port calls per voyage</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">14</span></td>
+          <td><code>voyage.port_call</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Direct vessel ref</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">15</span></td>
+          <td><code>voyage.port_call</code></td>
+          <td><code>unlocode</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Port ref</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">16</span></td>
+          <td><code>voyage.route_waypoint</code></td>
+          <td><code>voyage_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>voyage.voyage</code></td>
+          <td><code>voyage_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Waypoints per voyage</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">17</span></td>
+          <td><code>voyage.route_waypoint</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Direct vessel ref</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">18</span></td>
+          <td><code>compliance.psc_inspection</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Inspected vessel</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">19</span></td>
+          <td><code>compliance.psc_inspection</code></td>
+          <td><code>port_unlocode</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Inspection port</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">20</span></td>
+          <td><code>compliance.psc_deficiency</code></td>
+          <td><code>inspection_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>compliance.psc_inspection</code></td>
+          <td><code>inspection_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Deficiencies per inspection</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">21</span></td>
+          <td><code>compliance.certificate</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Vessel certs</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">22</span></td>
+          <td><code>market.fixture</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1 (nullable)</span></td>
+          <td>Fixture vessel</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">23</span></td>
+          <td><code>market.tc_contract</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1 (nullable)</span></td>
+          <td>Contract vessel</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">24</span></td>
+          <td><code>market.valuation</code></td>
+          <td><code>imo_number</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>vessel.entity</code></td>
+          <td><code>imo_number</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Vessel valuation</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">25</span></td>
+          <td><code>market.index_value</code></td>
+          <td><code>index_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>market.index_definition</code></td>
+          <td><code>index_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Daily index values</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">26</span></td>
+          <td><code>market.route_benchmark_value</code></td>
+          <td><code>benchmark_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>market.route_benchmark</code></td>
+          <td><code>benchmark_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Daily benchmark values</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">27</span></td>
+          <td><code>market.freight_rate</code></td>
+          <td><code>load_port</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>port.entity</code></td>
+          <td><code>unlocode</code></td>
+          <td><span class="card-n1">N:1 (nullable)</span></td>
+          <td>Load port ref</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">28</span></td>
+          <td><code>ingest.feed_config</code></td>
+          <td><code>source_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.source_def</code></td>
+          <td><code>source_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Source for feed</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">29</span></td>
+          <td><code>ingest.feed_field_map</code></td>
+          <td><code>feed_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>ingest.feed_config</code></td>
+          <td><code>feed_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Feed mapping</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">30</span></td>
+          <td><code>ingest.feed_field_map</code></td>
+          <td><code>attr_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.attribute_def</code></td>
+          <td><code>attr_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Attribute mapping</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">31</span></td>
+          <td><code>ingest.feed_run</code></td>
+          <td><code>feed_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>ingest.feed_config</code></td>
+          <td><code>feed_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Run for feed</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">32</span></td>
+          <td><code>ingest.conflict_queue</code></td>
+          <td><code>attr_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.attribute_def</code></td>
+          <td><code>attr_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Conflicted attribute</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">33</span></td>
+          <td><code>ui.persona_attr_config</code></td>
+          <td><code>persona_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>ui.persona</code></td>
+          <td><code>persona_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Persona attributes</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">34</span></td>
+          <td><code>auth.user_role</code></td>
+          <td><code>user_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>auth.app_user</code></td>
+          <td><code>user_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>User roles</td>
+        </tr>
+        <tr>
+          <td><span class="row-num">35</span></td>
+          <td><code>workflow.edit_draft</code></td>
+          <td><code>attr_id</code></td>
+          <td class="fk-arrow">&#8594;</td>
+          <td><code>registry.attribute_def</code></td>
+          <td><code>attr_id</code></td>
+          <td><span class="card-n1">N:1</span></td>
+          <td>Draft attribute</td>
+        </tr>
+      </tbody>
+    </table>
+  </div><!-- /fk-table-wrap -->
+
+  <!-- SECTION 3: SCHEMA DOMAIN MAP -->
+  <div class="section-title">Schema Domain Map</div>
+
+  <div class="domain-grid">
+
+    <!-- Row 1: Core Entity Schemas -->
+    <div class="domain-row-band">
+      <div class="domain-row-label">Core Entity Schemas</div>
+      <div class="domain-chips-row">
+        <div class="domain-chip dc-blue" style="flex:3">
+          <h4><span class="schema-name">vessel</span> <span style="font-weight:400;font-size:11px;color:#3A5070">·</span> <span class="schema-name">port</span> <span style="font-weight:400;font-size:11px;color:#3A5070">·</span> <span class="schema-name">company</span></h4>
+          <div class="tables">entity &nbsp;|&nbsp; attr_value (EAV partitioned) &nbsp;|&nbsp; raw_ingest (bronze) &nbsp;|&nbsp; v_current (materialized view)</div>
+          <div class="note">Bi-Temporal EAV + Bronze + Materialized Views — identical structural pattern per entity type</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Domain Schemas -->
+    <div class="domain-row-band">
+      <div class="domain-row-label">Domain Schemas</div>
+      <div class="domain-chips-row">
+        <div class="domain-chip dc-green">
+          <h4><span class="schema-name">voyage</span></h4>
+          <div class="tables">voyage &nbsp;· port_call &nbsp;· route_waypoint</div>
+        </div>
+        <div class="domain-chip dc-red">
+          <h4><span class="schema-name">compliance</span></h4>
+          <div class="tables">psc_inspection &nbsp;· psc_deficiency &nbsp;· certificate &nbsp;· sanction</div>
+        </div>
+        <div class="domain-chip dc-orange">
+          <h4><span class="schema-name">market</span></h4>
+          <div class="tables">fixture &nbsp;· tc_contract &nbsp;· index_definition &nbsp;· index_value &nbsp;· route_benchmark &nbsp;· route_benchmark_value &nbsp;· freight_rate &nbsp;· valuation</div>
+        </div>
+        <div class="domain-chip dc-purple">
+          <h4><span class="schema-name">geo</span></h4>
+          <div class="tables">choke_point &nbsp;· mou_zone</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Infrastructure Schemas -->
+    <div class="domain-row-band">
+      <div class="domain-row-label">Infrastructure Schemas</div>
+      <div class="domain-chips-row">
+        <div class="domain-chip dc-slate">
+          <h4><span class="schema-name">registry</span></h4>
+          <div class="tables">source_def &nbsp;· attribute_def &nbsp;· source_attr_weight &nbsp;· filter_group_def &nbsp;· column_group_def</div>
+          <div class="note">Attribute catalog &amp; source registry</div>
+        </div>
+        <div class="domain-chip dc-slate">
+          <h4><span class="schema-name">ingest</span></h4>
+          <div class="tables">feed_config &nbsp;· feed_field_map &nbsp;· qc_rule &nbsp;· feed_run &nbsp;· conflict_queue</div>
+          <div class="note">ETL pipeline &amp; conflict detection</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Platform Schemas -->
+    <div class="domain-row-band">
+      <div class="domain-row-label">Platform Schemas</div>
+      <div class="domain-chips-row">
+        <div class="domain-chip dc-teal">
+          <h4><span class="schema-name">ui</span></h4>
+          <div class="tables">persona &nbsp;· persona_attr_config &nbsp;· saved_filter &nbsp;· dashboard_layout</div>
+          <div class="note">Personalization</div>
+        </div>
+        <div class="domain-chip dc-teal">
+          <h4><span class="schema-name">auth</span></h4>
+          <div class="tables">app_user &nbsp;· role &nbsp;· user_role &nbsp;· permission</div>
+          <div class="note">Access control</div>
+        </div>
+        <div class="domain-chip dc-teal">
+          <h4><span class="schema-name">workflow</span></h4>
+          <div class="tables">conflict &nbsp;· edit_draft &nbsp;· draft_transition</div>
+          <div class="note">Human-in-the-loop</div>
+        </div>
+        <div class="domain-chip dc-teal">
+          <h4><span class="schema-name">audit</span></h4>
+          <div class="tables">change_log</div>
+          <div class="note">Immutable audit trail</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /domain-grid -->
+
+  <footer>Maritime Intelligence Platform &nbsp;·&nbsp; Data Model v4 &nbsp;·&nbsp; Entity Relationships &nbsp;·&nbsp; 2026-05-13</footer>
+</div><!-- /page -->
+</body>
+</html>

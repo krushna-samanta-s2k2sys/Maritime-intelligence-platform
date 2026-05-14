@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Flow &amp; Architectural Principles — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+.page{max-width:1080px;margin:0 auto;padding:52px 32px 72px}
+
+/* Nav breadcrumb */
+.nav{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#8AACCC;margin-bottom:36px}
+.nav a{color:#1558d6;text-decoration:none;font-weight:500}
+.nav a:hover{text-decoration:underline}
+.nav span{color:#C8D8EC}
+
+/* Page header */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:40px;font-weight:800;line-height:1.1;margin-bottom:12px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.sub{font-size:13.5px;color:#3A5070;margin-bottom:48px;line-height:1.65;max-width:680px}
+
+/* Section headings */
+.section{margin-bottom:52px}
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:3px solid #E07000;margin-bottom:28px}
+
+/* Pipeline flow */
+.pipeline{display:flex;flex-direction:column;gap:0}
+.pipe-stage{display:flex;align-items:stretch;gap:0;position:relative}
+.pipe-box{flex:1;border-radius:10px;padding:20px 22px;color:#fff;position:relative}
+.pipe-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.22);font-size:11px;font-weight:700;margin-bottom:10px}
+.pipe-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.pipe-desc{font-size:12px;line-height:1.6;opacity:.88}
+.pipe-arrow{display:flex;align-items:center;justify-content:center;padding:6px 0;font-size:20px;color:#8AACCC;line-height:1}
+
+/* Principle cards */
+.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.pcard{background:#fff;border:1px solid #C8D8EC;border-radius:12px;padding:24px 20px}
+.pcard-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;color:#fff;font-size:13px;font-weight:700;margin-bottom:14px}
+.pcard h3{font-size:14px;font-weight:700;color:#0D1F3C;margin-bottom:8px}
+.pcard p{font-size:12px;line-height:1.65;color:#5A7AAA}
+.pcard code{font-size:10.5px;background:#F0F4FA;padding:1px 4px;border-radius:3px;color:#1558d6;font-family:monospace}
+.pcard pre{margin-top:10px;background:#0D1F3C;color:#e2f0ff;font-size:10px;line-height:1.55;padding:10px 12px;border-radius:6px;overflow-x:auto;font-family:monospace}
+
+/* Governance flow */
+.gov-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden}
+.gov-step{padding:24px 22px;position:relative}
+.gov-step:not(:last-child){border-right:1px solid #C8D8EC}
+.gov-step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#1558d6;color:#fff;font-size:12px;font-weight:700;margin-bottom:12px}
+.gov-step h3{font-size:14px;font-weight:700;color:#0D1F3C;margin-bottom:8px}
+.gov-step p{font-size:12px;line-height:1.65;color:#5A7AAA}
+.gov-step code{font-size:10.5px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:#1558d6;font-family:monospace}
+.gov-arrow{position:absolute;right:-13px;top:50%;transform:translateY(-50%);background:#fff;border:1px solid #C8D8EC;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#8AACCC;z-index:1}
+
+/* Partitioning table */
+.tbl-wrap{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#0D1F3C}
+thead th{color:#fff;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:13px 16px;text-align:left}
+tbody tr{border-bottom:1px solid #EEF2F8}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#F7FAFF}
+tbody td{padding:13px 16px;font-size:12.5px;color:#0D1F3C}
+tbody td:first-child{font-family:monospace;font-size:12px;color:#1558d6;font-weight:500}
+tbody td .strategy{display:inline-block;background:#EEF2F8;border-radius:4px;padding:2px 7px;font-size:11px;color:#3A5070;font-weight:500}
+tbody td .partitions{font-size:11.5px;color:#5A7AAA}
+
+/* JS prototype section */
+.prose-box{background:#fff;border:1px solid #C8D8EC;border-radius:12px;padding:28px 28px}
+.prose-box p{font-size:13px;line-height:1.75;color:#3A5070;margin-bottom:16px}
+.prose-box p:last-child{margin-bottom:0}
+.prose-box code{font-family:monospace;font-size:11.5px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:#1558d6}
+.prose-box .callout{background:#FFF8EC;border-left:4px solid #E07000;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;font-size:12px;color:#5A3A00;line-height:1.6}
+.chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:18px 0}
+.chain-item{background:#EEF2F8;border:1px solid #C8D8EC;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;color:#0D1F3C;font-family:monospace}
+.chain-arrow{color:#8AACCC;font-size:14px;font-weight:700}
+
+/* Footer */
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:16px;border-top:1px solid #C8D8EC;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Breadcrumb -->
+  <div class="nav">
+    <a href="datamodel_index.html">Data Model</a>
+    <span>›</span>
+    <span>Data Flow &amp; Architectural Principles</span>
+  </div>
+
+  <!-- Header -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>Data Flow &amp; <span>Architectural Principles</span></h1>
+  <p class="sub">End-to-end pipeline from raw feed ingestion through the bi-temporal EAV store to the React UI. Six foundational design principles, governance workflow, partitioning strategy, and JS prototype data layer notes.</p>
+
+  <!-- ── SECTION 1: Pipeline ── -->
+  <div class="section">
+    <div class="section-title">End-to-End Data Pipeline</div>
+    <div class="pipeline">
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#6200ea">
+          <div class="pipe-num">1</div>
+          <div class="pipe-title">External Sources</div>
+          <div class="pipe-desc">15+ data vendors — IHS Seaweb, AIS networks, Flag registries, Class societies, PSC MoU authorities, Baltic Exchange</div>
+        </div>
+      </div>
+      <div class="pipe-arrow">↓</div>
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#b45309">
+          <div class="pipe-num">2</div>
+          <div class="pipe-title">Bronze Layer</div>
+          <div class="pipe-desc">Raw ingestion: <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">ingest.feed_run</code> → <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">vessel.raw_ingest</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">port.raw_ingest</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">company.raw_ingest</code> — immutable JSON payloads, partitioned by quarter</div>
+        </div>
+      </div>
+      <div class="pipe-arrow">↓</div>
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#1558d6">
+          <div class="pipe-num">3</div>
+          <div class="pipe-title">EAV Store</div>
+          <div class="pipe-desc">Bi-temporal attribute values: <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">vessel.attr_value</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">port.attr_value</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">company.attr_value</code> — insert-only, partitioned by year, confidence-scored</div>
+        </div>
+      </div>
+      <div class="pipe-arrow">↓</div>
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#137333">
+          <div class="pipe-num">4</div>
+          <div class="pipe-title">Materialized Views</div>
+          <div class="pipe-desc">Current-state projections: <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">vessel.v_current</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">port.v_current</code> / <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">company.v_current</code> — refreshed CONCURRENTLY after each ingest run</div>
+        </div>
+      </div>
+      <div class="pipe-arrow">↓</div>
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#E07000">
+          <div class="pipe-num">5</div>
+          <div class="pipe-title">JS Data Layer</div>
+          <div class="pipe-desc">30 JSON files + 10 data wrappers — built at Vite compile time, served as static assets. Zero API calls in prototype.</div>
+        </div>
+      </div>
+      <div class="pipe-arrow">↓</div>
+
+      <div class="pipe-stage">
+        <div class="pipe-box" style="background:#c8102e">
+          <div class="pipe-num">6</div>
+          <div class="pipe-title">React UI</div>
+          <div class="pipe-desc">20 pages, multi-persona dashboards, <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">attributeRegistry.js</code> drives filter/column/search config data-driven from <code style="background:rgba(255,255,255,.18);border-radius:3px;padding:1px 5px;font-size:11px">attribute_definitions.json</code></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: Six Principles ── -->
+  <div class="section">
+    <div class="section-title">Six Architectural Principles</div>
+    <div class="principles">
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#6200ea">1</div>
+        <h3>Bi-Temporal Data Model</h3>
+        <p>Every EAV row carries <code>valid_from</code>/<code>valid_to</code> (real-world time) AND <code>sys_from</code>/<code>sys_to</code> (system/recording time). Enables point-in-time queries for any attribute on any entity at any past moment.</p>
+        <pre>SELECT * FROM registry.attr_at(
+  'vessel',
+  '9234567',
+  'deadweight',
+  '2024-06-01'
+);</pre>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#b45309">2</div>
+        <h3>Insert-Only EAV Store</h3>
+        <p><code>attr_value</code> tables are INSERT-only — a RULE prevents UPDATE/DELETE. Corrections create a new row with <code>sys_to</code> set on the superseded row. Ensures a complete audit trail — no data is ever lost.</p>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#1558d6">3</div>
+        <h3>Confidence-Weighted Multi-Source</h3>
+        <p>Each attribute value carries a <code>source_id</code> and confidence score (0–1). When two sources disagree, the conflict is queued in <code>ingest.conflict_queue</code>. The highest-confidence approved value wins in <code>v_current</code>.</p>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#137333">4</div>
+        <h3>Schema-Per-Entity Template</h3>
+        <p>Vessel, Port, Company each follow the identical structural template: entity → <code>attr_value</code> (EAV, partitioned) → <code>raw_ingest</code> (bronze, partitioned) → <code>v_current</code> (materialized view). Adding a new entity type is a single template instantiation.</p>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#E07000">5</div>
+        <h3>Attribute Registry as Single Source of Truth</h3>
+        <p>All attribute definitions live in <code>registry.attribute_def</code> (and <code>attribute_definitions.json</code> in the JS layer). Filter types, column groups, display orders, validation rules — all data-driven. No hardcoded attribute logic in application code.</p>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-num" style="background:#c8102e">6</div>
+        <h3>Zero-Downtime View Refresh</h3>
+        <p>Materialized views are refreshed with the <code>CONCURRENT</code> option — queries against <code>v_current</code> continue serving stale data while the refresh runs. After ingest, call <code>registry.refresh_all_current_views()</code>.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: Governance ── -->
+  <div class="section">
+    <div class="section-title">Data Governance Workflow</div>
+    <div class="gov-flow">
+
+      <div class="gov-step">
+        <div class="gov-step-num">1</div>
+        <h3>Ingest</h3>
+        <p>Feed runs create <code>raw_ingest</code> records. QC rules in <code>ingest.qc_rule</code> validate each attribute value. Failed rows go to <code>conflict_queue</code>.</p>
+        <div class="gov-arrow">›</div>
+      </div>
+
+      <div class="gov-step">
+        <div class="gov-step-num">2</div>
+        <h3>Review</h3>
+        <p>Conflicts surfaced in ETL Review page. Analysts approve/reject via <code>workflow.edit_draft</code> → <code>workflow.draft_transition</code>. Every decision logged in <code>audit.change_log</code>.</p>
+        <div class="gov-arrow">›</div>
+      </div>
+
+      <div class="gov-step">
+        <div class="gov-step-num">3</div>
+        <h3>Publish</h3>
+        <p>Approved values written to <code>attr_value</code> with <code>workflow_state='APPROVED'</code>. View refresh picks up new values. Rejected values remain in audit log with <code>workflow_state='REJECTED'</code>.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: Partitioning ── -->
+  <div class="section">
+    <div class="section-title">Partitioning Strategy</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+            <th>Partition Key</th>
+            <th>Strategy</th>
+            <th>Partitions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>vessel.attr_value</td>
+            <td>sys_from</td>
+            <td><span class="strategy">RANGE by year</span></td>
+            <td><span class="partitions">2020–2028 + overflow</span></td>
+          </tr>
+          <tr>
+            <td>vessel.position</td>
+            <td>position_ts</td>
+            <td><span class="strategy">RANGE by quarter</span></td>
+            <td><span class="partitions">2024Q1–2026Q1 + overflow</span></td>
+          </tr>
+          <tr>
+            <td>vessel.raw_ingest</td>
+            <td>received_at</td>
+            <td><span class="strategy">RANGE by quarter</span></td>
+            <td><span class="partitions">2024Q1–2026Q1 + overflow</span></td>
+          </tr>
+          <tr>
+            <td>port.attr_value</td>
+            <td>sys_from</td>
+            <td><span class="strategy">RANGE by year</span></td>
+            <td><span class="partitions">2024–2026 + overflow</span></td>
+          </tr>
+          <tr>
+            <td>company.attr_value</td>
+            <td>sys_from</td>
+            <td><span class="strategy">RANGE by year</span></td>
+            <td><span class="partitions">2024–2026 + overflow</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: JS Prototype ── -->
+  <div class="section">
+    <div class="section-title">JS Prototype Data Layer</div>
+    <div class="prose-box">
+      <p>The current implementation uses Vite-bundled JSON files as a zero-backend prototype — all data is compiled into the static asset bundle at build time and served without any REST API or database connection. This enables full UI development and stakeholder review without infrastructure dependencies.</p>
+
+      <p>The central mapping chain from schema to UI is:</p>
+      <div class="chain">
+        <span class="chain-item">attribute_definitions.json</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item">attributeRegistry.js</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item">filter config</span>
+        <span class="chain-arrow">+</span>
+        <span class="chain-item">column config</span>
+        <span class="chain-arrow">+</span>
+        <span class="chain-item">search config</span>
+      </div>
+      <p>All filter groups, column picker options, and smart-search field enumerations are auto-generated at module initialisation from <code>attributeRegistry.js</code> — no hardcoded UI configuration lists exist.</p>
+
+      <div class="callout">
+        All 30 JSON files are imported eagerly at module initialisation. There is no lazy-loading or on-demand fetch in the prototype layer. In the production build these will be replaced by REST endpoints backed by <code>vessel.v_current</code>, <code>port.v_current</code>, and <code>company.v_current</code>.
+      </div>
+
+      <p><strong style="color:#0D1F3C">Coordinate convention — mapData.js:</strong> Raw AIS position data is stored in GeoJSON order <code>[longitude, latitude]</code> inside the JSON layer. <code>mapData.js</code> transposes to Leaflet order <code>[latitude, longitude]</code> when constructing marker and polyline arrays. All consumers of <code>mapData.js</code> must use the already-transposed values and must not re-swap coordinates.</p>
+
+      <p><strong style="color:#0D1F3C">USCG MOU naming special-case — pscData.js:</strong> The United States Coast Guard MOU authority is stored in source JSON as <code>"USCG"</code> but must be displayed in the UI as <code>"US Coast Guard (USCG MOU)"</code> to match the official authority name used in PSC inspection certificates. <code>pscData.js</code> applies a named mapping constant for this transformation; the raw value is preserved in the <code>mou_code</code> field for database joins.</p>
+    </div>
+  </div>
+
+  <footer>Maritime Intelligence Platform &nbsp;·&nbsp; Data Model v4 &nbsp;·&nbsp; Generated 2026-05-13</footer>
+</div>
+</body>
+</html>

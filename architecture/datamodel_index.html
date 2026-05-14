@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Model Documentation — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+.page{max-width:1080px;margin:0 auto;padding:56px 32px 64px}
+/* Header */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:44px;font-weight:800;line-height:1.1;margin-bottom:12px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.sub{font-size:14px;color:#3A5070;margin-bottom:22px;line-height:1.65;max-width:680px}
+.badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:52px}
+.badge{background:#fff;border:1px solid #C8D8EC;border-radius:16px;padding:5px 14px;font-size:10.5px;font-weight:600;color:#1558d6}
+/* Card grid */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:52px}
+.card{background:#fff;border:1px solid #C8D8EC;border-radius:12px;padding:24px 20px;text-decoration:none;display:block;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#1558d6)}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 32px rgba(13,31,60,.11)}
+.card-icon{font-size:28px;margin-bottom:12px;display:block}
+.card-label{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent,#1558d6);margin-bottom:6px}
+.card-title{font-size:15px;font-weight:700;color:#0D1F3C;margin-bottom:8px}
+.card-desc{font-size:12px;line-height:1.6;color:#5A7AAA}
+.c1{--accent:#1558d6}
+.c2{--accent:#137333}
+.c3{--accent:#E07000}
+.c4{--accent:#6200ea}
+.c5{--accent:#c8102e}
+.c6{--accent:#0D1F3C}
+/* Summary section */
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:3px solid #E07000;margin-bottom:24px}
+.overview{background:#fff;border:1px solid #C8D8EC;border-radius:12px;padding:32px 28px;margin-bottom:40px}
+.overview h2{font-size:18px;font-weight:700;color:#0D1F3C;margin-bottom:24px}
+.schema-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.schema-col h3{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E07000;margin-bottom:14px}
+.schema-item{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;font-size:13px}
+.schema-item .name{font-weight:600;color:#1558d6;font-family:monospace;font-size:12.5px}
+.schema-item .pk{font-size:10.5px;color:#8AACCC}
+/* Footer */
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:12px;border-top:1px solid #C8D8EC}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>Data Model <span>Documentation</span></h1>
+  <p class="sub">Complete data model reference — entity relationships, PostgreSQL schema (12 schemas, 40+ tables), 30 JSON data files, JavaScript data wrappers, and end-to-end data flow. Generated from <code style="font-size:12px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:#1558d6">src/schema/maritime_db.sql</code> v4.</p>
+  <div class="badge-row">
+    <div class="badge">Bi-Temporal EAV</div>
+    <div class="badge">12 PostgreSQL Schemas</div>
+    <div class="badge">30 JSON Files</div>
+    <div class="badge">PostGIS Geometry</div>
+    <div class="badge">Insert-Only Audit</div>
+  </div>
+
+  <!-- Card grid -->
+  <div class="cards">
+    <a class="card c1" href="datamodel_entities.html">
+      <span class="card-icon">🗺️</span>
+      <div class="card-label">Entity Model</div>
+      <div class="card-title">Entity Relationships</div>
+      <div class="card-desc">Core entities (Vessel, Port, Company), specialized tables (Voyage, PSC, Market, Compliance, Geo), and all foreign key relationships.</div>
+    </a>
+    <a class="card c2" href="datamodel_schema.html">
+      <span class="card-icon">🗄️</span>
+      <div class="card-label">PostgreSQL</div>
+      <div class="card-title">Schema Reference</div>
+      <div class="card-desc">All 12 schemas, 40+ tables, partitioned tables (vessel.attr_value, vessel.position), materialized views, utility functions, and seed data.</div>
+    </a>
+    <a class="card c3" href="datamodel_json.html">
+      <span class="card-icon">📄</span>
+      <div class="card-label">JSON Layer</div>
+      <div class="card-title">JSON Data Files</div>
+      <div class="card-desc">All 30 JSON files catalogued by domain — structure, key fields, row counts, and mapping to PostgreSQL tables.</div>
+    </a>
+    <a class="card c4" href="datamodel_wrappers.html">
+      <span class="card-icon">⚙️</span>
+      <div class="card-label">JS Wrappers</div>
+      <div class="card-title">Data Wrappers</div>
+      <div class="card-desc">JavaScript data wrappers (vessels.js, mapData.js, pscData.js, etc.) — field mappings from JSON to JS properties consumed by each React page.</div>
+    </a>
+    <a class="card c5" href="datamodel_flow.html">
+      <span class="card-icon">🔄</span>
+      <div class="card-label">Architecture</div>
+      <div class="card-title">Data Flow &amp; Principles</div>
+      <div class="card-desc">End-to-end data pipeline: Feed → Bronze → EAV → v_current → REST → React UI. Six architectural principles. Conflict resolution and governance workflow.</div>
+    </a>
+    <a class="card c6" href="aws_index.html">
+      <span class="card-icon">☁️</span>
+      <div class="card-label">Infrastructure</div>
+      <div class="card-title">AWS Architecture</div>
+      <div class="card-desc">AWS infrastructure — S3 data lake, Apache Airflow (MWAA), Aurora PostgreSQL, OpenSearch, SageMaker and Grafana observability.</div>
+    </a>
+    <a class="card" style="--accent:#7C3AED" href="dbmodel/index.html">
+      <span class="card-icon">🗃️</span>
+      <div class="card-label">PostgreSQL Schema</div>
+      <div class="card-title">DB Schema Reference</div>
+      <div class="card-desc">Detailed per-schema PostgreSQL documentation — every column, constraint, partition and index. Visual ER diagrams for all 13 schemas.</div>
+    </a>
+  </div>
+
+  <!-- Overview summary -->
+  <div class="overview">
+    <div class="section-title">Data Model Overview</div>
+    <div class="schema-cols">
+      <div class="schema-col">
+        <h3>Entity Schemas</h3>
+        <div class="schema-item"><span class="name">vessel</span><span class="pk">IMO PK</span></div>
+        <div class="schema-item"><span class="name">port</span><span class="pk">UNLOCODE PK</span></div>
+        <div class="schema-item"><span class="name">company</span><span class="pk">company_id PK</span></div>
+        <p style="font-size:11.5px;color:#5A7AAA;margin-top:14px;line-height:1.6">Each entity schema follows the identical structural template: base entity table, bi-temporal EAV attr_value (partitioned), bronze raw_ingest (partitioned), and v_current materialized view.</p>
+      </div>
+      <div class="schema-col">
+        <h3>Domain Schemas</h3>
+        <div class="schema-item"><span class="name">voyage</span></div>
+        <div class="schema-item"><span class="name">compliance</span></div>
+        <div class="schema-item"><span class="name">market</span></div>
+        <div class="schema-item"><span class="name">geo</span></div>
+        <div class="schema-item"><span class="name">registry</span></div>
+        <div class="schema-item"><span class="name">ingest</span></div>
+        <p style="font-size:11.5px;color:#5A7AAA;margin-top:14px;line-height:1.6">Domain schemas hold specialised operational data — voyages, PSC inspections, market rates, geometries, attribute definitions, and feed run tracking.</p>
+      </div>
+      <div class="schema-col">
+        <h3>Platform Schemas</h3>
+        <div class="schema-item"><span class="name">ui</span></div>
+        <div class="schema-item"><span class="name">auth</span></div>
+        <div class="schema-item"><span class="name">workflow</span></div>
+        <div class="schema-item"><span class="name">audit</span></div>
+        <p style="font-size:11.5px;color:#5A7AAA;margin-top:14px;line-height:1.6">Platform schemas support the application layer — user preferences, RBAC, editorial workflow drafts, and the insert-only change audit log.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>Maritime Intelligence Platform &nbsp;·&nbsp; Data Model v4 &nbsp;·&nbsp; Generated 2026-05-13</footer>
+</div>
+</body>
+</html>

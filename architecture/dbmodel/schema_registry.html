@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registry &amp; Ingest Schemas — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#1A2F52);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#FF9900;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#FF9900}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:700px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.schema-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,153,0,.12);border:1px solid rgba(255,153,0,.25);border-radius:20px;padding:4px 14px;font-size:10px;font-weight:700;color:#FF9900;margin-bottom:24px}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;color:#93B8D8}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;color:#93B8D8;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(255,255,255,.06);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#93B8D8;font-weight:600}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+td.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+td.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+td.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+td.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+td.note{font-size:10.5px;color:#5A7AAA;font-style:italic}
+.constraint-cell{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+.purpose{background:rgba(255,255,255,.03);border-left:3px solid #FF9900;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose strong{color:#fff}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:16px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.idx{display:flex;flex-direction:column;gap:5px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:220px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+/* ER Diagram */
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+svg{font-family:'JetBrains Mono',monospace}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#FF9900;color:#000}.btn-pri:hover{background:#FFB340}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+.seed-note{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:6px;padding:12px 16px;font-size:11.5px;color:#6EE7B7;margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Registry &amp; Ingest</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_platform.html">Next: Platform →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Infrastructure Layer</div>
+  <h1>Registry &amp; <span>Ingest</span> Schemas</h1>
+  <p class="sub">The foundation of the Maritime Intelligence Platform database. The <code>registry</code> schema is the single source of truth for all attribute definitions, data sources and UI configuration. The <code>ingest</code> schema manages ETL feed lifecycle, field mappings, QC rules and conflict resolution.</p>
+</div>
+
+<div class="main">
+
+  <div class="badge-row">
+    <span class="badge">9 tables</span>
+    <span class="badge">8 indexes</span>
+    <span class="badge">source_def → 29 seed rows</span>
+    <span class="badge">insert-only: audit.change_log</span>
+    <span class="badge">versioned field maps</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ registry ═══════════════════════ -->
+  <h2><span class="sc">registry</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Attribute catalog &amp; source registry</span></h2>
+
+  <!-- source_def -->
+  <h3>registry.source_def</h3>
+  <div class="purpose"><strong>Purpose:</strong> Vendor / data-source registry. Every row in attr_value, raw_ingest, position etc. must reference a valid source_id. Seeded with 29 rows from etl_feeds.json (IHS Markit, Equasis, Orbcomm AIS, flag registries, class societies, PSC MOU authorities, OFAC, EU Sanctions).</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="constraint-cell"><span class="pk">PK</span> GENERATED ALWAYS AS IDENTITY</div></td><td>—</td><td>Auto-generated surrogate key</td></tr>
+        <tr><td class="col">source_code</td><td class="typ">VARCHAR(30)</td><td><div class="constraint-cell"><span class="uq">UNIQUE</span> NOT NULL</div></td><td>—</td><td>Machine identifier: 'IHS_SEAWEB', 'AIS_ORBCOMM', 'OFAC', etc.</td></tr>
+        <tr><td class="col">source_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Human-readable vendor/authority name</td></tr>
+        <tr><td class="col">source_type</td><td class="typ">VARCHAR(30)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>COMMERCIAL_DATA | AIS | FLAG_REGISTRY | CLASS_SOCIETY | PSC_MOU | PORT_AUTHORITY | WEATHER | SANCTIONS | MANUAL | INTERNAL</td></tr>
+        <tr><td class="col">base_url</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>API endpoint or SFTP host base URL</td></tr>
+        <tr><td class="col">auth_type</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>'API_KEY'</td><td>Authentication method: API_KEY, OAUTH2, SFTP_KEY, BASIC, NONE</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Soft-delete flag; inactive sources still referenced by historical rows</td></tr>
+        <tr><td class="col">default_weight</td><td class="typ">NUMERIC(4,3)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>0.5</td><td>Default confidence weight for attr_value rows from this source (0.95 = high authority e.g. flag registry)</td></tr>
+        <tr><td class="col">notes</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Free-text notes about the source or integration</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- attribute_def -->
+  <h3>registry.attribute_def</h3>
+  <div class="purpose"><strong>Purpose:</strong> Central catalog for every attribute across all entity types. One row per attribute (e.g. deadweight, flag_name, port_type). Drives UI filters, column picker, search boost, validation, and the JS data layer via vessel_field / col_id columns that bridge DB ↔ attributeRegistry.js.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">attr_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key; referenced by all attr_value tables and ingest.feed_field_map</td></tr>
+        <tr><td class="col">entity_type</td><td class="typ">VARCHAR(30)</td><td>NOT NULL</td><td>—</td><td>'vessel' | 'port' | 'company'</td></tr>
+        <tr><td class="col">attr_key</td><td class="typ">VARCHAR(80)</td><td><div class="constraint-cell">NOT NULL <span class="uq">UNIQUE(entity,key)</span></div></td><td>—</td><td>Machine key matching attribute_definitions.json "key" (e.g. 'deadweight', 'flag_name')</td></tr>
+        <tr><td class="col">attr_id_ui</td><td class="typ">VARCHAR(80)</td><td><div class="constraint-cell">NOT NULL <span class="uq">UNIQUE(entity,id)</span></div></td><td>—</td><td>UI attribute ID with entity prefix (e.g. 'af-001', 'po-010')</td></tr>
+        <tr><td class="col">attr_label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Human-readable label shown in UI (e.g. 'Deadweight Tonnage')</td></tr>
+        <tr><td class="col">section_id / section_label</td><td class="typ">VARCHAR(60/120)</td><td>NOT NULL</td><td>—</td><td>Attribute section grouping (e.g. 'identity', 'tonnage')</td></tr>
+        <tr><td class="col">group_id / group_label</td><td class="typ">VARCHAR(60/120)</td><td>NOT NULL</td><td>—</td><td>Fine-grained group within a section</td></tr>
+        <tr><td class="col">section_order / group_order / display_order</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Sort positions for UI rendering</td></tr>
+        <tr><td class="col">data_type</td><td class="typ">VARCHAR(20)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>text | numeric | boolean | date | geometry | json</td></tr>
+        <tr><td class="col">unit</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Physical unit (e.g. 'MT', 'm', 'kW', 'knots')</td></tr>
+        <tr><td class="col">vessel_field</td><td class="typ">VARCHAR(80)</td><td>NULLABLE</td><td>NULL</td><td>JS bridge: property name on VESSELS object (e.g. 'dwt', 'nm'). Used by attributeRegistry.js</td></tr>
+        <tr><td class="col">filter_field / filter_xfm</td><td class="typ">VARCHAR(80/30)</td><td>NULLABLE</td><td>NULL</td><td>Field and transform used by applyFilters() (e.g. filter_field='dwt', filter_xfm='numOf')</td></tr>
+        <tr><td class="col">col_id</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Short UI column ID matching COL_ID_MAP in attributeRegistry.js (e.g. 'dwt', 'flag')</td></tr>
+        <tr><td class="col">is_filterable / filter_type / filter_group_id</td><td class="typ">BOOLEAN / VARCHAR / VARCHAR</td><td>NULLABLE</td><td>FALSE</td><td>Filter config: typeahead | multiselect | range | date_range. filter_group_id links to filter_group_def</td></tr>
+        <tr><td class="col">is_column / column_group_key / column_always / column_width</td><td class="typ">BOOLEAN / VARCHAR / BOOLEAN / SMALLINT</td><td>NULLABLE</td><td>FALSE/NULL</td><td>Column picker config: group key, always-visible flag, pixel width</td></tr>
+        <tr><td class="col">is_searchable / search_boost</td><td class="typ">BOOLEAN / NUMERIC(4,2)</td><td>NULLABLE</td><td>FALSE/1.0</td><td>Search config: boosts relevance scoring in full-text search</td></tr>
+        <tr><td class="col">validation_regex / validation_min / validation_max / allowed_values</td><td class="typ">TEXT / NUMERIC / NUMERIC / TEXT[]</td><td>NULLABLE</td><td>NULL</td><td>Input validation: regex pattern, numeric bounds, enumerated values</td></tr>
+        <tr><td class="col">is_required</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>Whether attribute is mandatory for entity creation</td></tr>
+        <tr><td class="col">is_active / deprecated_at</td><td class="typ">BOOLEAN / TIMESTAMPTZ</td><td>NULLABLE</td><td>TRUE/NULL</td><td>Soft-deprecation with timestamp</td></tr>
+        <tr><td class="col">created_at / updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Audit timestamps</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on registry.attribute_def</h4>
+    <div class="idx">
+      <div class="idx-row"><span class="idx-name">idx_attr_def_entity</span><span class="idx-def">(entity_type) — entity-type filter baseline</span></div>
+      <div class="idx-row"><span class="idx-name">idx_attr_def_filterable</span><span class="idx-def">(entity_type, is_filterable) WHERE is_filterable — filter panel load</span></div>
+      <div class="idx-row"><span class="idx-name">idx_attr_def_column</span><span class="idx-def">(entity_type, is_column) WHERE is_column — column picker load</span></div>
+      <div class="idx-row"><span class="idx-name">idx_attr_def_ui_id</span><span class="idx-def">(attr_id_ui) — persona/UI config lookups</span></div>
+      <div class="idx-row"><span class="idx-name">idx_attr_def_col_id</span><span class="idx-def">(entity_type, col_id) WHERE col_id IS NOT NULL — COL_ID_MAP resolution</span></div>
+    </div>
+  </div>
+
+  <!-- source_attr_weight -->
+  <h3>registry.source_attr_weight</h3>
+  <div class="purpose"><strong>Purpose:</strong> Per-source, per-attribute confidence weight overrides. Allows one source to be trusted more for specific attributes (e.g. class society has 0.98 weight for 'class_notation' but only 0.5 for 'vessel_name').</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="constraint-cell"><span class="pk">PK</span> <span class="fk">FK→source_def</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell"><span class="pk">PK</span> <span class="fk">FK→attribute_def</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">weight</td><td class="typ">NUMERIC(4,3)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>—</td><td>Override confidence weight for this source+attribute combination</td></tr>
+        <tr><td class="col">effective_from</td><td class="typ">DATE</td><td><span class="pk">PK</span> (composite)</td><td>CURRENT_DATE</td><td>Weight becomes active from this date</td></tr>
+        <tr><td class="col">effective_to</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>NULL = currently active. Set to end weight period</td></tr>
+        <tr><td class="col">auto_promote_to_master</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>When TRUE the ETL pipeline may approve the <code>workflow.promotion_request</code> for this source+attribute automatically without human review. Default FALSE — all promotions require explicit approval unless opted in per source+attribute.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- filter_group_def -->
+  <h3>registry.filter_group_def</h3>
+  <div class="purpose"><strong>Purpose:</strong> Defines the filter panel groups shown in the vessel list UI. Mirrors attribute_definitions.json "filter_groups" array. Seeded with 10 groups: identity, type, status, tonnage, dimensions, ownership, class, technical, cargo, safety.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">filter_group_id</td><td class="typ">VARCHAR(60)</td><td><span class="pk">PK</span></td><td>—</td><td>Short key: 'identity', 'tonnage', 'safety' etc.</td></tr>
+        <tr><td class="col">entity_type</td><td class="typ">VARCHAR(30)</td><td>NOT NULL</td><td>'vessel'</td><td>Entity this filter group applies to</td></tr>
+        <tr><td class="col">label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Display label in filter panel</td></tr>
+        <tr><td class="col">display_order</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Sort order in filter panel (1=first)</td></tr>
+        <tr><td class="col">icon</td><td class="typ">VARCHAR(10)</td><td>NULLABLE</td><td>NULL</td><td>Optional emoji or icon code</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Soft-delete flag</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- column_group_def -->
+  <h3>registry.column_group_def</h3>
+  <div class="purpose"><strong>Purpose:</strong> Defines the column picker group headers in the vessel list. Mirrors attribute_definitions.json "column_groups" array. Seeded with 10 groups: identity, tonnage, dimensions, ownership, class, machinery, cargo, construction, safety, operations.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">column_group_key</td><td class="typ">VARCHAR(60)</td><td><span class="pk">PK</span></td><td>—</td><td>Short key: 'identity', 'tonnage', 'machinery' etc.</td></tr>
+        <tr><td class="col">entity_type</td><td class="typ">VARCHAR(30)</td><td>NOT NULL</td><td>'vessel'</td><td>Entity this column group applies to</td></tr>
+        <tr><td class="col">label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Display label in column picker</td></tr>
+        <tr><td class="col">display_order</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Sort order in column picker</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Soft-delete flag</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ ingest ═══════════════════════ -->
+  <h2><span class="sc">ingest</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">ETL feed lifecycle management</span></h2>
+
+  <!-- feed_config -->
+  <h3>ingest.feed_config</h3>
+  <div class="purpose"><strong>Purpose:</strong> One row per ETL feed (e.g. IHS vessel data daily JSON pull, Orbcomm AIS WebSocket). Seeded from etl_feeds.json. Referenced by all feed_run and raw_ingest rows.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">feed_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key for feed</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→source_def</span></div></td><td>—</td><td>Which data source this feed comes from</td></tr>
+        <tr><td class="col">entity_type</td><td class="typ">VARCHAR(30)</td><td>NOT NULL</td><td>—</td><td>'vessel' | 'port' | 'company'</td></tr>
+        <tr><td class="col">feed_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Human label: 'IHS Seaweb Vessel Master', 'Orbcomm AIS Stream'</td></tr>
+        <tr><td class="col">feed_format</td><td class="typ">VARCHAR(20)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>JSON | XML | CSV | FTP_CSV | API_REST | SFTP_XML | KAFKA | WEBSOCKET</td></tr>
+        <tr><td class="col">endpoint_url</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>API or SFTP endpoint URL (secrets stored in Secrets Manager, not here)</td></tr>
+        <tr><td class="col">cron_schedule</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>CRON expression for scheduled pulls (NULL for streaming feeds)</td></tr>
+        <tr><td class="col">batch_size</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>500</td><td>Max records per ingest batch</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Pauses Airflow DAG if FALSE</td></tr>
+        <tr><td class="col">config_json</td><td class="typ">JSONB</td><td>NULLABLE</td><td>'{}'</td><td>Feed-specific config: auth params, field mappings, retry strategy</td></tr>
+        <tr><td class="col">created_at / updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Audit timestamps</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- feed_field_map -->
+  <h3>ingest.feed_field_map</h3>
+  <div class="purpose"><strong>Purpose:</strong> Versioned mapping from source field (JSONPath or CSV column) to registry attribute. Allows field-level history: if IHS renames a column, add a new row with valid_from and close the old one with valid_to. Mirrors etl_feeds.json "field_mappings" section.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">map_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">feed_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→feed_config</span></div></td><td>—</td><td>Which feed this mapping belongs to</td></tr>
+        <tr><td class="col">source_field</td><td class="typ">VARCHAR(200)</td><td>NOT NULL</td><td>—</td><td>JSONPath or CSV column (e.g. '$.vessel.imo', 'IMO_NUMBER')</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→attribute_def</span></div></td><td>—</td><td>Target attribute in registry</td></tr>
+        <tr><td class="col">transform_expr</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>DuckDB SQL transform expression applied during mapping step</td></tr>
+        <tr><td class="col">valid_from / valid_to</td><td class="typ">DATE</td><td><div class="constraint-cell">NOT NULL / NULLABLE <span class="uq">UNIQUE(feed,field,from)</span></div></td><td>CURRENT_DATE / NULL</td><td>Mapping validity period (NULL valid_to = currently active)</td></tr>
+        <tr><td class="col">notes</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Reason for mapping change</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes</h4>
+    <div class="idx">
+      <div class="idx-row"><span class="idx-name">idx_feed_field_map_active</span><span class="idx-def">(feed_id, attr_id) WHERE valid_to IS NULL — active mappings fast lookup</span></div>
+    </div>
+  </div>
+
+  <!-- qc_rule -->
+  <h3>ingest.qc_rule</h3>
+  <div class="purpose"><strong>Purpose:</strong> Quality control rules evaluated per attribute during ingest. WARN flags the row but allows it; ERROR sets qc_passed=FALSE; BLOCK prevents the row from being written to attr_value.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">rule_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→attribute_def</span></div></td><td>—</td><td>Attribute this rule applies to</td></tr>
+        <tr><td class="col">rule_type</td><td class="typ">VARCHAR(30)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>NOT_NULL | RANGE | REGEX | ENUM | CUSTOM_SQL</td></tr>
+        <tr><td class="col">rule_expr</td><td class="typ">TEXT</td><td>NOT NULL</td><td>—</td><td>Rule expression: regex string, range JSON, SQL snippet, or enum list</td></tr>
+        <tr><td class="col">severity</td><td class="typ">VARCHAR(10)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>'WARN'</td><td>WARN | ERROR | BLOCK</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Disable without deleting</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- feed_run -->
+  <h3>ingest.feed_run</h3>
+  <div class="purpose"><strong>Purpose:</strong> One row per ETL pipeline execution. Mirrors etl_runs.json. Tracks record counts (received, ingested, rejected) and conflict count. Referenced by every raw_ingest and attr_value row for full lineage tracing.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">run_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (BIGSERIAL for high volume)</td></tr>
+        <tr><td class="col">feed_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→feed_config</span></div></td><td>—</td><td>Which feed this run executed</td></tr>
+        <tr><td class="col">started_at / completed_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>Run timing (completed_at NULL while still RUNNING)</td></tr>
+        <tr><td class="col">status</td><td class="typ">VARCHAR(20)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>'RUNNING'</td><td>RUNNING | SUCCESS | PARTIAL | FAILED</td></tr>
+        <tr><td class="col">rows_received / rows_ingested / rows_rejected</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>0</td><td>Record counts for monitoring/alerting dashboards</td></tr>
+        <tr><td class="col">conflict_count</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>0</td><td>Number of source conflicts detected this run (mirrors etl_runs.json "conflicts")</td></tr>
+        <tr><td class="col">error_summary</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Short summary of errors (full detail in run_metadata)</td></tr>
+        <tr><td class="col">run_metadata</td><td class="typ">JSONB</td><td>NULLABLE</td><td>'{}'</td><td>Detailed run telemetry: duration, memory, S3 paths, Airflow task IDs</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes</h4>
+    <div class="idx">
+      <div class="idx-row"><span class="idx-name">idx_feed_run_feed</span><span class="idx-def">(feed_id, started_at DESC) — recent run history per feed</span></div>
+    </div>
+  </div>
+
+  <!-- conflict_queue -->
+  <h3>ingest.conflict_queue</h3>
+  <div class="purpose"><strong>Purpose:</strong> Automated conflict detection queue. When two sources provide different values for the same entity+attribute, a conflict row is written here. Mirrors etl_conflicts.json. Human resolvers work through this queue in the workflow UI. See also workflow.conflict for human-initiated conflicts.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">conflict_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">run_id</td><td class="typ">BIGINT</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→feed_run</span></div></td><td>—</td><td>ETL run that detected this conflict</td></tr>
+        <tr><td class="col">entity_type / entity_id</td><td class="typ">VARCHAR(30) / TEXT</td><td>NOT NULL</td><td>—</td><td>Entity that has conflicting values</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="constraint-cell">NOT NULL <span class="fk">FK→attribute_def</span></div></td><td>—</td><td>Which attribute is conflicting</td></tr>
+        <tr><td class="col">source_a_id / value_a / score_a</td><td class="typ">SMALLINT / TEXT / NUMERIC</td><td><div class="constraint-cell"><span class="fk">FK→source_def</span></div></td><td>—</td><td>First source and its value/confidence</td></tr>
+        <tr><td class="col">source_b_id / value_b / score_b</td><td class="typ">SMALLINT / TEXT / NUMERIC</td><td><div class="constraint-cell"><span class="fk">FK→source_def</span></div></td><td>—</td><td>Second source and its value/confidence</td></tr>
+        <tr><td class="col">conflict_type</td><td class="typ">VARCHAR(20)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>'VALUE_MISMATCH'</td><td>VALUE_MISMATCH | FORMAT | MISSING | RANGE_BREACH</td></tr>
+        <tr><td class="col">severity</td><td class="typ">VARCHAR(10)</td><td><div class="constraint-cell">NOT NULL <span class="ck">CHECK</span></div></td><td>'LOW'</td><td>LOW | MEDIUM | HIGH | CRITICAL</td></tr>
+        <tr><td class="col">detected_at / resolved_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NOW()</td><td>resolved_at NULL = still open</td></tr>
+        <tr><td class="col">resolution</td><td class="typ">VARCHAR(20)</td><td><div class="constraint-cell">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>ACCEPTED_A | ACCEPTED_B | MANUAL | DEFERRED | AUTO</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on ingest.conflict_queue</h4>
+    <div class="idx">
+      <div class="idx-row"><span class="idx-name">idx_cq_entity</span><span class="idx-def">(entity_type, entity_id) WHERE resolved_at IS NULL — open conflicts per entity</span></div>
+      <div class="idx-row"><span class="idx-name">idx_cq_run</span><span class="idx-def">(run_id) — conflicts by ETL run</span></div>
+      <div class="idx-row"><span class="idx-name">idx_cq_unresolved</span><span class="idx-def">(severity, detected_at DESC) WHERE resolved_at IS NULL — priority queue ordering</span></div>
+    </div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — Registry &amp; Ingest Schemas</h4>
+    <svg width="900" height="440" viewBox="0 0 900 440" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- source_def -->
+      <g>
+        <rect x="20" y="30" width="200" height="140" rx="6" fill="#1A2F52" stroke="#FF9900" stroke-width="1.5"/>
+        <rect x="20" y="30" width="200" height="26" rx="6" fill="#FF9900" fill-opacity=".2"/>
+        <rect x="20" y="50" width="200" height="6" fill="#FF9900" fill-opacity=".2"/>
+        <text x="120" y="48" text-anchor="middle" fill="#FF9900" font-weight="700" font-size="11">registry.source_def</text>
+        <text x="30" y="73" fill="#FF9900" font-size="9">PK</text><text x="50" y="73" fill="#93B8D8">source_id SMALLINT</text>
+        <text x="30" y="89" fill="#93B8D8" font-size="9">   source_code VARCHAR(30) UQ</text>
+        <text x="30" y="103" fill="#93B8D8" font-size="9">   source_name VARCHAR(120)</text>
+        <text x="30" y="117" fill="#93B8D8" font-size="9">   source_type VARCHAR(30) CK</text>
+        <text x="30" y="131" fill="#93B8D8" font-size="9">   default_weight NUMERIC CK</text>
+        <text x="30" y="145" fill="#93B8D8" font-size="9">   is_active BOOLEAN</text>
+        <text x="30" y="159" fill="#93B8D8" font-size="9">   created_at TIMESTAMPTZ</text>
+      </g>
+      <!-- attribute_def -->
+      <g>
+        <rect x="340" y="10" width="220" height="210" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="1.5"/>
+        <rect x="340" y="10" width="220" height="26" rx="6" fill="#4A9EFF" fill-opacity=".15"/>
+        <rect x="340" y="30" width="220" height="6" fill="#4A9EFF" fill-opacity=".15"/>
+        <text x="450" y="28" text-anchor="middle" fill="#4A9EFF" font-weight="700" font-size="11">registry.attribute_def</text>
+        <text x="350" y="51" fill="#FF9900" font-size="9">PK</text><text x="370" y="51" fill="#93B8D8">attr_id SERIAL</text>
+        <text x="350" y="67" fill="#93B8D8" font-size="9">   entity_type VARCHAR(30)</text>
+        <text x="350" y="81" fill="#93B8D8" font-size="9">   attr_key VARCHAR(80) UQ(ent,key)</text>
+        <text x="350" y="95" fill="#93B8D8" font-size="9">   attr_id_ui VARCHAR(80) UQ(ent,id)</text>
+        <text x="350" y="109" fill="#93B8D8" font-size="9">   attr_label VARCHAR(120)</text>
+        <text x="350" y="123" fill="#93B8D8" font-size="9">   section_id / group_id VARCHAR</text>
+        <text x="350" y="137" fill="#93B8D8" font-size="9">   data_type VARCHAR(20) CK</text>
+        <text x="350" y="151" fill="#93B8D8" font-size="9">   vessel_field / col_id VARCHAR</text>
+        <text x="350" y="165" fill="#93B8D8" font-size="9">   is_filterable / filter_type</text>
+        <text x="350" y="179" fill="#93B8D8" font-size="9">   is_column / column_group_key</text>
+        <text x="350" y="193" fill="#93B8D8" font-size="9">   is_searchable / search_boost</text>
+        <text x="350" y="207" fill="#93B8D8" font-size="9">   is_active BOOLEAN</text>
+      </g>
+      <!-- source_attr_weight -->
+      <g>
+        <rect x="20" y="220" width="200" height="100" rx="6" fill="#1A2F52" stroke="#34D399" stroke-width="1.5"/>
+        <rect x="20" y="220" width="200" height="26" rx="6" fill="#34D399" fill-opacity=".12"/>
+        <text x="120" y="238" text-anchor="middle" fill="#34D399" font-weight="700" font-size="10">registry.source_attr_weight</text>
+        <text x="30" y="258" fill="#FF9900" font-size="9">PK</text><text x="50" y="258" fill="#93B8D8">source_id FK, attr_id FK</text>
+        <text x="30" y="273" fill="#93B8D8" font-size="9">   effective_from DATE (PK)</text>
+        <text x="30" y="288" fill="#93B8D8" font-size="9">   weight NUMERIC(4,3) CK</text>
+        <text x="30" y="303" fill="#93B8D8" font-size="9">   effective_to DATE</text>
+      </g>
+      <!-- ingest.feed_config -->
+      <g>
+        <rect x="650" y="10" width="220" height="155" rx="6" fill="#1A2F52" stroke="#A78BFA" stroke-width="1.5"/>
+        <rect x="650" y="10" width="220" height="26" rx="6" fill="#A78BFA" fill-opacity=".15"/>
+        <text x="760" y="28" text-anchor="middle" fill="#A78BFA" font-weight="700" font-size="11">ingest.feed_config</text>
+        <text x="660" y="51" fill="#FF9900" font-size="9">PK</text><text x="680" y="51" fill="#93B8D8">feed_id SERIAL</text>
+        <text x="660" y="66" fill="#60A5FA" font-size="9">FK</text><text x="680" y="66" fill="#93B8D8">source_id → source_def</text>
+        <text x="660" y="81" fill="#93B8D8" font-size="9">   entity_type VARCHAR(30)</text>
+        <text x="660" y="95" fill="#93B8D8" font-size="9">   feed_name VARCHAR(120)</text>
+        <text x="660" y="109" fill="#93B8D8" font-size="9">   feed_format VARCHAR(20) CK</text>
+        <text x="660" y="123" fill="#93B8D8" font-size="9">   cron_schedule VARCHAR(60)</text>
+        <text x="660" y="137" fill="#93B8D8" font-size="9">   batch_size INTEGER</text>
+        <text x="660" y="151" fill="#93B8D8" font-size="9">   config_json JSONB</text>
+      </g>
+      <!-- ingest.feed_run -->
+      <g>
+        <rect x="650" y="200" width="220" height="130" rx="6" fill="#1A2F52" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="650" y="200" width="220" height="26" rx="6" fill="#FB923C" fill-opacity=".15"/>
+        <text x="760" y="218" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">ingest.feed_run</text>
+        <text x="660" y="240" fill="#FF9900" font-size="9">PK</text><text x="680" y="240" fill="#93B8D8">run_id BIGSERIAL</text>
+        <text x="660" y="254" fill="#60A5FA" font-size="9">FK</text><text x="680" y="254" fill="#93B8D8">feed_id → feed_config</text>
+        <text x="660" y="268" fill="#93B8D8" font-size="9">   status VARCHAR(20) CK</text>
+        <text x="660" y="282" fill="#93B8D8" font-size="9">   rows_received/ingested/rejected</text>
+        <text x="660" y="296" fill="#93B8D8" font-size="9">   conflict_count INTEGER</text>
+        <text x="660" y="310" fill="#93B8D8" font-size="9">   run_metadata JSONB</text>
+      </g>
+      <!-- ingest.conflict_queue -->
+      <g>
+        <rect x="340" y="260" width="220" height="150" rx="6" fill="#1A2F52" stroke="#F87171" stroke-width="1.5"/>
+        <rect x="340" y="260" width="220" height="26" rx="6" fill="#F87171" fill-opacity=".15"/>
+        <text x="450" y="278" text-anchor="middle" fill="#F87171" font-weight="700" font-size="11">ingest.conflict_queue</text>
+        <text x="350" y="300" fill="#FF9900" font-size="9">PK</text><text x="370" y="300" fill="#93B8D8">conflict_id BIGSERIAL</text>
+        <text x="350" y="314" fill="#60A5FA" font-size="9">FK</text><text x="370" y="314" fill="#93B8D8">run_id → feed_run</text>
+        <text x="350" y="328" fill="#60A5FA" font-size="9">FK</text><text x="370" y="328" fill="#93B8D8">attr_id → attribute_def</text>
+        <text x="350" y="342" fill="#60A5FA" font-size="9">FK</text><text x="370" y="342" fill="#93B8D8">source_a_id/source_b_id</text>
+        <text x="350" y="356" fill="#93B8D8" font-size="9">   conflict_type CK / severity CK</text>
+        <text x="350" y="370" fill="#93B8D8" font-size="9">   resolved_at / resolution CK</text>
+        <text x="350" y="384" fill="#93B8D8" font-size="9">   value_a / value_b / score_a/b</text>
+      </g>
+
+      <!-- Arrows -->
+      <!-- source_def → attribute_def (via source_attr_weight) -->
+      <line x1="220" y1="100" x2="340" y2="115" stroke="#4A9EFF" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- source_def → feed_config -->
+      <line x1="220" y1="70" x2="650" y2="55" stroke="#A78BFA" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- source_attr_weight → source_def -->
+      <line x1="120" y1="220" x2="120" y2="170" stroke="#34D399" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- source_attr_weight → attribute_def -->
+      <line x1="220" y1="265" x2="340" y2="185" stroke="#34D399" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- feed_config → feed_run -->
+      <line x1="760" y1="165" x2="760" y2="200" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- feed_run → conflict_queue -->
+      <line x1="650" y1="265" x2="560" y2="330" stroke="#F87171" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- attribute_def → conflict_queue -->
+      <line x1="450" y1="220" x2="450" y2="260" stroke="#F87171" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+      <!-- feed_field_map box hint -->
+      <rect x="340" y="228" width="220" height="26" rx="4" fill="#1A2F52" stroke="#A78BFA" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="450" y="246" text-anchor="middle" fill="#A78BFA" font-size="9.5">ingest.feed_field_map</text>
+      <!-- source_def → feed_field_map -->
+      <line x1="340" y1="130" x2="340" y2="241" stroke="#A78BFA" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#4A9EFF" opacity=".7"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="index.html">← Schema Hub</a>
+    <a class="nav-btn btn-pri" href="schema_platform.html">Next: Platform Schemas →</a>
+  </div>
+</div>
+</body>
+</html>

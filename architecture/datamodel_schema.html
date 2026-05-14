@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema Reference — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+
+/* NAV */
+nav{background:#0D1F3C;padding:0 32px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(13,31,60,.25)}
+.nav-brand{font-size:11.5px;font-weight:700;color:#8AACCC;letter-spacing:.12em;text-transform:uppercase;padding:14px 20px 14px 0;border-right:1px solid rgba(200,216,236,.18);margin-right:8px;white-space:nowrap}
+.nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.nav-links a{font-size:12px;font-weight:500;color:#C8D8EC;text-decoration:none;padding:14px 14px;border-radius:4px;transition:background .15s,color .15s;white-space:nowrap}
+.nav-links a:hover{background:rgba(21,88,214,.35);color:#fff}
+.nav-links a.active{background:#1558d6;color:#fff;font-weight:600}
+.nav-links a.hub{color:#E07000;font-weight:600}
+.nav-links a.hub:hover{background:rgba(224,112,0,.18);color:#E07000}
+
+/* PAGE */
+.page{max-width:1200px;margin:0 auto;padding:52px 32px 72px}
+
+/* HEADER */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:12px}
+h1{font-size:38px;font-weight:800;line-height:1.1;margin-bottom:10px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.subtitle{font-size:14px;color:#3A5070;margin-bottom:18px;line-height:1.65;max-width:860px}
+.ext-badges{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:44px}
+.ext-badge{background:#fff;border:1px solid #C8D8EC;border-radius:16px;padding:5px 14px;font-size:10.5px;font-weight:600;color:#1558d6;font-family:'Courier New',monospace}
+
+/* SECTION HEADING */
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:2px solid #E07000;margin-bottom:28px;margin-top:56px}
+
+/* SCHEMA BLOCK */
+.schema-block{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:28px}
+.schema-header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid #C8D8EC;background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 100%)}
+.schema-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:700;font-family:'Courier New',monospace;border:1.5px solid transparent}
+.schema-desc{font-size:12.5px;color:#5A7AAA;font-style:italic}
+.schema-num{font-size:10px;font-weight:700;color:#8AACCC;letter-spacing:.1em;text-transform:uppercase;margin-left:auto}
+
+/* Schema chip colors */
+.chip-registry{background:#EBF2FD;border-color:#B8D0F5;color:#1558d6}
+.chip-ingest{background:#E8EFF8;border-color:#B8CCDF;color:#0D1F3C}
+.chip-workflow{background:#F3EAFD;border-color:#C9A8F5;color:#6200ea}
+.chip-audit{background:#FDECED;border-color:#F5B8BC;color:#c8102e}
+.chip-ui{background:#E5F5F5;border-color:#A8D8D8;color:#007A7A}
+.chip-auth{background:#FEF3E6;border-color:#F5D08C;color:#E07000}
+.chip-vessel{background:#EBF2FD;border-color:#1558d6;color:#1558d6}
+.chip-port{background:#E8F5EE;border-color:#A8D8BC;color:#137333}
+.chip-company{background:#F3EAFD;border-color:#C9A8F5;color:#6200ea}
+.chip-voyage{background:#E8F5EE;border-color:#A8D8BC;color:#137333}
+.chip-compliance{background:#FDECED;border-color:#F5B8BC;color:#c8102e}
+.chip-market{background:#FEF3E6;border-color:#F5D08C;color:#E07000}
+.chip-geo{background:#F3EAFD;border-color:#C9A8F5;color:#6200ea}
+
+/* SCHEMA TABLE */
+.schema-table{width:100%;border-collapse:collapse;font-size:12px}
+.schema-table thead tr{background:#0D1F3C}
+.schema-table thead th{color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:11px 14px;text-align:left;border-right:1px solid rgba(255,255,255,.1)}
+.schema-table thead th:last-child{border-right:none}
+.schema-table tbody tr:nth-child(even){background:#F0F4FA}
+.schema-table tbody tr:nth-child(odd){background:#fff}
+.schema-table tbody tr:hover{background:#E8F0FC}
+.schema-table td{padding:10px 14px;border-bottom:1px solid #E8EFF8;color:#0D1F3C;vertical-align:top;line-height:1.55}
+.schema-table td:last-child{border-right:none}
+.schema-table td code{font-family:'Courier New',monospace;font-size:10.5px;background:#F0F4FA;padding:1px 5px;border-radius:3px;color:#1558d6;border:1px solid #C8D8EC;white-space:nowrap}
+.schema-table td.td-name{font-family:'Courier New',monospace;font-size:11.5px;font-weight:600;color:#0D1F3C;white-space:nowrap}
+.schema-table td.td-pk{font-family:'Courier New',monospace;font-size:10.5px;color:#137333;white-space:nowrap}
+.type-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.tb-base{background:#EBF2FD;color:#1558d6;border:1px solid #B8D0F5}
+.tb-part{background:#FEF3E6;color:#E07000;border:1px solid #F5D08C}
+.tb-mat{background:#E8F5EE;color:#137333;border:1px solid #A8D8BC}
+.tb-fn{background:#F3EAFD;color:#6200ea;border:1px solid #C9A8F5}
+
+/* CODE BLOCKS */
+.code-block{background:#0D1F3C;color:#C8D8EC;font-family:'Courier New',monospace;font-size:11.5px;padding:16px 20px;border-radius:8px;margin:12px 22px 16px;overflow-x:auto;line-height:1.7;border:1px solid rgba(21,88,214,.3)}
+.code-block .kw{color:#7DD3FC}
+.code-block .fn{color:#A5F3FC}
+.code-block .str{color:#86EFAC}
+.code-block .cm{color:#6B7280;font-style:italic}
+.code-block .ty{color:#FCA5A5}
+.code-block .nm{color:#FDE68A}
+
+/* STATS TABLE */
+.stats-wrap{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:8px}
+.stats-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.stats-table thead tr{background:#0D1F3C}
+.stats-table thead th{color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:12px 16px;text-align:left;border-right:1px solid rgba(255,255,255,.1)}
+.stats-table thead th:last-child{border-right:none}
+.stats-table thead th:not(:first-child){text-align:right}
+.stats-table tbody tr:nth-child(even){background:#F0F4FA}
+.stats-table tbody tr:nth-child(odd){background:#fff}
+.stats-table tbody tr:hover{background:#E8F0FC}
+.stats-table td{padding:10px 16px;border-bottom:1px solid #E8EFF8;color:#0D1F3C;vertical-align:middle}
+.stats-table td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#1558d6}
+.stats-table td:first-child{font-family:'Courier New',monospace;font-weight:600;font-size:12px}
+.stats-table tr.total-row{background:#0D1F3C !important}
+.stats-table tr.total-row td{color:#fff;font-weight:700;border-bottom:none}
+.stats-table tr.total-row td:not(:first-child){color:#7DD3FC}
+
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:20px;margin-top:56px;border-top:1px solid #C8D8EC}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Maritime Intel · Data Model</div>
+  <div class="nav-links">
+    <a href="datamodel_index.html" class="hub">&#8592; Hub</a>
+    <a href="datamodel_entities.html">Entity Relationships</a>
+    <a href="datamodel_schema.html" class="active">Schema Reference</a>
+    <a href="datamodel_json.html">JSON Files</a>
+    <a href="datamodel_wrappers.html">JS Wrappers</a>
+    <a href="datamodel_flow.html">Data Flow</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>PostgreSQL <span>Schema Reference</span></h1>
+  <p class="subtitle">12 schemas, 40+ tables, 6 materialized views, 2 utility functions. Each schema is documented with table types, primary keys, and key column descriptions.</p>
+  <div class="ext-badges">
+    <span class="ext-badge">uuid-ossp</span>
+    <span class="ext-badge">postgis</span>
+    <span class="ext-badge">btree_gin</span>
+    <span class="ext-badge">pg_partman</span>
+  </div>
+
+  <div class="section-title">Schema Documentation</div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 1: registry -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-registry">registry</span>
+      <span class="schema-desc">Attribute catalog, source registry, filter/column group definitions</span>
+      <span class="schema-num">Schema 1 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:200px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">source_def</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">source_id SMALLINT</td>
+          <td><code>source_code</code>, <code>source_name</code>, <code>source_type</code>, <code>default_weight</code></td>
+          <td>30 seed rows — vendors, AIS providers, flag registries, class societies, PSC MoUs</td>
+        </tr>
+        <tr>
+          <td class="td-name">attribute_def</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">attr_id SERIAL</td>
+          <td><code>entity_type</code>, <code>attr_key</code>, <code>attr_id_ui</code>, <code>attr_label</code>, <code>section_id</code>, <code>group_id</code>, <code>vessel_field</code>, <code>filter_type</code>, <code>col_id</code></td>
+          <td>~650 vessel attributes defined in <code>attribute_definitions.json</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">source_attr_weight</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">(source_id, attr_id, effective_from)</td>
+          <td><code>weight</code></td>
+          <td>Per-source attribute confidence overrides; composite PK ensures one weight row per source/attr/period</td>
+        </tr>
+        <tr>
+          <td class="td-name">filter_group_def</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">filter_group_id</td>
+          <td><code>entity_type</code>, <code>label</code>, <code>display_order</code></td>
+          <td>Mirrors <code>filter_groups</code> in <code>attribute_definitions.json</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">column_group_def</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">column_group_key</td>
+          <td><code>entity_type</code>, <code>label</code>, <code>display_order</code></td>
+          <td>Mirrors <code>column_groups</code> in <code>attribute_definitions.json</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+<span class="cm">-- Utility function: point-in-time attribute lookup</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">registry.attr_at</span>(
+  p_schema   <span class="ty">TEXT</span>,
+  entity_id  <span class="ty">TEXT</span>,
+  attr_key   <span class="ty">TEXT</span>,
+  valid_at   <span class="ty">TIMESTAMPTZ</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>(),
+  sys_at     <span class="ty">TIMESTAMPTZ</span> <span class="kw">DEFAULT</span> <span class="fn">now</span>()
+) <span class="kw">RETURNS</span> <span class="ty">TEXT</span>
+
+<span class="cm">-- Utility function: refresh all materialized views concurrently</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">registry.refresh_all_current_views</span>()
+<span class="kw">RETURNS</span> <span class="ty">VOID</span> <span class="cm">-- refreshes vessel.v_current, port.v_current, company.v_current, vessel.latest_position CONCURRENTLY</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 2: ingest -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-ingest">ingest</span>
+      <span class="schema-desc">ETL pipeline — feed configuration, field mapping, QC rules, run tracking, conflict queue</span>
+      <span class="schema-num">Schema 2 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">feed_config</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">feed_id SERIAL</td>
+          <td><code>source_id</code>, <code>entity_type</code>, <code>feed_format</code>, <code>cron_schedule</code>, <code>batch_size</code></td>
+          <td>Mirrors <code>etl_feeds.json</code>. Formats: JSON / XML / CSV / FTP_CSV / API_REST / SFTP_XML / KAFKA / WEBSOCKET</td>
+        </tr>
+        <tr>
+          <td class="td-name">feed_field_map</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">map_id SERIAL</td>
+          <td><code>feed_id</code>, <code>source_field</code>, <code>attr_id</code>, <code>transform_expr</code>, <code>valid_from</code>, <code>valid_to</code></td>
+          <td>Versioned JSONPath → attribute mapping; supports in-place schema evolution</td>
+        </tr>
+        <tr>
+          <td class="td-name">qc_rule</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">rule_id SERIAL</td>
+          <td><code>attr_id</code>, <code>rule_type</code>, <code>severity</code></td>
+          <td>Per-attribute QC rules. Types: NOT_NULL / RANGE / REGEX / ENUM / CUSTOM_SQL. Severity: WARN / ERROR / BLOCK</td>
+        </tr>
+        <tr>
+          <td class="td-name">feed_run</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">run_id BIGSERIAL</td>
+          <td><code>feed_id</code>, <code>status</code>, <code>rows_received</code>, <code>rows_ingested</code>, <code>rows_rejected</code>, <code>conflict_count</code></td>
+          <td>Mirrors <code>etl_runs.json</code>. Status: RUNNING / SUCCESS / PARTIAL / FAILED. Index on <code>(feed_id, started_at DESC)</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">conflict_queue</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">conflict_id BIGSERIAL</td>
+          <td><code>run_id</code>, <code>entity_type</code>, <code>entity_id</code>, <code>attr_id</code>, <code>source_a_id/value_a/score_a</code>, <code>source_b_id/value_b/score_b</code>, <code>conflict_type</code>, <code>severity</code>, <code>resolution</code></td>
+          <td>Mirrors <code>etl_conflicts.json</code>. Types: VALUE_MISMATCH / FORMAT / MISSING / RANGE_BREACH. Severity: LOW / MEDIUM / HIGH / CRITICAL</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 3: workflow -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-workflow">workflow</span>
+      <span class="schema-desc">Human-in-the-loop conflict resolution and manual edit drafts with state-machine audit</span>
+      <span class="schema-num">Schema 3 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">conflict</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">conflict_id BIGSERIAL</td>
+          <td><code>entity_type</code>, <code>entity_id</code>, <code>attr_id</code>, <code>source_a_id</code>, <code>value_a</code>, <code>source_b_id</code>, <code>value_b</code>, <code>resolved_by</code>, <code>resolution</code></td>
+          <td><code>resolved_by</code> → <code>auth.app_user</code>. Resolution: ACCEPTED_A / ACCEPTED_B / MANUAL / DEFERRED</td>
+        </tr>
+        <tr>
+          <td class="td-name">edit_draft</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">draft_id BIGSERIAL</td>
+          <td><code>entity_type</code>, <code>entity_id</code>, <code>attr_id</code>, <code>draft_value</code>, <code>state</code>, <code>created_by</code>, <code>reviewed_by</code></td>
+          <td>Manual value edits awaiting approval. States: PENDING / APPROVED / REJECTED / WITHDRAWN. FK to <code>auth.app_user</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">draft_transition</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">transition_id BIGSERIAL</td>
+          <td><code>draft_id</code>, <code>from_state</code>, <code>to_state</code>, <code>actor_id</code>, <code>reason</code></td>
+          <td>State machine audit log for each draft step. <code>actor_id</code> → <code>auth.app_user</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 4: audit -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-audit">audit</span>
+      <span class="schema-desc">Immutable change log — UPDATE and DELETE rules prevent modification</span>
+      <span class="schema-num">Schema 4 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">change_log</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">log_id BIGSERIAL</td>
+          <td><code>entity_type</code>, <code>entity_id</code>, <code>attr_id</code>, <code>operation</code>, <code>old_value JSONB</code>, <code>new_value JSONB</code>, <code>actor_id</code>, <code>logged_at</code></td>
+          <td>IMMUTABLE — PostgreSQL RULE prevents UPDATE and DELETE. Operations: INSERT / UPDATE / DELETE / APPROVE / REJECT. Partitioned future-ready.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+<span class="cm">-- Immutability enforced via PostgreSQL rules</span>
+<span class="kw">CREATE RULE</span> <span class="nm">no_update_change_log</span> <span class="kw">AS ON UPDATE TO</span> <span class="fn">audit.change_log</span>
+  <span class="kw">DO INSTEAD NOTHING</span>;
+<span class="kw">CREATE RULE</span> <span class="nm">no_delete_change_log</span> <span class="kw">AS ON DELETE TO</span> <span class="fn">audit.change_log</span>
+  <span class="kw">DO INSTEAD NOTHING</span>;
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 5: ui -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-ui">ui</span>
+      <span class="schema-desc">Personalization — personas, attribute visibility, saved filters, dashboard layouts</span>
+      <span class="schema-num">Schema 5 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">persona</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">persona_id SERIAL</td>
+          <td><code>persona_key</code>, <code>label</code>, <code>icon</code>, <code>color</code>, <code>attr_sections TEXT[]</code>, <code>vessel_columns TEXT[]</code>, <code>dashboard_cards JSONB</code></td>
+          <td>Mirrors <code>personas.json</code>. 5 system personas seeded: Fleet Ops, Commercial, Compliance, Risk, Executive</td>
+        </tr>
+        <tr>
+          <td class="td-name">persona_attr_config</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">(persona_id, attr_id)</td>
+          <td><code>is_visible</code>, <code>column_order</code></td>
+          <td>Per-persona attribute visibility overrides; composite PK ensures uniqueness per persona/attribute pair</td>
+        </tr>
+        <tr>
+          <td class="td-name">saved_filter</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">filter_id SERIAL</td>
+          <td><code>user_id</code>, <code>persona_id</code>, <code>entity_type</code>, <code>label</code>, <code>filter_json JSONB</code>, <code>is_shared</code></td>
+          <td>User-saved filter presets; <code>is_shared</code> enables team-level filter sharing</td>
+        </tr>
+        <tr>
+          <td class="td-name">dashboard_layout</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">layout_id SERIAL</td>
+          <td><code>user_id</code>, <code>persona_id</code>, <code>card_id</code>, <code>col_span (1–12)</code>, <code>row_order</code>, <code>is_visible</code></td>
+          <td>Mirrors <code>dashboard_cards.json</code> card definitions. UNIQUE on <code>(user_id, persona_id, card_id)</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 6: auth -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-auth">auth</span>
+      <span class="schema-desc">Access control — users, roles, role assignments, and resource permissions</span>
+      <span class="schema-num">Schema 6 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">app_user</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">user_id SERIAL</td>
+          <td><code>email UNIQUE</code>, <code>display_name</code>, <code>default_persona</code>, <code>is_active</code>, <code>last_login_at</code></td>
+          <td><code>default_persona</code> → <code>ui.persona</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">role</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">role_id SERIAL</td>
+          <td><code>role_key UNIQUE</code>, <code>label</code>, <code>description</code></td>
+          <td>System roles: ADMIN, ANALYST, EDITOR, REVIEWER, READ_ONLY</td>
+        </tr>
+        <tr>
+          <td class="td-name">user_role</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">(user_id, role_id)</td>
+          <td><code>granted_at</code>, <code>granted_by</code></td>
+          <td>Many-to-many user ↔ role junction. <code>granted_by</code> → <code>app_user</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">permission</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">permission_id SERIAL</td>
+          <td><code>role_id</code>, <code>resource</code>, <code>action</code></td>
+          <td>RBAC. Actions: READ / WRITE / APPROVE / ADMIN. UNIQUE on <code>(role_id, resource, action)</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 7: vessel -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-vessel">vessel</span>
+      <span class="schema-desc">Core vessel entity — bi-temporal EAV, AIS positions, bronze ingest, materialized views</span>
+      <span class="schema-num">Schema 7 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:130px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">entity</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">imo_number CHAR(7)</td>
+          <td><code>created_at</code>, <code>first_seen_at</code>, <code>first_source_id</code></td>
+          <td>Anchor table — one row per IMO number. All other vessel data links here.</td>
+        </tr>
+        <tr>
+          <td class="td-name">attr_value</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE sys_from)</span></td>
+          <td class="td-pk">av_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>attr_id</code>, <code>value_text/numeric/boolean/date/json</code>, <code>source_id</code>, <code>confidence</code>, <code>valid_from/to</code>, <code>sys_from/to</code>, <code>workflow_state</code>, <code>run_id</code>, <code>qc_flags</code></td>
+          <td>INSERT-ONLY (PostgreSQL RULE). Bi-temporal: valid_* = real-world, sys_* = system time. Partitions: 2020–2028 + overflow.</td>
+        </tr>
+        <tr>
+          <td class="td-name">position</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE position_ts)</span></td>
+          <td class="td-pk">pos_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>mmsi</code>, <code>latitude</code>, <code>longitude</code>, <code>geom GEOMETRY(Point,4326)</code>, <code>speed_kn</code>, <code>course_deg</code>, <code>heading_deg</code>, <code>nav_status</code>, <code>destination</code>, <code>eta</code></td>
+          <td>High-volume AIS stream. Quarterly partitions: 2024Q1–2026Q1 + overflow. GIST index on <code>geom</code>.</td>
+        </tr>
+        <tr>
+          <td class="td-name">raw_ingest</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE received_at)</span></td>
+          <td class="td-pk">raw_id BIGSERIAL</td>
+          <td><code>feed_id</code>, <code>run_id</code>, <code>imo_number</code>, <code>raw_payload JSONB</code>, <code>parse_status</code></td>
+          <td>Bronze layer — raw JSON/XML payloads before transformation. Quarterly partitions.</td>
+        </tr>
+        <tr>
+          <td class="td-name">latest_position</td>
+          <td><span class="type-badge tb-mat">Materialized View</span></td>
+          <td class="td-pk">Unique on imo_number</td>
+          <td colspan="2">DISTINCT ON most recent <code>position_ts</code> per vessel. Refreshed concurrently. Supports real-time map layer.</td>
+        </tr>
+        <tr>
+          <td class="td-name">v_current</td>
+          <td><span class="type-badge tb-mat">Materialized View</span></td>
+          <td class="td-pk">Unique on imo_number</td>
+          <td colspan="2">Pivots EAV rows (CASE/MAX) into ~50 wide columns matching <code>vessels.js</code> VESSELS property names. Joins <code>latest_position</code> for current lat/lon/speed. Refreshed concurrently via <code>registry.refresh_all_current_views()</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+<span class="cm">-- Insert-only rule on vessel.attr_value</span>
+<span class="kw">CREATE RULE</span> <span class="nm">attr_value_insert_only</span> <span class="kw">AS ON UPDATE TO</span> <span class="fn">vessel.attr_value</span>
+  <span class="kw">DO INSTEAD</span>
+    <span class="kw">INSERT INTO</span> <span class="fn">vessel.attr_value</span> (imo_number, attr_id, value_text, source_id,
+      valid_from, valid_to, sys_from, sys_to, workflow_state)
+    <span class="kw">VALUES</span> (NEW.imo_number, NEW.attr_id, NEW.value_text, NEW.source_id,
+      NEW.valid_from, NEW.valid_to, <span class="fn">now</span>(), <span class="str">'infinity'</span>, NEW.workflow_state);
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 8: port -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-port">port</span>
+      <span class="schema-desc">Core port entity — bi-temporal EAV, PostGIS geometry, bronze ingest, materialized view</span>
+      <span class="schema-num">Schema 8 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:130px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">entity</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">unlocode VARCHAR(5)</td>
+          <td colspan="2">Anchor table — one row per UN/LOCODE. All port data links here.</td>
+        </tr>
+        <tr>
+          <td class="td-name">attr_value</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE sys_from)</span></td>
+          <td class="td-pk">av_id BIGSERIAL</td>
+          <td><code>unlocode</code>, <code>attr_id</code>, <code>value_text/numeric/boolean/date/json</code>, <code>source_id</code>, <code>confidence</code>, <code>valid_from/to</code>, <code>sys_from/to</code></td>
+          <td>Annual partitions: 2024–2026 + overflow</td>
+        </tr>
+        <tr>
+          <td class="td-name">location</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">unlocode</td>
+          <td><code>geom GEOMETRY(Point,4326)</code>, <code>latitude GENERATED</code>, <code>longitude GENERATED</code>, <code>country_code</code>, <code>timezone</code></td>
+          <td>1:1 with entity. GIST index on <code>geom</code>. Generated columns compute lat/lon from geometry.</td>
+        </tr>
+        <tr>
+          <td class="td-name">raw_ingest</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE received_at)</span></td>
+          <td class="td-pk">raw_id BIGSERIAL</td>
+          <td colspan="2">Bronze layer. Annual partitions: 2024–2026 + overflow.</td>
+        </tr>
+        <tr>
+          <td class="td-name">v_current</td>
+          <td><span class="type-badge tb-mat">Materialized View</span></td>
+          <td class="td-pk">Unique on unlocode</td>
+          <td colspan="2">~40 named columns covering identity, channel limits, berths, services, bunkering, traffic, PSC stats, congestion. Matches <code>ports.js</code> PORTS property names.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 9: company -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-company">company</span>
+      <span class="schema-desc">Core company entity — bi-temporal EAV, multi-identifier (LRNO/LEI/DUNS), bronze ingest, materialized view</span>
+      <span class="schema-num">Schema 9 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:130px">Type</th>
+          <th style="width:220px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">entity</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">company_id VARCHAR(20)</td>
+          <td><code>id_type</code>, <code>lrno UNIQUE</code>, <code>lei UNIQUE</code>, <code>duns UNIQUE</code></td>
+          <td>id_type: LRNO / LEI / DUNS / INTERNAL. Unique indexes on all three external identifiers.</td>
+        </tr>
+        <tr>
+          <td class="td-name">attr_value</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE sys_from)</span></td>
+          <td class="td-pk">av_id BIGSERIAL</td>
+          <td><code>company_id</code>, <code>attr_id</code>, <code>value_text/numeric/boolean/date/json</code>, <code>source_id</code>, <code>confidence</code>, <code>valid_from/to</code>, <code>sys_from/to</code></td>
+          <td>Annual partitions: 2024–2026 + overflow</td>
+        </tr>
+        <tr>
+          <td class="td-name">raw_ingest</td>
+          <td><span class="type-badge tb-part">Partitioned (RANGE received_at)</span></td>
+          <td class="td-pk">raw_id BIGSERIAL</td>
+          <td colspan="2">Bronze layer. Annual partitions: 2024–2026 + overflow.</td>
+        </tr>
+        <tr>
+          <td class="td-name">v_current</td>
+          <td><span class="type-badge tb-mat">Materialized View</span></td>
+          <td class="td-pk">Unique on company_id</td>
+          <td colspan="2">~35 named columns: identity, fleet size/DWT, DOC/ISM, PSC detention, financial (revenue/EBITDA), credit rating, sanctions, KYC tier, ESG score. Matches <code>companies.js</code> COMPANIES property names.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 10: voyage -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-voyage">voyage</span>
+      <span class="schema-desc">Voyage tracking — voyages, port calls, and route waypoints with PostGIS geometry</span>
+      <span class="schema-num">Schema 10 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">voyage</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">voyage_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>voyage_number</code>, <code>departure_port</code>, <code>arrival_port</code>, <code>departure_at</code>, <code>arrival_at</code>, <code>voyage_status</code>, <code>cargo_type</code>, <code>cargo_qty_mt</code>, <code>charterer</code></td>
+          <td>Status: PLANNED / UNDERWAY / COMPLETED / CANCELLED. Index on <code>(imo_number, departure_at DESC)</code></td>
+        </tr>
+        <tr>
+          <td class="td-name">port_call</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">call_id BIGSERIAL</td>
+          <td><code>voyage_id</code>, <code>imo_number</code>, <code>unlocode</code>, <code>port_name</code>, <code>ata</code>, <code>atd</code>, <code>berth_name</code>, <code>call_type</code>, <code>purpose</code>, <code>cargo_volume</code></td>
+          <td>Mirrors <code>port_calls.json</code>. Types: CARGO / BUNKER / REPAIR / CREW_CHANGE / ANCHOR / TRANSIT</td>
+        </tr>
+        <tr>
+          <td class="td-name">route_waypoint</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">waypoint_id BIGSERIAL</td>
+          <td><code>voyage_id</code>, <code>imo_number</code>, <code>seq_no</code>, <code>port_name</code>, <code>unlocode</code>, <code>latitude</code>, <code>longitude</code>, <code>geom</code>, <code>ata</code>, <code>atd</code>, <code>eta</code>, <code>waypoint_type</code></td>
+          <td>Normalized from <code>movements.json</code> nested "route" array. Types: done / current / future. GIST index on <code>geom</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 11: compliance -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-compliance">compliance</span>
+      <span class="schema-desc">PSC inspections and deficiencies, statutory certificates, and cross-entity sanctions</span>
+      <span class="schema-num">Schema 11 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">psc_inspection</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">inspection_id BIGSERIAL</td>
+          <td><code>external_id UNIQUE</code>, <code>imo_number</code>, <code>vessel_name</code>, <code>inspection_date</code>, <code>inspection_type</code>, <code>port_unlocode</code>, <code>port_name</code>, <code>authority</code>, <code>mou_region</code>, <code>deficiency_count</code>, <code>detained</code>, <code>detention_start/end</code>, <code>inspection_status</code></td>
+          <td>Mirrors <code>psc_inspections.json</code>. Types: Initial / Expanded. Indexes on (imo_number, date DESC), (port, date DESC), (mou, date DESC)</td>
+        </tr>
+        <tr>
+          <td class="td-name">psc_deficiency</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">deficiency_id BIGSERIAL</td>
+          <td><code>inspection_id</code>, <code>deficiency_code</code>, <code>category</code>, <code>description</code>, <code>severity</code>, <code>action_taken</code>, <code>rectified</code></td>
+          <td>Mirrors nested deficiencies in <code>psc_inspections.json</code>. Severity: high / medium / low</td>
+        </tr>
+        <tr>
+          <td class="td-name">certificate</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">cert_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>cert_type</code>, <code>issuing_authority</code>, <code>issue_date</code>, <code>expiry_date</code>, <code>is_valid</code>, <code>survey_date</code></td>
+          <td>Mirrors <code>certificates.json</code>. Types: SMC / DOC / ISSC / MLC / IOPP / etc. Index on <code>expiry_date WHERE is_valid</code>.</td>
+        </tr>
+        <tr>
+          <td class="td-name">sanction</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">sanction_id BIGSERIAL</td>
+          <td><code>entity_type</code>, <code>entity_id</code>, <code>sanction_list</code>, <code>listed_at</code>, <code>delisted_at</code>, <code>is_active</code></td>
+          <td>Cross-entity — covers vessels, companies, and individuals. Lists: OFAC_SDN / EU_CONS / UN_SC / etc.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 12: market -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-market">market</span>
+      <span class="schema-desc">Market data — freight indices, routes, fixtures, time charters, valuations, freight rates</span>
+      <span class="schema-num">Schema 12 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">index_definition</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">index_id SERIAL</td>
+          <td><code>index_code UNIQUE</code>, <code>index_name</code>, <code>index_type</code>, <code>color</code>, <code>description</code></td>
+          <td>Mirrors <code>market_indices.json</code>. Codes: BDI / BDTI / BCTI / BCI / BLNG / BPCI. Types: DRY / TANKER / LNG / LPG / CONTAINER / COMPOSITE</td>
+        </tr>
+        <tr>
+          <td class="td-name">index_value</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">value_id BIGSERIAL</td>
+          <td><code>index_id</code>, <code>value_date</code>, <code>value</code>, <code>prev_value</code>, <code>daily_change</code>, <code>direction</code>, <code>w52_low</code>, <code>w52_high</code>, <code>sparkline NUMERIC[]</code></td>
+          <td>UNIQUE on <code>(index_id, value_date)</code>. Mirrors daily data in <code>market_indices.json</code>. Direction: up / down / flat</td>
+        </tr>
+        <tr>
+          <td class="td-name">freight_rate</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">rate_id BIGSERIAL</td>
+          <td><code>vessel_type</code>, <code>route_code</code>, <code>load_port</code>, <code>discharge_port</code>, <code>rate_date</code>, <code>rate_type</code>, <code>rate_value</code>, <code>rate_unit</code></td>
+          <td>Types: SPOT / TC_6M / TC_1Y / TC_3Y / VOYAGE. <code>load_port</code> → <code>port.entity</code> (nullable)</td>
+        </tr>
+        <tr>
+          <td class="td-name">valuation</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">val_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>val_date</code>, <code>val_type</code>, <code>value_usd</code>, <code>currency</code>, <code>methodology</code></td>
+          <td>UNIQUE on <code>(imo_number, val_date, val_type, source_id)</code>. Types: MARKET / SCRAP / INSURANCE / BOOK</td>
+        </tr>
+        <tr>
+          <td class="td-name">fixture</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">fixture_id BIGSERIAL</td>
+          <td><code>external_id UNIQUE</code>, <code>imo_number</code>, <code>vessel_name</code>, <code>vessel_type</code>, <code>dwt</code>, <code>charterer</code>, <code>owner</code>, <code>cargo</code>, <code>cargo_qty</code>, <code>load_port</code>, <code>discharge_port</code>, <code>laycan</code>, <code>rate_text</code>, <code>tce_usd</code>, <code>fixture_status</code>, <code>broker</code></td>
+          <td>Mirrors <code>fixtures.json</code>. Status: Fixed / On Subjects / Rumoured / Failed / Withdrawn</td>
+        </tr>
+        <tr>
+          <td class="td-name">tc_contract</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">contract_id BIGSERIAL</td>
+          <td><code>imo_number</code>, <code>vessel_name</code>, <code>charter_type</code>, <code>term_text</code>, <code>start_date</code>, <code>end_date</code>, <code>daily_rate_usd</code>, <code>charterer</code>, <code>redelivery_zone</code>, <code>options_text</code></td>
+          <td>Mirrors <code>tc_contracts.json</code>. Types: Time Charter / Bareboat Charter / Demise Charter</td>
+        </tr>
+        <tr>
+          <td class="td-name">route_benchmark</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">benchmark_id SERIAL</td>
+          <td><code>route_code UNIQUE</code>, <code>route_label</code>, <code>segment</code></td>
+          <td>Route definitions: TD3C, 5TC, etc. Segments: VLCC / Suezmax / Aframax / Product / Capesize / Panamax / Supramax / LNG / LPG</td>
+        </tr>
+        <tr>
+          <td class="td-name">route_benchmark_value</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">value_id BIGSERIAL</td>
+          <td><code>benchmark_id</code>, <code>value_date</code>, <code>ws</code>, <code>tce_usd</code>, <code>prev_tce_usd</code>, <code>lo_52w</code>, <code>hi_52w</code></td>
+          <td>UNIQUE on <code>(benchmark_id, value_date)</code>. Mirrors <code>freight_routes.json</code>. <code>ws</code> = Worldscale points.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SCHEMA 13: geo -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="schema-block">
+    <div class="schema-header">
+      <span class="schema-chip chip-geo">geo</span>
+      <span class="schema-desc">GIS reference data — strategic chokepoints and MOU patrol zones</span>
+      <span class="schema-num">Schema 13 of 13</span>
+    </div>
+    <table class="schema-table">
+      <thead>
+        <tr>
+          <th style="width:200px">Table / View</th>
+          <th style="width:120px">Type</th>
+          <th style="width:210px">Primary Key</th>
+          <th>Key Columns</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">choke_point</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">choke_id SERIAL</td>
+          <td><code>name UNIQUE</code>, <code>geom GEOMETRY(Point,4326)</code>, <code>latitude GENERATED</code>, <code>longitude GENERATED</code>, <code>volume_label</code>, <code>risk_level</code></td>
+          <td>7 strategic chokepoints. Mirrors <code>choke_points.json</code>. Levels: High / Medium / Low. GIST index on <code>geom</code>.</td>
+        </tr>
+        <tr>
+          <td class="td-name">mou_zone</td>
+          <td><span class="type-badge tb-base">Base Table</span></td>
+          <td class="td-pk">zone_id SERIAL</td>
+          <td><code>name UNIQUE</code>, <code>color VARCHAR(7)</code>, <code>geom GEOMETRY(Polygon,4326)</code></td>
+          <td>5 MOU patrol zones (Paris, Tokyo, Indian Ocean, Caribbean, Mediterranean). Mirrors <code>mou_zones.json</code>. GIST index on <code>geom</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+<span class="cm">-- Spatial query example: vessels near a chokepoint (within 50 nautical miles)</span>
+<span class="kw">SELECT</span> v.imo_number, v.vessel_name, lp.speed_kn, lp.nav_status
+<span class="kw">FROM</span>   <span class="fn">vessel.latest_position</span> lp
+<span class="kw">JOIN</span>   <span class="fn">vessel.v_current</span> v <span class="kw">USING</span> (imo_number)
+<span class="kw">JOIN</span>   <span class="fn">geo.choke_point</span> cp <span class="kw">ON</span> cp.name = <span class="str">'Strait of Hormuz'</span>
+<span class="kw">WHERE</span>  <span class="fn">ST_DWithin</span>(lp.geom::geography, cp.geom::geography, <span class="nm">92600</span>); <span class="cm">-- 50 nmi in metres</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- INDEX STATISTICS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section-title">Index Statistics</div>
+
+  <div class="stats-wrap">
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Schema</th>
+          <th>Tables</th>
+          <th>Partitioned Tables</th>
+          <th>Materialized Views</th>
+          <th>Indexes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>registry</td>
+          <td>5</td>
+          <td>0</td>
+          <td>0</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>ingest</td>
+          <td>5</td>
+          <td>0</td>
+          <td>0</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>workflow</td>
+          <td>3</td>
+          <td>0</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>audit</td>
+          <td>1</td>
+          <td>0</td>
+          <td>0</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>ui</td>
+          <td>4</td>
+          <td>0</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>auth</td>
+          <td>4</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>vessel</td>
+          <td>3</td>
+          <td>3</td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>port</td>
+          <td>3</td>
+          <td>2</td>
+          <td>1</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>company</td>
+          <td>3</td>
+          <td>2</td>
+          <td>1</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>voyage</td>
+          <td>3</td>
+          <td>0</td>
+          <td>0</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>compliance</td>
+          <td>4</td>
+          <td>0</td>
+          <td>0</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>market</td>
+          <td>8</td>
+          <td>0</td>
+          <td>0</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td>geo</td>
+          <td>2</td>
+          <td>0</td>
+          <td>0</td>
+          <td>2</td>
+        </tr>
+        <tr class="total-row">
+          <td>TOTAL</td>
+          <td>48</td>
+          <td>7</td>
+          <td>4</td>
+          <td>51</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>Maritime Intelligence Platform &nbsp;·&nbsp; Data Model v4 &nbsp;·&nbsp; Schema Reference &nbsp;·&nbsp; 2026-05-13</footer>
+</div><!-- /page -->
+</body>
+</html>

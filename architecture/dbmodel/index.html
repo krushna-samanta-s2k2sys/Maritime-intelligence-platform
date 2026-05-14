@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime DB — Schema Documentation Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.hero{background:linear-gradient(135deg,#0D1F3C 0%,#1A2F52 60%,#0D3366 100%);padding:56px 40px 48px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;color:#FF9900;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:40px;font-weight:800;color:#fff;margin-bottom:10px}
+h1 span{color:#FF9900}
+.sub{font-size:14px;color:#8AACCC;line-height:1.7;max-width:680px;margin:0 auto 28px}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:0}
+.badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 14px;font-size:10.5px;font-weight:600;color:#93B8D8}
+.main{max-width:1100px;margin:0 auto;padding:40px 32px}
+h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:22px;text-decoration:none;color:inherit;display:block;transition:all .18s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.card-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.card-icon{font-size:28px;line-height:1}
+.card-meta{flex:1}
+.card-tag{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+.card-title{font-size:15px;font-weight:700;color:#fff}
+.card-desc{font-size:11.5px;color:#7A9CBB;line-height:1.55;margin-bottom:14px}
+.card-tables{display:flex;flex-wrap:wrap;gap:5px}
+.tbl{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 8px;font-size:9.5px;font-family:'JetBrains Mono',monospace;color:#93B8D8}
+.c1::before{background:#FF9900}.c1 .card-tag{color:#FF9900}
+.c2::before{background:#4A9EFF}.c2 .card-tag{color:#4A9EFF}
+.c3::before{background:#34D399}.c3 .card-tag{color:#34D399}
+.c4::before{background:#A78BFA}.c4 .card-tag{color:#A78BFA}
+.c5::before{background:#F87171}.c5 .card-tag{color:#F87171}
+.c6::before{background:#FB923C}.c6 .card-tag{color:#FB923C}
+.c7::before{background:#38BDF8}.c7 .card-tag{color:#38BDF8}
+.c8::before{background:#4ADE80}.c8 .card-tag{color:#4ADE80}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:24px;margin-bottom:40px}
+.stat{text-align:center}
+.stat-v{font-size:28px;font-weight:800;color:#FF9900;font-family:'JetBrains Mono',monospace}
+.stat-l{font-size:10px;font-weight:600;color:#5A7AAA;text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px}
+.info-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:20px}
+.info-box h3{font-size:12px;font-weight:700;color:#FF9900;text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+.info-box ul{list-style:none}
+.info-box li{font-size:12px;color:#8AACCC;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.info-box li::before{content:'→';color:#FF9900;flex-shrink:0;margin-top:1px}
+.nav-row{display:flex;gap:12px;justify-content:center;margin-bottom:24px}
+.nav-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:24px;font-size:12px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#FF9900;color:#000}
+.btn-pri:hover{background:#FFB340}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}
+.btn-sec:hover{background:rgba(255,255,255,.12)}
+.footer{text-align:center;font-size:10.5px;color:#3A5070;padding:24px;border-top:1px solid rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence · Database Documentation</div>
+  <h1>PostgreSQL Schema <span>Reference</span></h1>
+  <p class="sub">Complete entity-level documentation for the Maritime Intelligence Platform database — 13 schemas, 53 tables, 4 materialized views, column-level detail, FK relationships and visual ER diagrams per schema. Three-layer data architecture: Bronze (raw ingest) → Silver (vendor EAV, insert-only) → Gold (explicitly promoted master) → materialized views.</p>
+  <div class="badges">
+    <div class="badge">13 Schemas</div>
+    <div class="badge">53 Tables</div>
+    <div class="badge">4 Materialized Views</div>
+    <div class="badge">Bi-Temporal EAV</div>
+    <div class="badge">PostGIS Geometry</div>
+    <div class="badge">Insert-Only Audit</div>
+    <div class="badge">Range Partitioning</div>
+    <div class="badge">51+ Indexes</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-v">13</div><div class="stat-l">Schemas</div></div>
+    <div class="stat"><div class="stat-v">53</div><div class="stat-l">Tables</div></div>
+    <div class="stat"><div class="stat-v">10</div><div class="stat-l">Partitioned</div></div>
+    <div class="stat"><div class="stat-v">4</div><div class="stat-l">Mat. Views</div></div>
+    <div class="stat"><div class="stat-v">51+</div><div class="stat-l">Indexes</div></div>
+    <div class="stat"><div class="stat-v">29</div><div class="stat-l">Data Sources</div></div>
+  </div>
+
+  <!-- Schema Cards -->
+  <h2>Schema Documentation</h2>
+  <div class="grid">
+    <a class="card c1" href="schema_registry.html">
+      <div class="card-head"><div class="card-icon">🗂️</div><div class="card-meta"><div class="card-tag">Infrastructure</div><div class="card-title">Registry &amp; Ingest</div></div></div>
+      <div class="card-desc">Attribute catalog, data source registry, QC rules, feed configuration, ETL run logs and conflict queue. Foundation for all entity schemas.</div>
+      <div class="card-tables">
+        <span class="tbl">registry.source_def</span><span class="tbl">registry.attribute_def</span><span class="tbl">registry.filter_group_def</span><span class="tbl">registry.column_group_def</span><span class="tbl">ingest.feed_config</span><span class="tbl">ingest.feed_field_map</span><span class="tbl">ingest.qc_rule</span><span class="tbl">ingest.feed_run</span><span class="tbl">ingest.conflict_queue</span>
+      </div>
+    </a>
+    <a class="card c2" href="schema_platform.html">
+      <div class="card-head"><div class="card-icon">⚙️</div><div class="card-meta"><div class="card-tag">Platform</div><div class="card-title">Workflow, Audit, UI &amp; Auth</div></div></div>
+      <div class="card-desc">Human-in-the-loop edit drafts, explicit vendor promotion gate, immutable audit trail, persona configuration, saved filters and RBAC permissions.</div>
+      <div class="card-tables">
+        <span class="tbl">workflow.conflict</span><span class="tbl">workflow.edit_draft</span><span class="tbl">workflow.promotion_request</span><span class="tbl">audit.change_log</span><span class="tbl">ui.persona</span><span class="tbl">ui.saved_filter</span><span class="tbl">auth.app_user</span><span class="tbl">auth.role</span><span class="tbl">auth.permission</span>
+      </div>
+    </a>
+    <a class="card c3" href="schema_vessel.html">
+      <div class="card-head"><div class="card-icon">🚢</div><div class="card-meta"><div class="card-tag">Core Entity</div><div class="card-title">Vessel Schema</div></div></div>
+      <div class="card-desc">Three-layer EAV for 650+ vessel attributes: vendor data in attr_value (silver), explicitly promoted to master_value (gold), pivoted by v_current. AIS position stream, confidence scoring and promotion gate.</div>
+      <div class="card-tables">
+        <span class="tbl">vessel.entity</span><span class="tbl">vessel.attr_value</span><span class="tbl">vessel.master_value</span><span class="tbl">vessel.attr_source_preference</span><span class="tbl">vessel.position</span><span class="tbl">vessel.raw_ingest</span><span class="tbl">vessel.v_current</span><span class="tbl">vessel.latest_position</span>
+      </div>
+    </a>
+    <a class="card c4" href="schema_port.html">
+      <div class="card-head"><div class="card-icon">⚓</div><div class="card-meta"><div class="card-tag">Core Entity</div><div class="card-title">Port Schema</div></div></div>
+      <div class="card-desc">Three-layer EAV for port attributes: vendor data (silver) promoted to master_value (gold), PostGIS geometry for location, channel/berth/service/PSC attributes flattened in materialized view.</div>
+      <div class="card-tables">
+        <span class="tbl">port.entity</span><span class="tbl">port.attr_value</span><span class="tbl">port.master_value</span><span class="tbl">port.location</span><span class="tbl">port.raw_ingest</span><span class="tbl">port.v_current</span>
+      </div>
+    </a>
+    <a class="card c5" href="schema_company.html">
+      <div class="card-head"><div class="card-icon">🏢</div><div class="card-meta"><div class="card-tag">Core Entity</div><div class="card-title">Company Schema</div></div></div>
+      <div class="card-desc">Three-layer EAV for company attributes: vendor data (silver) promoted to master_value (gold). Covers fleet, financials, credit ratings, KYC, ESG and sanctions. Multi-ID support (LRNO, LEI, DUNS).</div>
+      <div class="card-tables">
+        <span class="tbl">company.entity</span><span class="tbl">company.attr_value</span><span class="tbl">company.master_value</span><span class="tbl">company.raw_ingest</span><span class="tbl">company.v_current</span>
+      </div>
+    </a>
+    <a class="card c6" href="schema_voyage.html">
+      <div class="card-head"><div class="card-icon">🗺️</div><div class="card-meta"><div class="card-tag">Domain</div><div class="card-title">Voyage &amp; Compliance</div></div></div>
+      <div class="card-desc">Voyage records, port calls, route waypoints with PostGIS geometry. PSC inspections with deficiency codes, certificates and sanctions (vessel/company/person).</div>
+      <div class="card-tables">
+        <span class="tbl">voyage.voyage</span><span class="tbl">voyage.port_call</span><span class="tbl">voyage.route_waypoint</span><span class="tbl">compliance.psc_inspection</span><span class="tbl">compliance.psc_deficiency</span><span class="tbl">compliance.certificate</span><span class="tbl">compliance.sanction</span>
+      </div>
+    </a>
+    <a class="card c7" href="schema_market.html">
+      <div class="card-head"><div class="card-icon">📊</div><div class="card-meta"><div class="card-tag">Domain</div><div class="card-title">Market &amp; Geo</div></div></div>
+      <div class="card-desc">Freight indices (BDI/BDTI/BCTI), route benchmarks, spot and TC fixture reports, vessel valuations, maritime chokepoints and MOU patrol zone polygons.</div>
+      <div class="card-tables">
+        <span class="tbl">market.index_definition</span><span class="tbl">market.index_value</span><span class="tbl">market.fixture</span><span class="tbl">market.tc_contract</span><span class="tbl">market.route_benchmark</span><span class="tbl">geo.choke_point</span><span class="tbl">geo.mou_zone</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Design Principles -->
+  <div class="info-row">
+    <div class="info-box">
+      <h3>Design Principles</h3>
+      <ul>
+        <li>Each core entity (vessel, port, company) owns its own schema with an identical structural template: entity → raw_ingest (bronze) → attr_value (silver) → master_value (gold) → v_current (materialized view)</li>
+        <li>Vendor data never auto-promotes — <code>workflow.promotion_request</code> is the explicit human gate between silver and gold layers; <code>registry.source_attr_weight.auto_promote_to_master</code> is the opt-in bypass for fully trusted sources</li>
+        <li>Bi-temporal model: <code>valid_from/valid_to</code> (real-world time) + <code>sys_from/sys_to</code> (system recording time) on every EAV row; backdating supported by setting <code>valid_from</code> to any past date</li>
+        <li>Bronze and silver layers are immutable — <code>raw_ingest</code> tables are append-only; PostgreSQL RULEs prevent UPDATE/DELETE on all <code>attr_value</code> tables</li>
+        <li>Attribute catalog lives in <code>registry.attribute_def</code>; JS layer reads it at build-time via <code>attributeRegistry.js</code></li>
+        <li>Feed-to-master field mappings versioned in <code>ingest.feed_field_map</code> with full history (valid_from / valid_to)</li>
+        <li>Materialized views (<code>v_current</code>, <code>latest_position</code>) read exclusively from the gold layer and refreshed CONCURRENTLY — zero downtime after each ingest run</li>
+        <li>Range partitioning on all high-volume tables: attr_value and master_value by year, position/raw_ingest by quarter</li>
+      </ul>
+    </div>
+    <div class="info-box">
+      <h3>Schema → JSON → JS Layer Alignment</h3>
+      <ul>
+        <li><strong>registry.attribute_def</strong> ← <code>attribute_definitions.json</code> — all filter_groups, column_groups, attr metadata</li>
+        <li><strong>vessel.v_current columns</strong> ← <code>vessels.js</code> VESSELS object property names (nm, imo, dwt, ow…)</li>
+        <li><strong>port.v_current columns</strong> ← <code>ports_detail.json</code> field names flattened (ch_max_draft, berth_count…)</li>
+        <li><strong>company.v_current columns</strong> ← <code>companies_detail.json</code> field names flattened (fleet.owned → vessels_owned)</li>
+        <li><strong>ingest.feed_config rows</strong> ← <code>etl_feeds.json</code> source definitions (seed data)</li>
+        <li><strong>ui.persona rows</strong> ← <code>personas.json</code> (persona_key = JSON id, attr_sections, vessel_columns, dashboard_cards)</li>
+        <li><strong>compliance.psc_inspection</strong> ← <code>psc_inspections.json</code> (external_id = psc_inspections.json "id")</li>
+        <li><strong>market.fixture</strong> ← <code>fixtures.json</code>; <strong>market.tc_contract</strong> ← <code>tc_contracts.json</code>; <strong>market.route_benchmark</strong> ← <code>freight_routes.json</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-row">
+    <a class="nav-btn btn-pri" href="../aws_index.html">← AWS Architecture Hub</a>
+    <a class="nav-btn btn-sec" href="../datamodel_index.html">Data Model Overview</a>
+    <a class="nav-btn btn-sec" href="schema_vessel.html">Start: Vessel Schema →</a>
+  </div>
+</div>
+
+<div class="footer">PostgreSQL Schema Documentation v4.0 &nbsp;·&nbsp; May 2026 &nbsp;·&nbsp; Confidential — S&amp;P Global Internal</div>
+</body>
+</html>

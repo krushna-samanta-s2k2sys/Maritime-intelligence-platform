@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voyage &amp; Compliance Schemas — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#1A0D20);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#F87171;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#F87171}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:760px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace}
+h2 .voyage{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#F87171}
+h2 .compliance{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.25);color:#FB923C}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+h3.voyage{color:#FCA5A5}
+h3.compliance{color:#FCD34D}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(248,113,113,.06);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(248,113,113,.12);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(248,113,113,.04)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#FCA5A5;font-weight:600}
+td.col.comp{color:#FCD34D}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(248,113,113,.04);border-left:3px solid #F87171;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose.comp{background:rgba(251,146,60,.04);border-left-color:#FB923C}
+.purpose strong{color:#fff}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:250px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#F87171;color:#000}.btn-pri:hover{background:#FCA5A5}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+.divider{height:1px;background:rgba(255,255,255,.07);margin:36px 0}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Voyage &amp; Compliance</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_company.html">← Company</a>
+    <a href="schema_market.html">Next: Market &amp; Geo →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Domain Schemas</div>
+  <h1>Voyage &amp; <span>Compliance</span> Schemas</h1>
+  <p class="sub">The <strong>voyage</strong> schema covers port calls, sea passages and route waypoints with PostGIS geometry. The <strong>compliance</strong> schema covers PSC inspections with deficiency codes, vessel certificates, and sanctions lists spanning vessels, companies and individuals.</p>
+</div>
+
+<div class="main">
+  <div class="badge-row">
+    <span class="badge">7 tables total</span>
+    <span class="badge">voyage.route_waypoint: PostGIS geometry</span>
+    <span class="badge">psc_inspection ← psc_inspections.json</span>
+    <span class="badge">sanction: vessel | company | person</span>
+    <span class="badge">multi-FK joins to vessel + port</span>
+  </div>
+
+  <!-- ═══════ voyage ═══════ -->
+  <h2><span class="sc voyage">voyage</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Port calls, passages, route waypoints</span></h2>
+
+  <h3 class="voyage">voyage.voyage</h3>
+  <div class="purpose"><strong>Purpose:</strong> One row per voyage (port-to-port passage). Normalised from movements.json top-level records. A voyage has a departure port, arrival port, cargo, charterer and status. Port calls and waypoints are child records. FK to both vessel.entity and port.entity.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">voyage_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate voyage identifier</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel making this voyage</td></tr>
+        <tr><td class="col">voyage_number</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Vessel operator's voyage number (e.g. 'V2025-042')</td></tr>
+        <tr><td class="col">departure_port</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NULLABLE <span class="fk">FK→port.entity</span></div></td><td>NULL</td><td>UNLOCODE of departure port</td></tr>
+        <tr><td class="col">arrival_port</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NULLABLE <span class="fk">FK→port.entity</span></div></td><td>NULL</td><td>UNLOCODE of arrival port</td></tr>
+        <tr><td class="col">departure_at / arrival_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>Actual departure/arrival timestamps</td></tr>
+        <tr><td class="col">voyage_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PLANNED'</td><td>PLANNED | UNDERWAY | COMPLETED | CANCELLED</td></tr>
+        <tr><td class="col">cargo_type</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Cargo description (e.g. 'Crude Oil', 'Iron Ore', 'LNG')</td></tr>
+        <tr><td class="col">cargo_qty_mt</td><td class="typ">NUMERIC(12,3)</td><td>NULLABLE</td><td>NULL</td><td>Cargo quantity in metric tonnes</td></tr>
+        <tr><td class="col">charterer</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Chartering party name</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Data source for this voyage record</td></tr>
+        <tr><td class="col">created_at / updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Audit timestamps</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on voyage.voyage</h4>
+    <div class="idx-row"><span class="idx-name">idx_voyage_imo</span><span class="idx-def">(imo_number, departure_at DESC) — voyage history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_voyage_ports</span><span class="idx-def">(departure_port, arrival_port) — trade lane analysis</span></div>
+  </div>
+
+  <h3 class="voyage">voyage.port_call</h3>
+  <div class="purpose"><strong>Purpose:</strong> Individual port call events — one row per vessel stop. Mirrors port_calls.json. A voyage (port-to-port) may have multiple port calls (bunker stops, crew changes, transit through intermediate ports). Both imo_number and unlocode are indexed for lookups from either direction. Port_name is denormalised for PSC reporting convenience.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">call_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">voyage_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→voyage.voyage</span></div></td><td>NULL</td><td>Parent voyage (NULL for independently-sourced port calls)</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel making the port call</td></tr>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NOT NULL <span class="fk">FK→port.entity</span></div></td><td>—</td><td>Port visited</td></tr>
+        <tr><td class="col">port_name</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Denormalised port name (matches port_calls.json "port" field)</td></tr>
+        <tr><td class="col">ata / atd</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>Actual Time of Arrival / Departure (matches port_calls.json "ata"/"atd")</td></tr>
+        <tr><td class="col">berth_name</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Specific berth or terminal name (port_calls.json "berth")</td></tr>
+        <tr><td class="col">call_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>CARGO | BUNKER | REPAIR | CREW_CHANGE | ANCHOR | TRANSIT</td></tr>
+        <tr><td class="col">purpose</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Free-text purpose (port_calls.json "purpose", e.g. 'Transit / Suez Canal')</td></tr>
+        <tr><td class="col">cargo_volume</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Volume description (port_calls.json "volume", e.g. '800 MT IFO380')</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Source of this port call record</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on voyage.port_call</h4>
+    <div class="idx-row"><span class="idx-name">idx_pcall_imo</span><span class="idx-def">(imo_number, ata DESC) — port call history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pcall_unlocode</span><span class="idx-def">(unlocode, ata DESC) — call volume per port</span></div>
+  </div>
+
+  <h3 class="voyage">voyage.route_waypoint</h3>
+  <div class="purpose"><strong>Purpose:</strong> Individual waypoints on a voyage route. Normalised from movements.json nested "route" arrays. Each row is one stop (done/current/future) with PostGIS geometry for map rendering. seq_no determines the order of waypoints within a voyage. Mirrors the Movements.jsx timeline UI.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">waypoint_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">voyage_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→voyage.voyage</span></div></td><td>NULL</td><td>Parent voyage</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this waypoint belongs to</td></tr>
+        <tr><td class="col">seq_no</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Order of this waypoint within the voyage (0=first)</td></tr>
+        <tr><td class="col">port_name</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Port/location name (matches movements.json "port" field)</td></tr>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(10)</td><td>NULLABLE</td><td>NULL</td><td>LOCODE if known (movements.json "locode" — may be space-separated, e.g. 'SG SIN')</td></tr>
+        <tr><td class="col">latitude / longitude</td><td class="typ">NUMERIC(9,6)</td><td>NULLABLE</td><td>NULL</td><td>Coordinates for waypoints without a LOCODE</td></tr>
+        <tr><td class="col">geom</td><td class="typ">GEOMETRY(Point, 4326)</td><td>NULLABLE</td><td>NULL</td><td>PostGIS point for map rendering (GIST indexed where NOT NULL)</td></tr>
+        <tr><td class="col">ata / atd</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>Actual arrival/departure (NULL if not yet reached)</td></tr>
+        <tr><td class="col">eta</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>Estimated arrival (for future waypoints)</td></tr>
+        <tr><td class="col">waypoint_type</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'future'</td><td>done | current | future — drives Movements.jsx timeline icon/colour</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on voyage.route_waypoint</h4>
+    <div class="idx-row"><span class="idx-name">idx_rwp_voyage</span><span class="idx-def">(voyage_id, seq_no) — ordered waypoint list per voyage</span></div>
+    <div class="idx-row"><span class="idx-name">idx_rwp_imo</span><span class="idx-def">(imo_number) — waypoints per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_rwp_geom</span><span class="idx-def">GIST (geom) WHERE geom IS NOT NULL — spatial queries on route waypoints</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ compliance ═══════ -->
+  <h2><span class="sc compliance">compliance</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">PSC inspections, certificates, sanctions</span></h2>
+
+  <h3 class="compliance">compliance.psc_inspection</h3>
+  <div class="purpose comp"><strong>Purpose:</strong> One row per Port State Control inspection. Directly mirrors psc_inspections.json — external_id matches the JSON "id" field (e.g. 'PSC-2024-0130-001'). Tracks detention status, deficiency count, MOU region and PSC authority. Child records in psc_deficiency capture the individual deficiency codes. Drives the PSC page and analytics.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col comp">inspection_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Internal surrogate key</td></tr>
+        <tr><td class="col comp">external_id</td><td class="typ">VARCHAR(40)</td><td><div class="cc">NULLABLE <span class="uq">UNIQUE</span></div></td><td>NULL</td><td>PSC authority record ID — matches psc_inspections.json "id" (e.g. 'PSC-2024-0130-001')</td></tr>
+        <tr><td class="col comp">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel that was inspected</td></tr>
+        <tr><td class="col comp">vessel_name</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Denormalised vessel name for PSC reporting (matches psc_inspections.json "vessel_name")</td></tr>
+        <tr><td class="col comp">inspection_date</td><td class="typ">DATE</td><td>NOT NULL</td><td>—</td><td>Date of the PSC inspection</td></tr>
+        <tr><td class="col comp">inspection_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>Initial | Expanded</td></tr>
+        <tr><td class="col comp">port_unlocode</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NULLABLE <span class="fk">FK→port.entity</span></div></td><td>NULL</td><td>Port where inspection took place</td></tr>
+        <tr><td class="col comp">port_name</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Denormalised port name (matches psc_inspections.json "port_name")</td></tr>
+        <tr><td class="col comp">authority</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>PSC authority conducting the inspection (e.g. 'Paris MOU PSCO', 'USCG Marine Inspector')</td></tr>
+        <tr><td class="col comp">mou_region</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Paris | Tokyo | USCG | Indian Ocean | Mediterranean | Riyadh. Matches pscData.js MOU_MAP keys.</td></tr>
+        <tr><td class="col comp">deficiency_count</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Total number of deficiencies found (matches psc_inspections.json "total_deficiencies")</td></tr>
+        <tr><td class="col comp">detained</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>Whether vessel was detained</td></tr>
+        <tr><td class="col comp">detention_start / detention_end</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Detention dates (detention_end NULL = still detained)</td></tr>
+        <tr><td class="col comp">inspection_status</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Display string: 'Detained' | 'No detention' (matches pscData.js "res" field)</td></tr>
+        <tr><td class="col comp">result_code</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>NULL</td><td>PSC authority result code (authority-specific)</td></tr>
+        <tr><td class="col comp">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>PSC_PARIS_MOU, PSC_TOKYO_MOU, PSC_USCG, etc.</td></tr>
+        <tr><td class="col comp">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on compliance.psc_inspection</h4>
+    <div class="idx-row"><span class="idx-name">idx_psc_imo</span><span class="idx-def">(imo_number, inspection_date DESC) — PSC history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_psc_port</span><span class="idx-def">(port_unlocode, inspection_date DESC) — inspection rate per port</span></div>
+    <div class="idx-row"><span class="idx-name">idx_psc_mou</span><span class="idx-def">(mou_region, inspection_date DESC) — MOU region detention rate analytics</span></div>
+  </div>
+
+  <h3 class="compliance">compliance.psc_deficiency</h3>
+  <div class="purpose comp"><strong>Purpose:</strong> Individual deficiency records within a PSC inspection. One inspection → zero or more deficiency rows. Mirrors psc_inspections.json "deficiencies" array. deficiency_code matches international PSC code tables (e.g. '07106' = Fire dampers). Drives the deficiency category chart in the PSC page.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col comp">deficiency_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col comp">inspection_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→psc_inspection</span></div></td><td>—</td><td>Parent inspection record</td></tr>
+        <tr><td class="col comp">deficiency_code</td><td class="typ">VARCHAR(10)</td><td>NULLABLE</td><td>NULL</td><td>PSC deficiency code (e.g. '07106', '10113'). Matches psc_inspections.json "code"</td></tr>
+        <tr><td class="col comp">category</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>Category: 'Fire safety', 'ISM', 'MARPOL', 'Life-saving appliances', 'Stability', etc.</td></tr>
+        <tr><td class="col comp">description</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Full deficiency description (matches psc_inspections.json "description")</td></tr>
+        <tr><td class="col comp">severity</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>high | medium | low (matches psc_inspections.json "severity")</td></tr>
+        <tr><td class="col comp">action_taken</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>'Detain' | 'Rectify before departure' | 'Rectify at next port'</td></tr>
+        <tr><td class="col comp">action_code</td><td class="typ">VARCHAR(10)</td><td>NULLABLE</td><td>NULL</td><td>PSC authority action code (legacy, authority-specific)</td></tr>
+        <tr><td class="col comp">rectified</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>Whether deficiency has been rectified and closed out</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on compliance.psc_deficiency</h4>
+    <div class="idx-row"><span class="idx-name">idx_pscdef_inspection</span><span class="idx-def">(inspection_id) — deficiencies per inspection</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pscdef_category</span><span class="idx-def">(category) — deficiency category analytics (top-N chart)</span></div>
+  </div>
+
+  <h3 class="compliance">compliance.certificate</h3>
+  <div class="purpose comp"><strong>Purpose:</strong> Vessel statutory certificates (SMC, DOC, ISSC, MLC, IOPP, class certificates, etc.). Partial idx_cert_expiry enables expiry monitoring — only active certificates are indexed to reduce size.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col comp">cert_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col comp">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel holding this certificate</td></tr>
+        <tr><td class="col comp">cert_type</td><td class="typ">VARCHAR(60)</td><td>NOT NULL</td><td>—</td><td>Certificate type: 'SMC' (Safety Management Certificate), 'DOC', 'ISSC', 'MLC', 'IOPP', 'Load Line'</td></tr>
+        <tr><td class="col comp">issuing_authority</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Flag state, class society or IMO body that issued the certificate</td></tr>
+        <tr><td class="col comp">issue_date / expiry_date</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Certificate validity period</td></tr>
+        <tr><td class="col comp">is_valid</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>FALSE = expired, withdrawn or superseded</td></tr>
+        <tr><td class="col comp">survey_date</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Most recent survey/audit date for renewal-based certificates</td></tr>
+        <tr><td class="col comp">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Classification society or flag registry</td></tr>
+        <tr><td class="col comp">created_at / updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Audit timestamps</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes</h4>
+    <div class="idx-row"><span class="idx-name">idx_cert_imo</span><span class="idx-def">(imo_number, cert_type) — certificates per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_cert_expiry</span><span class="idx-def">(expiry_date) WHERE is_valid — upcoming expiry monitoring</span></div>
+  </div>
+
+  <h3 class="compliance">compliance.sanction</h3>
+  <div class="purpose comp"><strong>Purpose:</strong> Sanctions list entries covering vessels, companies AND persons (entity_type column discriminates). Tracks multiple lists (OFAC SDN, EU Consolidated, UN Security Council). Sourced from OFAC and EU_SANCTIONS sources. Partial index on is_active speeds up live screening queries.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col comp">sanction_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col comp">entity_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>vessel | company | person (single table for all entity types)</td></tr>
+        <tr><td class="col comp">entity_id</td><td class="typ">TEXT</td><td>NOT NULL</td><td>—</td><td>Entity identifier: IMO number (vessel), company_id (company), or name/DOB hash (person)</td></tr>
+        <tr><td class="col comp">sanction_list</td><td class="typ">VARCHAR(60)</td><td>NOT NULL</td><td>—</td><td>OFAC_SDN | EU_CONS | UN_SC | HM_TREAS | OFAC_NONSDN etc.</td></tr>
+        <tr><td class="col comp">sanction_type</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>ASSET_FREEZE | TRAVEL_BAN | ARMS_EMBARGO | FULL</td></tr>
+        <tr><td class="col comp">listed_at / delisted_at</td><td class="typ">DATE</td><td>NULLABLE</td><td>NULL</td><td>Listing and delisting dates (delisted_at NULL = still active)</td></tr>
+        <tr><td class="col comp">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>FALSE after delisting (historical record kept)</td></tr>
+        <tr><td class="col comp">description</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Sanction reason/basis as stated by the listing authority</td></tr>
+        <tr><td class="col comp">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>OFAC, EU_SANCTIONS, etc. (weight=1.00 for sanctions sources)</td></tr>
+        <tr><td class="col comp">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When listing was recorded</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes</h4>
+    <div class="idx-row"><span class="idx-name">idx_sanction_entity</span><span class="idx-def">(entity_type, entity_id) WHERE is_active — live screening lookup</span></div>
+    <div class="idx-row"><span class="idx-name">idx_sanction_list</span><span class="idx-def">(sanction_list) WHERE is_active — list-level reporting</span></div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — voyage &amp; compliance Schemas</h4>
+    <svg width="920" height="400" viewBox="0 0 920 400" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- vessel.entity -->
+      <rect x="380" y="10" width="160" height="40" rx="4" fill="#0D3A2E" stroke="#34D399" stroke-width="1"/>
+      <text x="460" y="28" text-anchor="middle" fill="#34D399" font-size="10" font-weight="700">vessel.entity</text>
+      <text x="460" y="42" text-anchor="middle" fill="#93B8D8" font-size="8.5">PK: imo_number</text>
+      <!-- port.entity -->
+      <rect x="700" y="10" width="160" height="40" rx="4" fill="#1A2040" stroke="#60A5FA" stroke-width="1"/>
+      <text x="780" y="28" text-anchor="middle" fill="#60A5FA" font-size="10" font-weight="700">port.entity</text>
+      <text x="780" y="42" text-anchor="middle" fill="#93B8D8" font-size="8.5">PK: unlocode</text>
+
+      <!-- voyage.voyage -->
+      <g>
+        <rect x="380" y="90" width="200" height="100" rx="6" fill="#1A0D20" stroke="#F87171" stroke-width="1.5"/>
+        <rect x="380" y="90" width="200" height="22" rx="6" fill="#F87171" fill-opacity=".15"/>
+        <text x="480" y="106" text-anchor="middle" fill="#F87171" font-size="11" font-weight="700">voyage.voyage</text>
+        <text x="390" y="124" fill="#FF9900" font-size="9">PK</text><text x="410" y="124" fill="#93B8D8">voyage_id BIGSERIAL</text>
+        <text x="390" y="138" fill="#60A5FA" font-size="9">FK</text><text x="410" y="138" fill="#93B8D8">imo_number, departure/arrival ports</text>
+        <text x="390" y="152" fill="#93B8D8" font-size="9">   voyage_status CK / cargo_type</text>
+        <text x="390" y="166" fill="#93B8D8" font-size="9">   departure_at / arrival_at</text>
+        <text x="390" y="180" fill="#93B8D8" font-size="9">   charterer / cargo_qty_mt</text>
+      </g>
+      <!-- voyage.port_call -->
+      <g>
+        <rect x="20" y="90" width="210" height="110" rx="6" fill="#1A0D20" stroke="#F87171" stroke-width="1"/>
+        <text x="125" y="108" text-anchor="middle" fill="#F87171" font-size="11" font-weight="700">voyage.port_call</text>
+        <text x="30" y="126" fill="#FF9900" font-size="9">PK</text><text x="50" y="126" fill="#93B8D8">call_id BIGSERIAL</text>
+        <text x="30" y="140" fill="#60A5FA" font-size="9">FK</text><text x="50" y="140" fill="#93B8D8">voyage_id (NULLABLE)</text>
+        <text x="30" y="154" fill="#60A5FA" font-size="9">FK</text><text x="50" y="154" fill="#93B8D8">imo_number → vessel</text>
+        <text x="30" y="168" fill="#60A5FA" font-size="9">FK</text><text x="50" y="168" fill="#93B8D8">unlocode → port</text>
+        <text x="30" y="182" fill="#93B8D8" font-size="9">   ata/atd · call_type CK</text>
+        <text x="30" y="196" fill="#93B8D8" font-size="9">   purpose · cargo_volume</text>
+      </g>
+      <!-- voyage.route_waypoint -->
+      <g>
+        <rect x="650" y="90" width="250" height="110" rx="6" fill="#1A0D20" stroke="#F87171" stroke-width="1"/>
+        <text x="775" y="108" text-anchor="middle" fill="#F87171" font-size="11" font-weight="700">voyage.route_waypoint</text>
+        <text x="660" y="126" fill="#FF9900" font-size="9">PK</text><text x="680" y="126" fill="#93B8D8">waypoint_id BIGSERIAL</text>
+        <text x="660" y="140" fill="#60A5FA" font-size="9">FK</text><text x="680" y="140" fill="#93B8D8">voyage_id / imo_number</text>
+        <text x="660" y="154" fill="#93B8D8" font-size="9">   seq_no · port_name · unlocode</text>
+        <text x="660" y="168" fill="#93B8D8" font-size="9">   geom GEOMETRY(Point) ← GIST</text>
+        <text x="660" y="182" fill="#93B8D8" font-size="9">   ata/atd/eta</text>
+        <text x="660" y="196" fill="#93B8D8" font-size="9">   waypoint_type CK (done/current/future)</text>
+      </g>
+      <!-- psc_inspection -->
+      <g>
+        <rect x="20" y="260" width="250" height="120" rx="6" fill="#1A0D20" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="20" y="260" width="250" height="22" rx="6" fill="#FB923C" fill-opacity=".15"/>
+        <text x="145" y="276" text-anchor="middle" fill="#FB923C" font-size="11" font-weight="700">compliance.psc_inspection</text>
+        <text x="30" y="296" fill="#FF9900" font-size="9">PK</text><text x="50" y="296" fill="#93B8D8">inspection_id BIGSERIAL</text>
+        <text x="30" y="310" fill="#34D399" font-size="9">UQ</text><text x="50" y="310" fill="#93B8D8">external_id (psc_inspections.json "id")</text>
+        <text x="30" y="324" fill="#60A5FA" font-size="9">FK</text><text x="50" y="324" fill="#93B8D8">imo_number + port_unlocode</text>
+        <text x="30" y="338" fill="#93B8D8" font-size="9">   mou_region · deficiency_count</text>
+        <text x="30" y="352" fill="#93B8D8" font-size="9">   detained BOOL · detention_start/end</text>
+        <text x="30" y="366" fill="#93B8D8" font-size="9">   inspection_status · result_code</text>
+      </g>
+      <!-- psc_deficiency -->
+      <g>
+        <rect x="300" y="260" width="220" height="120" rx="6" fill="#1A0D20" stroke="#FB923C" stroke-width="1"/>
+        <text x="410" y="278" text-anchor="middle" fill="#FB923C" font-size="11" font-weight="700">compliance.psc_deficiency</text>
+        <text x="310" y="296" fill="#FF9900" font-size="9">PK</text><text x="330" y="296" fill="#93B8D8">deficiency_id BIGSERIAL</text>
+        <text x="310" y="310" fill="#60A5FA" font-size="9">FK</text><text x="330" y="310" fill="#93B8D8">inspection_id → psc_inspection</text>
+        <text x="310" y="324" fill="#93B8D8" font-size="9">   deficiency_code VARCHAR(10)</text>
+        <text x="310" y="338" fill="#93B8D8" font-size="9">   category · description</text>
+        <text x="310" y="352" fill="#93B8D8" font-size="9">   severity CK · action_taken</text>
+        <text x="310" y="366" fill="#93B8D8" font-size="9">   rectified BOOLEAN</text>
+      </g>
+      <!-- sanction -->
+      <g>
+        <rect x="560" y="260" width="230" height="120" rx="6" fill="#1A0D20" stroke="#F87171" stroke-width="1"/>
+        <text x="675" y="278" text-anchor="middle" fill="#F87171" font-size="11" font-weight="700">compliance.sanction</text>
+        <text x="570" y="296" fill="#FF9900" font-size="9">PK</text><text x="590" y="296" fill="#93B8D8">sanction_id BIGSERIAL</text>
+        <text x="570" y="310" fill="#93B8D8" font-size="9">   entity_type CK: vessel|company|person</text>
+        <text x="570" y="324" fill="#93B8D8" font-size="9">   entity_id TEXT</text>
+        <text x="570" y="338" fill="#93B8D8" font-size="9">   sanction_list VARCHAR(60)</text>
+        <text x="570" y="352" fill="#93B8D8" font-size="9">   listed_at / delisted_at</text>
+        <text x="570" y="366" fill="#93B8D8" font-size="9">   is_active BOOLEAN</text>
+      </g>
+      <!-- Arrows -->
+      <line x1="460" y1="50" x2="460" y2="90" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <line x1="780" y1="50" x2="780" y2="90" stroke="#60A5FA" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <line x1="380" y1="140" x2="230" y2="140" stroke="#F87171" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <line x1="580" y1="140" x2="650" y2="140" stroke="#F87171" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <line x1="145" y1="200" x2="145" y2="260" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <line x1="270" y1="310" x2="300" y2="310" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrVc)"/>
+      <defs>
+        <marker id="arrVc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#F87171" opacity=".7"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_company.html">← Company Schema</a>
+    <a class="nav-btn btn-pri" href="schema_market.html">Next: Market &amp; Geo →</a>
+  </div>
+</div>
+</body>
+</html>

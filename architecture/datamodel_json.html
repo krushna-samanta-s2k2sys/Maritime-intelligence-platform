@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Data Files — Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;color:#0D1F3C;min-height:100vh}
+
+/* NAV */
+nav{background:#0D1F3C;padding:0 32px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(13,31,60,.25)}
+.nav-brand{font-size:11.5px;font-weight:700;color:#8AACCC;letter-spacing:.12em;text-transform:uppercase;padding:14px 20px 14px 0;border-right:1px solid rgba(200,216,236,.18);margin-right:8px;white-space:nowrap}
+.nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.nav-links a{font-size:12px;font-weight:500;color:#C8D8EC;text-decoration:none;padding:14px 14px;border-radius:4px;transition:background .15s,color .15s;white-space:nowrap}
+.nav-links a:hover{background:rgba(21,88,214,.35);color:#fff}
+.nav-links a.active{background:#1558d6;color:#fff;font-weight:600}
+.nav-links a.hub{color:#E07000;font-weight:600}
+.nav-links a.hub:hover{background:rgba(224,112,0,.18);color:#E07000}
+
+/* PAGE */
+.page{max-width:1160px;margin:0 auto;padding:52px 32px 72px}
+
+/* HEADER */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;color:#E07000;text-transform:uppercase;margin-bottom:12px}
+h1{font-size:38px;font-weight:800;line-height:1.1;margin-bottom:10px;color:#0D1F3C}
+h1 span{color:#1558d6}
+.subtitle{font-size:14px;color:#3A5070;margin-bottom:44px;line-height:1.65;max-width:820px}
+
+/* SECTION HEADINGS */
+.section-title{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0D1F3C;padding-bottom:10px;border-bottom:2px solid #E07000;margin-bottom:28px;margin-top:56px;display:flex;align-items:center;gap:10px}
+.section-title:first-of-type{margin-top:0}
+.domain-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;letter-spacing:.08em;text-transform:uppercase}
+
+/* DOMAIN ACCENT COLORS */
+.acc-blue{color:#1558d6}
+.acc-green{color:#137333}
+.acc-red{color:#c8102e}
+.acc-orange{color:#E07000}
+.acc-purple{color:#6200ea}
+.acc-slate{color:#0D1F3C}
+.acc-teal{color:#007A7A}
+
+.badge-blue{background:#EBF2FD;color:#1558d6}
+.badge-green{background:#E8F5EE;color:#137333}
+.badge-red{background:#FDECED;color:#c8102e}
+.badge-orange{background:#FEF3E6;color:#E07000}
+.badge-purple{background:#F3EAFD;color:#6200ea}
+.badge-slate{background:#E8EFF8;color:#0D1F3C}
+.badge-teal{background:#E5F5F5;color:#007A7A}
+
+/* FILE CARDS */
+.file-grid{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:8px}
+.file-card{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05)}
+.file-card-header{padding:16px 22px 14px;border-bottom:1px solid #C8D8EC;display:flex;align-items:center;gap:14px;background:#fff}
+.file-card-accent{width:4px;min-width:4px;border-radius:2px;align-self:stretch;background:var(--domain-color,#1558d6)}
+.file-name{font-family:'Courier New',monospace;font-size:14.5px;font-weight:700;color:#E07000;letter-spacing:.02em}
+.file-count{font-size:11px;font-weight:600;color:#5A7AAA;background:#F0F4FA;border:1px solid #C8D8EC;border-radius:8px;padding:3px 10px;margin-left:auto;white-space:nowrap}
+.file-card-body{padding:16px 22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.file-card-body.wide{grid-template-columns:1fr 1fr}
+.fc-row{display:flex;flex-direction:column;gap:4px}
+.fc-row.full{grid-column:1/-1}
+.fc-label{font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#8AACCC;margin-bottom:3px}
+.fc-val{font-size:12px;color:#0D1F3C;line-height:1.6}
+.fc-val em{font-style:italic;color:#5A7AAA}
+.fc-val .note{font-size:11.5px;color:#5A7AAA;line-height:1.55}
+
+/* INLINE CODE */
+code{font-family:'Courier New',monospace;font-size:11px;background:#EEF2FF;color:#1558d6;border-radius:3px;padding:1px 4px;white-space:nowrap}
+
+/* FIELD PILLS */
+.field-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.field-pill{font-family:'Courier New',monospace;font-size:10.5px;background:#EEF2FF;color:#1558d6;border-radius:3px;padding:1px 5px;white-space:nowrap}
+
+/* SUMMARY TABLE */
+.table-wrap{background:#fff;border:1px solid #C8D8EC;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(13,31,60,.05);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:#0D1F3C}
+thead th{color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:12px 16px;text-align:left;border-right:1px solid rgba(255,255,255,.08)}
+thead th:last-child{border-right:none}
+tbody tr:nth-child(odd){background:#fff}
+tbody tr:nth-child(even){background:#F8FAFC}
+tbody tr:hover{background:#E8F0FC}
+tbody tr.total-row{background:#0D1F3C;color:#fff;font-weight:700}
+tbody tr.total-row td{color:#fff;border-bottom:none}
+tbody tr.total-row code{background:rgba(255,255,255,.12);color:#8AACCC}
+td{padding:10px 16px;border-bottom:1px solid #E8EFF8;color:#0D1F3C;vertical-align:middle;line-height:1.5}
+td:first-child{font-weight:600}
+
+footer{text-align:center;font-size:11px;color:#8AACCC;padding-top:20px;margin-top:56px;border-top:1px solid #C8D8EC}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Maritime Intel · Data Model</div>
+  <div class="nav-links">
+    <a href="datamodel_index.html" class="hub">&#8592; Hub</a>
+    <a href="datamodel_entities.html">Entity Relationships</a>
+    <a href="datamodel_schema.html">Schema Reference</a>
+    <a href="datamodel_json.html" class="active">JSON Files</a>
+    <a href="datamodel_wrappers.html">JS Wrappers</a>
+    <a href="datamodel_flow.html">Data Flow</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="eyebrow">S&amp;P Global · Maritime Intelligence Platform</div>
+  <h1>JSON <span>Data Files</span></h1>
+  <p class="subtitle">30 JSON files in <code>src/data/json/</code> — the static data layer powering the prototype. Each file maps directly to one or more PostgreSQL tables and is consumed by a JavaScript data wrapper.</p>
+
+  <!-- ═══════════════════════════════════ DOMAIN 1: VESSEL & FLEET ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-blue">Domain 1</span>
+    <span class="acc-blue">Vessel &amp; Fleet</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- vessels.json -->
+    <div class="file-card" style="--domain-color:#1558d6">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">vessels.json</span>
+        <span class="file-count">25 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">imo_number</span><span class="field-pill">mmsi_number</span><span class="field-pill">call_sign</span><span class="field-pill">name</span><span class="field-pill">flag_code</span><span class="field-pill">flag_name</span><span class="field-pill">flag_emoji</span><span class="field-pill">vessel_type</span><span class="field-pill">status</span><span class="field-pill">last_updated</span>
+            <span class="field-pill">current_position{latitude,longitude,speed_over_ground,course_over_ground}</span>
+            <span class="field-pill">dimensions{length_overall_m,beam_m,depth_m,max_draft_m,summer_draft_m,length_between_perp_m}</span>
+            <span class="field-pill">tonnage{deadweight_t,gross_t,net_t}</span>
+            <span class="field-pill">construction{year_built,shipyard,hull_number,build_country_code}</span>
+            <span class="field-pill">machinery{main_engine,mcr_kw,service_speed_kn,fuel_type,propulsion_type}</span>
+            <span class="field-pill">cargo{teu_nominal,teu_reefer,car_equivalent_units,passengers,cargo_holds,cargo_hatches,lane_metres}</span>
+            <span class="field-pill">ownership{registered_owner,beneficial_owner,commercial_operator,technical_manager,pi_club}</span>
+            <span class="field-pill">classification{class_society,class_notation,ice_class,dp_class}</span>
+            <span class="field-pill">safety{firefighting_capacity,bow_discharge,stern_discharge,crude_oil_washing,inert_gas_system,scrubber_type,helideck,ballast_water_mgmt_plan}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>vessel.entity, vessel.attr_value</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>vessels.js &rarr; VESSELS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Deeply nested JSON; <code>vessels.js</code> flattens all nested objects into abbreviated field names (<code>nm</code>, <code>imo</code>, <code>mmsi</code>, <code>loa</code>, <code>dwt</code>, etc.) for the VESSELS array.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ais_positions.json -->
+    <div class="file-card" style="--domain-color:#1558d6">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">ais_positions.json</span>
+        <span class="file-count">25 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">imo</span><span class="field-pill">mmsi</span><span class="field-pill">type</span><span class="field-pill">flag_name</span><span class="field-pill">flag_emoji</span><span class="field-pill">speed_kn</span><span class="field-pill">heading_deg</span><span class="field-pill">latitude</span><span class="field-pill">longitude</span><span class="field-pill">destination</span><span class="field-pill">eta</span><span class="field-pill">ais_status</span><span class="field-pill">dwt</span><span class="field-pill">owner</span><span class="field-pill">cargo</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>vessel.position (live AIS feed target)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; AIS_VESSELS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Separate from <code>vessels.json</code> — these are live AIS snapshots, not master data. Used exclusively by the GIS/AIS map page.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- fleet_kpis.json -->
+    <div class="file-card" style="--domain-color:#1558d6">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">fleet_kpis.json</span>
+        <span class="file-count">object</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">as_of_date</span>
+            <span class="field-pill">kpis[]{id,label,value_formatted,delta_formatted,direction,color}</span>
+            <span class="field-pill">fleet_by_type[]{vessel_type,count,color}</span>
+            <span class="field-pill">top_flag_states[]{flag_emoji,flag_name,vessel_count}</span>
+            <span class="field-pill">cert_compliance_summary[]{icon,name,description,expiring_count,css_class}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>Derived / computed (fleet aggregate tables)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>dashboardData.js &rarr; KPIS[], FLEET_TYPES[], FLAGS[], CERTS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Aggregated stats. In production these would be computed by analytics jobs against <code>vessel.v_current</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- certificates.json -->
+    <div class="file-card" style="--domain-color:#1558d6">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">certificates.json</span>
+        <span class="file-count">8 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">vessel_name</span><span class="field-pill">imo_number</span><span class="field-pill">certificate_type</span><span class="field-pill">issuing_authority</span><span class="field-pill">issue_date</span><span class="field-pill">expiry_date</span><span class="field-pill">days_until_expiry</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>compliance.certificate</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>dashboardData.js &rarr; CERTS_EXPIRING[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Only certificates with <code>days_until_expiry</code> &le; 60 are shown in the dashboard widget.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 1 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 2: PORT & GIS ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-green">Domain 2</span>
+    <span class="acc-green">Port &amp; GIS</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- ports.json -->
+    <div class="file-card" style="--domain-color:#137333">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">ports.json</span>
+        <span class="file-count">12 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">unlocode</span><span class="field-pill">name</span><span class="field-pill">full_name</span><span class="field-pill">country_code</span><span class="field-pill">country_name</span><span class="field-pill">region</span><span class="field-pill">latitude</span><span class="field-pill">longitude</span><span class="field-pill">port_type</span><span class="field-pill">status</span><span class="field-pill">throughput_teu</span><span class="field-pill">throughput_label</span><span class="field-pill">global_rank</span>
+            <span class="field-pill">contact{vhf_channel,phone,website}</span>
+            <span class="field-pill">physical{max_vessel_loa_m,max_draft_m}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>port.entity (GeoJSON display layer)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; PORT_GEO (FeatureCollection)</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Used for the dashboard LiveMapCard and Movements map. <code>PORT_GEO</code> derives <code>type</code> ('mega'/'major'/'regional') from <code>global_rank</code> and <code>calls</code> from <code>throughput_teu</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ports_detail.json -->
+    <div class="file-card" style="--domain-color:#137333">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">ports_detail.json</span>
+        <span class="file-count">5 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">name</span><span class="field-pill">unlocode</span><span class="field-pill">country</span><span class="field-pill">region</span><span class="field-pill">type</span><span class="field-pill">mou</span><span class="field-pill">status</span><span class="field-pill">lat</span><span class="field-pill">lon</span><span class="field-pill">authority</span>
+            <span class="field-pill">harbour{totalArea,tideRange}</span>
+            <span class="field-pill">channel{maxDraft,maxLoa,maxBeam,nightEntry}</span>
+            <span class="field-pill">berths{count,maxLoa,maxDraft,types[]}</span>
+            <span class="field-pill">anchorage{spots,maxDraft,holdingGround}</span>
+            <span class="field-pill">terminals{container,bulk,tanker,roro}</span>
+            <span class="field-pill">services{pilotage,pilotageCompulsory,towage,tugs,freshwater,provisions,medical,garbage}</span>
+            <span class="field-pill">bunker{available,hfo,vlsfo,mdo,mgo,lng,methanol}</span>
+            <span class="field-pill">repair{drydock,drydockCount}</span>
+            <span class="field-pill">navAids{lighthouse,vts,aisBase}</span>
+            <span class="field-pill">restrictions{maxDraft,maxLoa,daylight_only}</span>
+            <span class="field-pill">traffic{year,totalCalls,teu,liquidBulk,worldRank}</span>
+            <span class="field-pill">congestion{avgWaiting,avgTurnaround,berthOccupancy,risk}</span>
+            <span class="field-pill">operations{hours,workingRate}</span>
+            <span class="field-pill">psc{mou,totalInsp,detentions,detRate,totalDef,avgDef}</span>
+            <span class="field-pill">tariffs{currency,portDue,pilotage}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>port.attr_value via port.v_current</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>ports.js &rarr; PORTS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Highly nested. <code>ports.js</code> provides 250+ accessor functions (<code>getPortAttrValue</code>) covering all nested fields via the <code>po-*</code> attribute ID system.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- gis_ports.json -->
+    <div class="file-card" style="--domain-color:#137333">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">gis_ports.json</span>
+        <span class="file-count">12 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">latitude</span><span class="field-pill">longitude</span><span class="field-pill">country</span><span class="field-pill">locode</span><span class="field-pill">size_tier</span><span class="field-pill">throughput_label</span><span class="field-pill">annual_calls</span><span class="field-pill">max_draft_m</span><span class="field-pill">mou_region</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>port.entity (GIS display layer)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; GIS_PORTS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Simplified port records for the GIS/AIS map. <code>size_tier</code> drives icon sizing; <code>mou_region</code> drives map layer filtering.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- gis_companies.json -->
+    <div class="file-card" style="--domain-color:#137333">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">gis_companies.json</span>
+        <span class="file-count">12 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">type</span><span class="field-pill">country</span><span class="field-pill">hq_lat</span><span class="field-pill">hq_lon</span><span class="field-pill">vessel_count</span><span class="field-pill">dwt_label</span><span class="field-pill">fleet_type</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>company.entity (GIS display layer)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; GIS_COMPANIES[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Company HQ positions for the Companies layer on the GIS map. <code>hq_lat</code>/<code>hq_lon</code> are the coordinate fields (not <code>lat</code>/<code>lon</code>).</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 2 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 3: COMPANY & COMPLIANCE ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-red">Domain 3</span>
+    <span class="acc-red">Company &amp; Compliance</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- companies.json -->
+    <div class="file-card" style="--domain-color:#c8102e">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">companies.json</span>
+        <span class="file-count">15 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">type</span><span class="field-pill">country</span><span class="field-pill">city</span><span class="field-pill">lrNumber</span><span class="field-pill">status</span>
+            <span class="field-pill">fleet{total,owned,managed,totalDwt,avgage}</span>
+            <span class="field-pill">psc{risk,detRate,lastResult}</span>
+            <span class="field-pill">financial{revenue,ebitda}</span>
+            <span class="field-pill">sanctions{ofac,un,eu}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>company.entity (list view)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>Companies.jsx directly</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Summary records for the company list page. <code>companies_detail.json</code> provides full detail for individual company records.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- companies_detail.json -->
+    <div class="file-card" style="--domain-color:#c8102e">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">companies_detail.json</span>
+        <span class="file-count">5 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">name</span><span class="field-pill">lrNumber</span><span class="field-pill">lei</span><span class="field-pill">type</span><span class="field-pill">country</span><span class="field-pill">city</span><span class="field-pill">roles[]</span>
+            <span class="field-pill">fleet{owned,managed,totalDwt,avgAge,newbuildOrders}</span>
+            <span class="field-pill">doc{number,issDate,expDate,shipTypes[]}</span>
+            <span class="field-pill">ism{auditor,lastAudit,nextAudit,openNC,openObs}</span>
+            <span class="field-pill">psc{totalInsp,detentions,detRate,deficiencies,risk}</span>
+            <span class="field-pill">financial{revenue,ebitda,netIncome,assets,currency}</span>
+            <span class="field-pill">credit{moodys,sp,outlook,payRisk}</span>
+            <span class="field-pill">sanctions{ofac,un,eu,uk,lastScreened,risk}</span>
+            <span class="field-pill">kyc{status,date,tier,reviewer,amlRisk,adverseMedia}</span>
+            <span class="field-pill">esg{poseidon,eexiAvg,ciiAvg,ghgTarget,mlc,sire,boardSize,diversity,antiCorruption}</span>
+            <span class="field-pill">history{names[],ownership[],ma}</span>
+            <span class="field-pill">ubo{name,country,pct}</span>
+            <span class="field-pill">parent{name,country}</span>
+            <span class="field-pill">subsidiaries[]</span>
+            <span class="field-pill">personnel{ceo,cfo,dpa}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>company.attr_value</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>companies.js &rarr; COMPANIES[] (getCompanyAttrValue accessor)</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Richest entity record type. <code>companies.js</code> provides 200+ accessor functions via <code>co-*</code> attribute ID mapping.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- psc_inspections.json -->
+    <div class="file-card" style="--domain-color:#c8102e">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">psc_inspections.json</span>
+        <span class="file-count">10 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id (PSC-YYYY-MMDD-NNN)</span><span class="field-pill">vessel_name</span><span class="field-pill">imo_number</span><span class="field-pill">flag_display</span><span class="field-pill">port_name</span><span class="field-pill">mou_region</span><span class="field-pill">inspection_date</span><span class="field-pill">total_deficiencies</span><span class="field-pill">detained</span><span class="field-pill">detention_start</span><span class="field-pill">detention_end</span><span class="field-pill">inspection_status</span>
+            <span class="field-pill">deficiencies[]{code,description,category,severity}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>compliance.psc_inspection, compliance.psc_deficiency</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>pscData.js &rarr; INSPECTIONS[], dashboardData.js &rarr; PSC_DATA[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>pscData.js</code> special-cases <code>mou_region='USCG'</code> to avoid appending ' MOU' (other regions get 'Paris MOU', 'Tokyo MOU' etc.).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- psc_summary.json -->
+    <div class="file-card" style="--domain-color:#c8102e">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">psc_summary.json</span>
+        <span class="file-count">object</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">kpis[]{v,l,c,d,dn}</span>
+            <span class="field-pill">mou_stats[]{n,insp,det,rate,c}</span>
+            <span class="field-pill">deficiency_categories[]{n,cnt,c}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>Derived (computed from compliance.psc_inspection)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>pscData.js &rarr; PSC_KPIS[], MOU_STATS[], DEF_CATS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Aggregate stats. In production computed by compliance materialized views.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 3 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 4: VOYAGE & MOVEMENTS ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-orange">Domain 4</span>
+    <span class="acc-orange">Voyage &amp; Movements</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- movements.json -->
+    <div class="file-card" style="--domain-color:#E07000">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">movements.json</span>
+        <span class="file-count">8 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">imo</span><span class="field-pill">type</span><span class="field-pill">flag</span><span class="field-pill">status</span><span class="field-pill">speed_kn</span><span class="field-pill">heading_deg</span><span class="field-pill">latitude</span><span class="field-pill">longitude</span><span class="field-pill">destination</span><span class="field-pill">eta</span><span class="field-pill">last_port</span><span class="field-pill">ata</span><span class="field-pill">atd</span><span class="field-pill">cargo</span><span class="field-pill">dwt</span>
+            <span class="field-pill">route[]{port,locode,lat,lon,ata,atd,eta,type(done/current/future)}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>voyage.voyage, voyage.route_waypoint</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>movementsData.js &rarr; MOVEMENT_VESSELS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Nested <code>route</code> array maps to <code>voyage.route_waypoint</code> with <code>waypoint_type</code> (done/current/future). Each vessel has 2-4 waypoints showing the active voyage progression.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- port_calls.json -->
+    <div class="file-card" style="--domain-color:#E07000">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">port_calls.json</span>
+        <span class="file-count">7 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">vessel</span><span class="field-pill">imo</span><span class="field-pill">port</span><span class="field-pill">locode</span><span class="field-pill">ata</span><span class="field-pill">atd</span><span class="field-pill">purpose</span><span class="field-pill">volume</span><span class="field-pill">berth</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>voyage.port_call</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>movementsData.js &rarr; PORT_CALLS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Flat records (no nesting). <code>purpose</code> field is free text (e.g. 'Transit / Suez Canal', 'Discharge &mdash; Iron Ore'). <code>volume</code> maps to <code>cargo_volume</code> in DB.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- routes.json -->
+    <div class="file-card" style="--domain-color:#E07000">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">routes.json</span>
+        <span class="file-count">GeoJSON FeatureCollection</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">features[]{type:Feature</span>
+            <span class="field-pill">properties{route_name,trade,description}</span>
+            <span class="field-pill">geometry{type:LineString,coordinates:[[lon,lat],...]}}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>geo.route_benchmark (route definitions)</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; AIS_ROUTES[] (coordinate-swapped), ROUTE_GEO</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><strong>Important:</strong> GeoJSON stores coordinates as [longitude, latitude]. <code>mapData.js</code> converts to Leaflet's expected [latitude, longitude] order when building <code>AIS_ROUTES</code>.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 4 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 5: MARKET & FREIGHT ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-purple">Domain 5</span>
+    <span class="acc-purple">Market &amp; Freight</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- market_indices.json -->
+    <div class="file-card" style="--domain-color:#6200ea">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">market_indices.json</span>
+        <span class="file-count">6 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">code (BDI/BDTI/BCTI/BCI/BLNG/BPCI)</span><span class="field-pill">name</span><span class="field-pill">value</span><span class="field-pill">prev</span><span class="field-pill">w52_low</span><span class="field-pill">w52_high</span><span class="field-pill">delta (numeric)</span><span class="field-pill">direction (up/down)</span><span class="field-pill">color (CSS var or hex)</span><span class="field-pill">description</span><span class="field-pill">sparkline (15-element numeric array)</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>market.index_definition, market.index_value</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>fixturesData.js &rarr; INDICES[], dashboardData.js &rarr; MARKET[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>delta</code> is a raw number (not a string); <code>dashboardData.js</code> formats it as "+123" or "-45". <code>sparkline</code> array is stored as <code>NUMERIC[]</code> in PostgreSQL.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- freight_routes.json -->
+    <div class="file-card" style="--domain-color:#6200ea">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">freight_routes.json</span>
+        <span class="file-count">10 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">route (TD3C/5TC/TC2/etc.)</span><span class="field-pill">segment (VLCC/Suezmax/Capesize/etc.)</span><span class="field-pill">description</span><span class="field-pill">ws (Worldscale points)</span><span class="field-pill">tce ($/day)</span><span class="field-pill">prev_tce</span><span class="field-pill">lo (52w low)</span><span class="field-pill">hi (52w high)</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>market.route_benchmark, market.route_benchmark_value</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>fixturesData.js &rarr; ROUTES[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>route</code> maps to <code>route_code</code> in DB. <code>tce</code> maps to <code>tce_usd</code>. <code>ws</code> is NULL for dry bulk TC routes (only tanker routes use Worldscale).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- fixtures.json -->
+    <div class="file-card" style="--domain-color:#6200ea">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">fixtures.json</span>
+        <span class="file-count">10 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id (F001-F010)</span><span class="field-pill">vessel</span><span class="field-pill">vessel_type</span><span class="field-pill">dwt</span><span class="field-pill">charterer</span><span class="field-pill">owner</span><span class="field-pill">cargo</span><span class="field-pill">quantity</span><span class="field-pill">load_port</span><span class="field-pill">discharge_port</span><span class="field-pill">laycan</span><span class="field-pill">rate (e.g. 'WS 82' or '$14.50/MT')</span><span class="field-pill">tce ($/day)</span><span class="field-pill">status (Fixed/On Subjects/Rumoured/Failed/Withdrawn)</span><span class="field-pill">broker</span><span class="field-pill">date</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>market.fixture</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>fixturesData.js &rarr; FIXTURES[] (passed through directly)</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>status</code> field uses the same CHECK constraint values as the DB column. <code>tce</code> maps to <code>tce_usd</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- tc_contracts.json -->
+    <div class="file-card" style="--domain-color:#6200ea">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">tc_contracts.json</span>
+        <span class="file-count">5 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">vessel</span><span class="field-pill">imo</span><span class="field-pill">type (Time Charter/Bareboat Charter)</span><span class="field-pill">term</span><span class="field-pill">start</span><span class="field-pill">end</span><span class="field-pill">rate ($/day)</span><span class="field-pill">charterer</span><span class="field-pill">redelivery</span><span class="field-pill">options</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>market.tc_contract</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>fixturesData.js &rarr; TC_CONTRACTS[] (passed through directly)</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>type</code> maps to <code>charter_type</code>. <code>rate</code> maps to <code>daily_rate_usd</code>. <code>redelivery</code> maps to <code>redelivery_zone</code>.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 5 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 6: ETL & CONFIGURATION ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-slate">Domain 6</span>
+    <span class="acc-slate">ETL &amp; Configuration</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- etl_feeds.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">etl_feeds.json</span>
+        <span class="file-count">15 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">source_code</span><span class="field-pill">source_name</span><span class="field-pill">entity_type</span><span class="field-pill">feed_format (JSON/XML/CSV/FTP_CSV/API_REST/SFTP_XML)</span><span class="field-pill">cron_schedule</span><span class="field-pill">is_active</span><span class="field-pill">last_run</span><span class="field-pill">records_processed</span><span class="field-pill">success_rate</span>
+            <span class="field-pill">field_mappings[]{source_field,target_field,transform}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>ingest.feed_config, ingest.feed_field_map</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>etlData.js &rarr; ETL_FEEDS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>field_mappings</code> seeds <code>ingest.feed_field_map</code>. The <code>source_code</code> values seed <code>registry.source_def</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- etl_runs.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">etl_runs.json</span>
+        <span class="file-count">10 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">feed_id</span><span class="field-pill">feed_name</span><span class="field-pill">started_at</span><span class="field-pill">completed_at</span><span class="field-pill">status (SUCCESS/PARTIAL/FAILED)</span><span class="field-pill">records_received</span><span class="field-pill">records_ingested</span><span class="field-pill">records_rejected</span><span class="field-pill">conflicts</span><span class="field-pill">duration_ms</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>ingest.feed_run</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>etlData.js &rarr; ETL_RUNS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>conflicts</code> count matches <code>ingest.conflict_queue</code> rows generated by this run.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- etl_conflicts.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">etl_conflicts.json</span>
+        <span class="file-count">20 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">run_id</span><span class="field-pill">entity_type</span><span class="field-pill">entity_id</span><span class="field-pill">attribute</span><span class="field-pill">source_a</span><span class="field-pill">value_a</span><span class="field-pill">score_a</span><span class="field-pill">source_b</span><span class="field-pill">value_b</span><span class="field-pill">score_b</span><span class="field-pill">type (VALUE_MISMATCH/FORMAT/MISSING)</span><span class="field-pill">severity (LOW/MEDIUM/HIGH/CRITICAL)</span><span class="field-pill">detected_at</span><span class="field-pill">resolved_at</span><span class="field-pill">resolution (ACCEPTED_A/ACCEPTED_B/MANUAL/DEFERRED/AUTO)</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>ingest.conflict_queue</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>etlData.js &rarr; ETL_CONFLICTS[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Mirrors the exact CHECK constraint values in <code>ingest.conflict_queue</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- attribute_definitions.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">attribute_definitions.json</span>
+        <span class="file-count">object (~650 vessel attrs)</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">version</span>
+            <span class="field-pill">entities{vessel{sections[{id,label,icon,order,groups[{id,label,order,attributes[{key,id(af-*),label,data_type,vessel_field,filter_field,filter_field_transform,is_filterable,filter_type,filter_group,is_column,column_group,display_order,unit}]}]}]}}</span>
+            <span class="field-pill">filter_groups[{id,label,display_order,icon}]</span>
+            <span class="field-pill">column_groups[{key,label,display_order}]</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>registry.attribute_def, registry.filter_group_def, registry.column_group_def</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>attributeRegistry.js &rarr; ATTRIBUTE_TREE, FILTER_CONFIGS, FILTER_MAP, ALL_VESSEL_COLUMNS, applyFilters()</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">The most important config file. ~650 vessel attribute definitions. <code>attr_id_ui</code> uses <code>'af-'</code> prefix for vessel attributes. <code>COL_ID_MAP</code> in <code>attributeRegistry.js</code> bridges <code>af-*</code> IDs to short column IDs stored in <code>personas.json</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- enums.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">enums.json</span>
+        <span class="file-count">object</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">countries[]</span><span class="field-pill">vessel_types[]</span><span class="field-pill">vessel_statuses[]</span><span class="field-pill">flag_states[]</span><span class="field-pill">classification_societies[]</span><span class="field-pill">pi_clubs[]</span><span class="field-pill">ice_classes[]</span><span class="field-pill">dp_classes[]</span><span class="field-pill">scrubber_types[]</span><span class="field-pill">fuel_types[]</span><span class="field-pill">propulsion_types[]</span><span class="field-pill">certificate_types[]</span><span class="field-pill">mou_regions[]</span><span class="field-pill">data_sources[]</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>CHECK constraints and allowed_values[] in registry.attribute_def</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>FilterBuilder.jsx, various form components</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Reference data for dropdowns and validation. <code>mou_regions</code> matches CHECK constraint values in <code>compliance.psc_inspection</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- personas.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">personas.json</span>
+        <span class="file-count">object (5 personas)</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">default_persona_id</span>
+            <span class="field-pill">personas[]{id,name,icon,color,description,attr_sections[],vessel_columns[],dashboard_cards[]{card_id,width}}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>ui.persona</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>personas.js &rarr; PERSONAS{}, DEFAULT_PERSONA_ID</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">5 system personas (Ship Owner, Charterer, Compliance Officer, Port Agent, Analyst). <code>vessel_columns</code> values match <code>COL_ID_MAP</code> keys in <code>attributeRegistry.js</code>. <code>dashboard_cards[].card_id</code> matches <code>dashboard_cards.json</code> keys.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dashboard_cards.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">dashboard_cards.json</span>
+        <span class="file-count">object</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">categories[]{id,label}</span>
+            <span class="field-pill">cards{[card_id]{title,description,category,defaultW,icon}}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>ui.dashboard_layout</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>dashboardCards.js &rarr; CARD_CATALOG</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">card_id values: <code>'kpi-row'</code>, <code>'live-map'</code>, <code>'live-activity'</code>, <code>'fleet-types'</code>, <code>'flag-states'</code>, <code>'certs-expiring'</code>, <code>'psc-detentions'</code>, <code>'market-snapshot'</code>, plus individual KPI cards <code>'kpi-{id}'</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- activity_feed.json -->
+    <div class="file-card" style="--domain-color:#0D1F3C">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">activity_feed.json</span>
+        <span class="file-count">10 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">timestamp</span><span class="field-pill">color (hex)</span><span class="field-pill">description (HTML string with &lt;span&gt; tags)</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>No direct DB table</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>dashboardData.js &rarr; ACT_POOL[], ACT_TIMES[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>description</code> is HTML. <code>ACT_TIMES[]</code> derives relative timestamps ("2m ago", "1h 15m ago") by comparing each record's timestamp to the newest. Dashboard shows 14 randomly shuffled activities, refreshed every 30s.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 6 -->
+
+  <!-- ═══════════════════════════════════ DOMAIN 7: GEOSPATIAL ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span class="domain-badge badge-teal">Domain 7</span>
+    <span class="acc-teal">Geospatial</span>
+  </div>
+
+  <div class="file-grid">
+
+    <!-- choke_points.json -->
+    <div class="file-card" style="--domain-color:#007A7A">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">choke_points.json</span>
+        <span class="file-count">7 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">id</span><span class="field-pill">name</span><span class="field-pill">latitude</span><span class="field-pill">longitude</span><span class="field-pill">volume_label (e.g. '~18.5M bbl/day')</span><span class="field-pill">risk_level (High/Medium/Low)</span><span class="field-pill">is_active</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>geo.choke_point</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; AIS_CHOKE[], CHOKE_POINTS</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>latitude</code>/<code>longitude</code> field names (not <code>lat</code>/<code>lon</code>). GIST index in DB. Latitude/longitude in <code>geo.choke_point</code> are GENERATED columns derived from <code>ST_Y</code>/<code>ST_X</code> of the <code>geom</code> field.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- mou_zones.json -->
+    <div class="file-card" style="--domain-color:#007A7A">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">mou_zones.json</span>
+        <span class="file-count">5 rows &mdash; array</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">name</span><span class="field-pill">color (hex)</span><span class="field-pill">bounds (array of [lat,lon] pairs forming a polygon ring)</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>geo.mou_zone</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>mapData.js &rarr; MOU_ZONES[]</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note"><code>bounds</code> coordinate order is [lat,lon] (Leaflet convention). Stored in DB as <code>GEOMETRY(Polygon,4326)</code> with [lon,lat] order (PostGIS/WGS84 convention).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- search_config.json -->
+    <div class="file-card" style="--domain-color:#007A7A">
+      <div class="file-card-header">
+        <div class="file-card-accent"></div>
+        <span class="file-name">search_config.json</span>
+        <span class="file-count">object</span>
+      </div>
+      <div class="file-card-body">
+        <div class="fc-row full">
+          <div class="fc-label">Key Fields</div>
+          <div class="field-list">
+            <span class="field-pill">type_map{}</span><span class="field-pill">dwt_ranges{}</span><span class="field-pill">status_map{}</span><span class="field-pill">flag_map{}</span>
+          </div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Maps To (PostgreSQL)</div>
+          <div class="fc-val"><em>Supplementary to registry.attribute_def</em></div>
+        </div>
+        <div class="fc-row">
+          <div class="fc-label">Consumed By</div>
+          <div class="fc-val"><em>Vessels.jsx smart search</em></div>
+        </div>
+        <div class="fc-row full">
+          <div class="fc-label">Notes</div>
+          <div class="fc-val note">Used for typeahead abbreviation expansion (e.g. 'vlcc' &rarr; 'VLCC', 'container' &rarr; 'Container Ship') and quick DWT range lookups.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /file-grid domain 7 -->
+
+  <!-- ═══════════════════════════════════ SUMMARY TABLE ═══════════════════════════════════ -->
+  <div class="section-title">
+    <span>Domain Summary</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th>Files</th>
+          <th>Total Records</th>
+          <th>Key DB Targets</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="domain-badge badge-blue" style="font-size:11px">Vessel &amp; Fleet</span></td>
+          <td>4</td>
+          <td>~68 rows</td>
+          <td><code>vessel.entity</code>, <code>vessel.position</code>, <code>compliance.certificate</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-green" style="font-size:11px">Port &amp; GIS</span></td>
+          <td>4</td>
+          <td>~34 rows</td>
+          <td><code>port.entity</code>, <code>port.location</code>, <code>port.attr_value</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-red" style="font-size:11px">Company &amp; Compliance</span></td>
+          <td>4</td>
+          <td>~38 rows</td>
+          <td><code>company.entity</code>, <code>compliance.psc_inspection</code>, <code>compliance.psc_deficiency</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-orange" style="font-size:11px">Voyage &amp; Movements</span></td>
+          <td>3</td>
+          <td>~25 rows</td>
+          <td><code>voyage.voyage</code>, <code>voyage.port_call</code>, <code>voyage.route_waypoint</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-purple" style="font-size:11px">Market &amp; Freight</span></td>
+          <td>4</td>
+          <td>~31 rows</td>
+          <td><code>market.fixture</code>, <code>market.tc_contract</code>, <code>market.index_value</code>, <code>market.route_benchmark_value</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-slate" style="font-size:11px">ETL &amp; Config</span></td>
+          <td>6 (incl. 2 derived)</td>
+          <td>~80 rows + 650 attrs</td>
+          <td><code>ingest.feed_config</code>, <code>registry.attribute_def</code>, <code>ui.persona</code></td>
+        </tr>
+        <tr>
+          <td><span class="domain-badge badge-teal" style="font-size:11px">Geospatial</span></td>
+          <td>3</td>
+          <td>~22 rows</td>
+          <td><code>geo.choke_point</code>, <code>geo.mou_zone</code></td>
+        </tr>
+        <tr class="total-row">
+          <td>TOTAL</td>
+          <td>28 files + 2 derived</td>
+          <td>~348 records</td>
+          <td>12 schemas, 40+ tables</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    S&amp;P Global &middot; Maritime Intelligence Platform &middot; Data Model Documentation &middot; 2025
+  </footer>
+
+</div><!-- /page -->
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Port Schema — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#1A2040);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#60A5FA;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#60A5FA}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:760px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;color:#60A5FA}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;color:#93C5FD;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(96,165,250,.07);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(96,165,250,.15);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(96,165,250,.04)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#93C5FD;font-weight:600}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.gen{font-size:9px;font-weight:700;background:rgba(251,146,60,.15);color:#FB923C;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(96,165,250,.04);border-left:3px solid #60A5FA;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose strong{color:#fff}
+.rule-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:12px 16px;font-size:11px;color:#FCA5A5;margin:8px 0 16px;font-family:'JetBrains Mono',monospace}
+.rule-box strong{color:#F87171}
+.partition-box{background:rgba(251,146,60,.05);border:1px solid rgba(251,146,60,.2);border-radius:6px;padding:14px 16px;margin:8px 0 16px}
+.partition-box h4{font-size:10px;font-weight:700;color:#FB923C;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.partition-table{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.8}
+.partition-table span{color:#60A5FA}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:240px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.mv-box{background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.2);border-radius:8px;padding:16px;margin-bottom:20px}
+.mv-box h4{font-size:12px;font-weight:700;color:#60A5FA;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.mv-col-group{margin-bottom:10px}
+.mv-col-group strong{font-size:10px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.mv-cols{font-size:10.5px;color:#8AACCC;font-family:'JetBrains Mono',monospace;line-height:1.9}
+.mv-cols span{color:#60A5FA}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#60A5FA;color:#000}.btn-pri:hover{background:#93C5FD}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Port Schema</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_vessel.html">← Vessel</a>
+    <a href="schema_company.html">Next: Company →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Core Entity</div>
+  <h1>Port <span>Schema</span></h1>
+  <p class="sub">Bi-temporal EAV store for port attributes, a PostGIS geometry table for precise location data (with GENERATED columns for lat/lon from the geometry), annual range partitions, and a wide <code>v_current</code> materialized view that flattens all channel, berth, service, bunker, traffic and PSC attributes into named columns aligned with <code>ports_detail.json</code>.</p>
+</div>
+
+<div class="main">
+  <div class="badge-row">
+    <span class="badge">6 tables + 1 mat. view</span>
+    <span class="badge">UNLOCODE primary key</span>
+    <span class="badge">PostGIS GEOMETRY(Point,4326)</span>
+    <span class="badge">GENERATED lat/lon columns</span>
+    <span class="badge">attr_value: 4 annual partitions</span>
+    <span class="badge">insert-only attr_value (RULE)</span>
+  </div>
+
+  <h2><span class="sc">port</span> Schema Tables</h2>
+
+  <h3>port.entity</h3>
+  <div class="purpose"><strong>Purpose:</strong> Anchor table — one row per port. The UNLOCODE (UN Location Code, 5 chars e.g. 'SGSIN') is the primary key and universal join key. Mirrors gis_ports.json "locode" field. Referenced by voyage.port_call, compliance.psc_inspection, market.freight_rate etc.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td><span class="pk">PK</span></td><td>—</td><td>UN/LOCODE — 5-char country+location code (e.g. 'SGSIN', 'NLRTM', 'USHOU')</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When port was first added to the platform</td></tr>
+        <tr><td class="col">first_seen_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>First data received for this port</td></tr>
+        <tr><td class="col">first_source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Data source that first reported this port</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>port.attr_value <span style="font-size:11px;color:#7A9CBB;font-weight:400">— Silver Layer (vendor data)</span></h3>
+  <div class="purpose"><strong>Purpose:</strong> Bi-temporal EAV for all port attributes from vendor sources. Structurally identical to <code>vessel.attr_value</code> but keyed by unlocode. Insert-only by RULE. Partitioned annually. The <code>workflow_state</code> here reflects QC status only — promotion to master requires an explicit <code>workflow.promotion_request</code> approval. <code>port.v_current</code> reads from <code>port.master_value</code>, not this table. Covers all attributes in ports_detail.json: identity, channel limits, berths, services, bunkering, traffic, PSC, certification.</div>
+  <div class="rule-box">
+    <strong>INSERT-ONLY RULES:</strong><br>
+    CREATE RULE port_av_no_update AS ON UPDATE TO port.attr_value DO INSTEAD NOTHING;<br>
+    CREATE RULE port_av_no_delete AS ON DELETE TO port.attr_value DO INSTEAD NOTHING;
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">av_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NOT NULL <span class="fk">FK→port.entity</span></div></td><td>—</td><td>Port this value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute (e.g. 'ch_max_draft', 'berth_count', 'bunker_vlsfo')</td></tr>
+        <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">varied</td><td>NULLABLE</td><td>NULL</td><td>Typed value columns — only one is populated per row based on data_type in attribute_def</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Data source (PORT_AUTHORITY, COMMERCIAL_DATA, etc.)</td></tr>
+        <tr><td class="col">confidence</td><td class="typ">NUMERIC(4,3)</td><td><div class="cc">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>0.5</td><td>Source reliability weight</td></tr>
+        <tr><td class="col">valid_from / valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>Real-world temporal bounds</td></tr>
+        <tr><td class="col">sys_from / sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW()</td><td>System temporal bounds (sys_from = partition key)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>PENDING | APPROVED | REJECTED | SUPERSEDED</td></tr>
+        <tr><td class="col">draft_id / run_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK</span></div></td><td>NULL</td><td>Lineage: edit draft or ETL run that produced this value</td></tr>
+        <tr><td class="col">qc_flags / qc_passed</td><td class="typ">TEXT[] / BOOLEAN</td><td>NULLABLE / NOT NULL</td><td>NULL / TRUE</td><td>QC rule results from ingest pipeline</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (sys_from) — annual)</h4>
+    <div class="partition-table">
+      <span>port.attr_value_2024</span> → 2024-01-01 TO 2025-01-01<br>
+      <span>port.attr_value_2025</span> → 2025-01-01 TO 2026-01-01<br>
+      <span>port.attr_value_2026</span> → 2026-01-01 TO 2027-01-01<br>
+      <span>port.attr_value_overflow</span> → DEFAULT
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on port.attr_value</h4>
+    <div class="idx-row"><span class="idx-name">idx_pav_unlocode_attr</span><span class="idx-def">(unlocode, attr_id) — baseline lookup per port+attribute</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pav_current</span><span class="idx-def">(unlocode, attr_id, confidence DESC) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED'</span></div>
+  </div>
+
+  <h3>port.master_value <span style="font-size:11px;color:#7A9CBB;font-weight:400">— Gold Layer (master record)</span></h3>
+  <div class="purpose"><strong>Purpose:</strong> Explicitly approved master record for port attributes. Mirrors the structure of <code>vessel.master_value</code>. Values enter here only via an APPROVED <code>workflow.promotion_request</code> (vendor path) or an APPROVED <code>workflow.edit_draft</code> (manual/backdated path). <code>port.v_current</code> is built from this table, not <code>port.attr_value</code>.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">mv_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (auto-partitioned)</td></tr>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td><div class="cc">NOT NULL <span class="fk">FK→port.entity</span></div></td><td>—</td><td>Port this master value belongs to</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute this master value is for</td></tr>
+        <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">various</td><td>NULLABLE</td><td>NULL</td><td>The approved master value in the appropriate typed column</td></tr>
+        <tr><td class="col">entry_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>VENDOR_PROMOTED | MANUAL_ENTRY | BACKDATED | CONFLICT_RESOLVED</td></tr>
+        <tr><td class="col">source_av_id</td><td class="typ">BIGINT</td><td>NULLABLE</td><td>NULL</td><td>Back-reference to <code>port.attr_value.av_id</code> when VENDOR_PROMOTED. No FK — cross-partition.</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Originating vendor</td></tr>
+        <tr><td class="col">pr_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.promotion_request</span></div></td><td>NULL</td><td>Promotion request that approved this value</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.edit_draft</span></div></td><td>NULL</td><td>Edit draft for manual/backdated entries</td></tr>
+        <tr><td class="col">entered_by / approved_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>auth.app_user.user_id — no FK (schema ordering)</td></tr>
+        <tr><td class="col">valid_from / valid_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW() / NULL</td><td>Bi-temporal real-world validity period</td></tr>
+        <tr><td class="col">sys_from / sys_to</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL / NULLABLE</td><td>NOW() / NULL</td><td>Bi-temporal system recording period (partition key)</td></tr>
+        <tr><td class="col">workflow_state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'APPROVED'</td><td>APPROVED | SUPERSEDED | REJECTED — drives v_current JOIN filter</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Partitions &amp; Indexes</h4>
+    <div class="idx-row"><span class="idx-name">port.master_value_2024–2026 + overflow</span><span class="idx-def">PARTITION BY RANGE (sys_from) — annual</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pmv_unlocode_attr</span><span class="idx-def">(unlocode, attr_id)</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pmv_current</span><span class="idx-def">(unlocode, attr_id) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — v_current fast path</span></div>
+  </div>
+
+  <h3>port.location</h3>
+  <div class="purpose"><strong>Purpose:</strong> PostGIS geometry table for port location. NOT EAV — geometry changes rarely and requires spatial indexing. Uses <strong>GENERATED ALWAYS AS</strong> columns to extract latitude/longitude from the geometry so queries can use either numeric coordinates or the PostGIS geometry. Mirrors gis_ports.json coordinate fields.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→port.entity</span></div></td><td>—</td><td>One location per port — 1:1 with port.entity</td></tr>
+        <tr><td class="col">geom</td><td class="typ">GEOMETRY(Point, 4326)</td><td>NOT NULL</td><td>—</td><td>PostGIS WGS-84 point geometry. Indexed with GIST for spatial queries (radius, bounding box, intersection with MOU zones)</td></tr>
+        <tr><td class="col">latitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc"><span class="gen">GENERATED ALWAYS AS (ST_Y(geom)) STORED</span></div></td><td>—</td><td>Computed from geom — no separate update needed. Used by v_current and the GIS map layer.</td></tr>
+        <tr><td class="col">longitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc"><span class="gen">GENERATED ALWAYS AS (ST_X(geom)) STORED</span></div></td><td>—</td><td>Computed from geom — same mechanism as latitude</td></tr>
+        <tr><td class="col">country_code</td><td class="typ">CHAR(2)</td><td>NULLABLE</td><td>NULL</td><td>ISO 3166-1 alpha-2 country code (first 2 chars of UNLOCODE)</td></tr>
+        <tr><td class="col">timezone</td><td class="typ">VARCHAR(60)</td><td>NULLABLE</td><td>NULL</td><td>IANA timezone string (e.g. 'Asia/Singapore', 'Europe/Rotterdam')</td></tr>
+        <tr><td class="col">utc_offset</td><td class="typ">SMALLINT</td><td>NULLABLE</td><td>NULL</td><td>UTC offset in minutes (positive = east, negative = west)</td></tr>
+        <tr><td class="col">coastline</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Coastline/sea area description (e.g. 'North Sea', 'Strait of Malacca')</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Source of the geometry data</td></tr>
+        <tr><td class="col">valid_from</td><td class="typ">DATE</td><td>NOT NULL</td><td>CURRENT_DATE</td><td>Date from which this geometry is valid</td></tr>
+        <tr><td class="col">updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Last update timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index on port.location</h4>
+    <div class="idx-row"><span class="idx-name">idx_port_location_geom</span><span class="idx-def">GIST (geom) — spatial queries: radius search, MOU zone intersection, bounding box</span></div>
+  </div>
+
+  <h3>port.raw_ingest</h3>
+  <div class="purpose"><strong>Purpose:</strong> Bronze layer for port feed payloads. Same structure as vessel.raw_ingest but keyed by unlocode. Annual partitions are sufficient given lower port data velocity vs. vessel AIS.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">raw_id + received_at</td><td class="typ">BIGSERIAL + TIMESTAMPTZ</td><td><span class="pk">PK</span> (composite)</td><td>—</td><td>Composite partition key</td></tr>
+        <tr><td class="col">feed_id / run_id</td><td class="typ">INTEGER / BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK</span></div></td><td>—</td><td>Feed and run lineage</td></tr>
+        <tr><td class="col">unlocode</td><td class="typ">VARCHAR(5)</td><td>NULLABLE</td><td>NULL</td><td>UNLOCODE extracted from payload (NULL if parsing failed)</td></tr>
+        <tr><td class="col">raw_payload</td><td class="typ">JSONB</td><td>NOT NULL</td><td>—</td><td>Complete raw payload</td></tr>
+        <tr><td class="col">parse_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | MAPPED | PARTIAL | REJECTED</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="partition-box">
+    <h4>Range Partitions (PARTITION BY RANGE (received_at) — annual)</h4>
+    <div class="partition-table">
+      <span>port.raw_ingest_2024</span> · <span>port.raw_ingest_2025</span> · <span>port.raw_ingest_2026</span> · <span>port.raw_ingest_overflow</span>
+    </div>
+  </div>
+
+  <h2><span class="sc">port</span> Materialized View</h2>
+
+  <h3>port.v_current (Materialized View)</h3>
+  <div class="purpose"><strong>Purpose:</strong> Wide current-state view of the <strong>master record</strong>. Reads exclusively from <code>port.master_value</code> (gold layer). Column names match <code>ports_detail.json</code> field paths. Also JOINs <code>port.location</code> for coordinates and geometry. Refreshed CONCURRENTLY via <code>registry.refresh_all_current_views()</code>. Serves the port detail panel, GIS map layer, and PSC analytics pages. For vendor comparison, query <code>port.attr_value</code> directly.</div>
+  <div class="mv-box">
+    <h4>port.v_current Column Groups (pivoted from master_value using CASE WHEN attr_key = '...' THEN ...)</h4>
+    <div class="mv-col-group">
+      <strong>Identity (ports_detail.json: name, fullName, country, region, type, status, mou)</strong>
+      <div class="mv-cols">
+        <span>name</span> = port_name &nbsp;·&nbsp; <span>full_name</span> = port_full_name &nbsp;·&nbsp; <span>country</span> &nbsp;·&nbsp; <span>region</span> &nbsp;·&nbsp; <span>type</span> = port_type &nbsp;·&nbsp; <span>status</span> = port_status &nbsp;·&nbsp; <span>mou</span> = psc_mou &nbsp;·&nbsp; <span>wpi</span> = wpi_number &nbsp;·&nbsp; <span>authority</span> = port_authority &nbsp;·&nbsp; <span>established</span> = year_established &nbsp;·&nbsp; <span>eca_zone</span> &nbsp;·&nbsp; <span>seca_zone</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Channel Limits (ports_detail.json: channel.maxDraft, maxLoa, maxBeam, nightEntry)</strong>
+      <div class="mv-cols">
+        <span>ch_max_draft_m</span> &nbsp;·&nbsp; <span>ch_max_loa_m</span> &nbsp;·&nbsp; <span>ch_max_beam_m</span> &nbsp;·&nbsp; <span>ch_max_dwt</span> &nbsp;·&nbsp; <span>ch_max_air_draft_m</span> &nbsp;·&nbsp; <span>night_entry</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Berths (ports_detail.json: berths.count, maxLoa, maxDraft)</strong>
+      <div class="mv-cols">
+        <span>berth_count</span> &nbsp;·&nbsp; <span>berth_max_loa_m</span> &nbsp;·&nbsp; <span>berth_max_draft_m</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Services (ports_detail.json: services.*)</strong>
+      <div class="mv-cols">
+        <span>pilotage</span> &nbsp;·&nbsp; <span>pilotage_compulsory</span> &nbsp;·&nbsp; <span>towage</span> &nbsp;·&nbsp; <span>tugs</span> = tug_count &nbsp;·&nbsp; <span>freshwater</span> &nbsp;·&nbsp; <span>drydock</span> &nbsp;·&nbsp; <span>drydock_count</span> &nbsp;·&nbsp; <span>vts</span> = vts_available
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Bunkering (ports_detail.json: bunker.*)</strong>
+      <div class="mv-cols">
+        <span>bunker_available</span> &nbsp;·&nbsp; <span>bunker_hfo</span> &nbsp;·&nbsp; <span>bunker_vlsfo</span> &nbsp;·&nbsp; <span>bunker_mgo</span> &nbsp;·&nbsp; <span>bunker_lng</span> &nbsp;·&nbsp; <span>bunker_methanol</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Traffic &amp; Congestion (ports_detail.json: traffic.*, congestion.*)</strong>
+      <div class="mv-cols">
+        <span>annual_calls</span> &nbsp;·&nbsp; <span>annual_cargo</span> = annual_cargo_mt &nbsp;·&nbsp; <span>teu</span> = annual_teu &nbsp;·&nbsp; <span>world_rank</span> &nbsp;·&nbsp; <span>avg_waiting_hrs</span> &nbsp;·&nbsp; <span>avg_turnaround_hrs</span> &nbsp;·&nbsp; <span>congestion_risk</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>PSC Record (ports_detail.json: psc.*)</strong>
+      <div class="mv-cols">
+        <span>psc_total_insp</span> &nbsp;·&nbsp; <span>psc_detentions</span> &nbsp;·&nbsp; <span>psc_det_rate_pct</span> &nbsp;·&nbsp; <span>psc_avg_def</span>
+      </div>
+    </div>
+    <div class="mv-col-group">
+      <strong>Location (from port.location JOIN)</strong>
+      <div class="mv-cols">
+        <span>latitude</span> &nbsp;·&nbsp; <span>longitude</span> &nbsp;·&nbsp; <span>geom</span> &nbsp;·&nbsp; <span>timezone</span> &nbsp;·&nbsp; <span>utc_offset</span> &nbsp;·&nbsp; <span>coastline</span>
+      </div>
+    </div>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on port.v_current</h4>
+    <div class="idx-row"><span class="idx-name">UNIQUE (unlocode)</span><span class="idx-def">— enables CONCURRENT refresh</span></div>
+    <div class="idx-row"><span class="idx-name">(country)</span><span class="idx-def">— country filter</span></div>
+    <div class="idx-row"><span class="idx-name">(mou)</span><span class="idx-def">— MOU region filter</span></div>
+    <div class="idx-row"><span class="idx-name">(type)</span><span class="idx-def">— port type filter</span></div>
+    <div class="idx-row"><span class="idx-name">GIST (geom)</span><span class="idx-def">— spatial queries (nearby vessels, zone containment)</span></div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — port Schema (silver → gold → v_current)</h4>
+    <svg width="900" height="460" viewBox="0 0 900 460" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- port.entity -->
+      <g>
+        <rect x="340" y="170" width="210" height="90" rx="6" fill="#1A2040" stroke="#60A5FA" stroke-width="2"/>
+        <rect x="340" y="170" width="210" height="26" rx="6" fill="#60A5FA" fill-opacity=".2"/>
+        <text x="445" y="188" text-anchor="middle" fill="#60A5FA" font-weight="700" font-size="12">port.entity</text>
+        <text x="350" y="211" fill="#FF9900" font-size="9">PK</text><text x="370" y="211" fill="#93B8D8">unlocode VARCHAR(5)</text>
+        <text x="350" y="225" fill="#60A5FA" font-size="9">FK</text><text x="370" y="225" fill="#93B8D8">first_source_id</text>
+        <text x="350" y="239" fill="#93B8D8" font-size="9">   created_at, first_seen_at</text>
+      </g>
+      <!-- port.attr_value (silver) -->
+      <g>
+        <rect x="20" y="140" width="220" height="135" rx="6" fill="#1A2040" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="20" y="140" width="220" height="26" rx="6" fill="#FB923C" fill-opacity=".12"/>
+        <text x="130" y="158" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">port.attr_value  (silver)</text>
+        <text x="30" y="180" fill="#FF9900" font-size="9">PK</text><text x="50" y="180" fill="#93B8D8">av_id BIGSERIAL</text>
+        <text x="30" y="194" fill="#60A5FA" font-size="9">FK</text><text x="50" y="194" fill="#93B8D8">unlocode / source_id</text>
+        <text x="30" y="208" fill="#93B8D8" font-size="9">   value columns · bi-temporal</text>
+        <text x="30" y="222" fill="#93B8D8" font-size="9">   workflow_state (QC only)</text>
+        <text x="30" y="236" fill="#F87171" font-size="9">   INSERT-ONLY · 4 partitions</text>
+        <text x="30" y="250" fill="#FB923C" font-size="9">   Vendor data — does NOT drive UI</text>
+      </g>
+      <!-- port.master_value (gold) -->
+      <g>
+        <rect x="20" y="320" width="220" height="120" rx="6" fill="#1A2040" stroke="#FFD700" stroke-width="1.5"/>
+        <rect x="20" y="320" width="220" height="26" rx="6" fill="#FFD700" fill-opacity=".1"/>
+        <text x="130" y="338" text-anchor="middle" fill="#FFD700" font-weight="700" font-size="11">port.master_value  (gold)</text>
+        <text x="30" y="360" fill="#FF9900" font-size="9">PK</text><text x="50" y="360" fill="#93B8D8">mv_id BIGSERIAL</text>
+        <text x="30" y="374" fill="#60A5FA" font-size="9">FK</text><text x="50" y="374" fill="#93B8D8">unlocode / pr_id / draft_id</text>
+        <text x="30" y="388" fill="#93B8D8" font-size="9">   entry_type CK · bi-temporal</text>
+        <text x="30" y="402" fill="#F87171" font-size="9">   INSERT-ONLY · 4 partitions</text>
+        <text x="30" y="416" fill="#FFD700" font-size="9">   workflow_state=APPROVED → v_current</text>
+      </g>
+      <!-- port.location -->
+      <g>
+        <rect x="660" y="140" width="220" height="135" rx="6" fill="#1A2040" stroke="#34D399" stroke-width="1.5"/>
+        <rect x="660" y="140" width="220" height="26" rx="6" fill="#34D399" fill-opacity=".12"/>
+        <text x="770" y="158" text-anchor="middle" fill="#34D399" font-weight="700" font-size="11">port.location</text>
+        <text x="670" y="180" fill="#FF9900" font-size="9">PK</text><text x="690" y="180" fill="#93B8D8">unlocode FK (1:1 entity)</text>
+        <text x="670" y="194" fill="#93B8D8" font-size="9">   geom GEOMETRY(Point,4326) ←GIST</text>
+        <text x="670" y="208" fill="#FB923C" font-size="9">GEN</text><text x="700" y="208" fill="#93B8D8">lat/lon STORED</text>
+        <text x="670" y="222" fill="#93B8D8" font-size="9">   timezone / utc_offset</text>
+        <text x="670" y="236" fill="#93B8D8" font-size="9">   coastline TEXT</text>
+        <text x="670" y="250" fill="#93B8D8" font-size="9">   valid_from DATE / updated_at</text>
+      </g>
+      <!-- port.raw_ingest -->
+      <g>
+        <rect x="340" y="320" width="210" height="60" rx="6" fill="#1A2040" stroke="#FB923C" stroke-width="1"/>
+        <text x="445" y="340" text-anchor="middle" fill="#FB923C" font-size="11" font-weight="700">port.raw_ingest</text>
+        <text x="350" y="358" fill="#93B8D8" font-size="9">   raw_payload JSONB · 4 partitions</text>
+        <text x="350" y="372" fill="#60A5FA" font-size="9">FK</text><text x="370" y="372" fill="#93B8D8">feed_id + run_id</text>
+      </g>
+      <!-- port.v_current -->
+      <g>
+        <rect x="340" y="20" width="210" height="90" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="445" y="38" text-anchor="middle" fill="#4A9EFF" font-size="11" font-weight="700">port.v_current (MAT VIEW)</text>
+        <text x="350" y="55" fill="#93B8D8" font-size="9">   Reads from master_value (gold)</text>
+        <text x="350" y="69" fill="#93B8D8" font-size="9">   + lat/lon/geom from location</text>
+        <text x="350" y="83" fill="#4A9EFF" font-size="9">   UNIQUE(unlocode) · GIST(geom)</text>
+      </g>
+      <!-- Arrows -->
+      <line x1="240" y1="210" x2="340" y2="210" stroke="#FB923C" stroke-width="1.5" marker-end="url(#arrP)"/>
+      <line x1="660" y1="210" x2="550" y2="210" stroke="#34D399" stroke-width="1.5" marker-end="url(#arrP)"/>
+      <line x1="445" y1="320" x2="445" y2="260" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrP)"/>
+      <!-- master_value → entity -->
+      <line x1="240" y1="375" x2="340" y2="260" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="5,2" marker-end="url(#arrP)"/>
+      <!-- master_value → v_current -->
+      <line x1="130" y1="320" x2="130" y2="110" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrP)"/>
+      <!-- v_current + location -->
+      <line x1="660" y1="165" x2="550" y2="55" stroke="#4A9EFF" stroke-width="1" stroke-dasharray="4,2"/>
+      <defs>
+        <marker id="arrP" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#60A5FA" opacity=".8"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_vessel.html">← Vessel Schema</a>
+    <a class="nav-btn btn-pri" href="schema_company.html">Next: Company Schema →</a>
+  </div>
+</div>
+</body>
+</html>

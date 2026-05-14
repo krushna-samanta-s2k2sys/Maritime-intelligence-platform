@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform Schemas (workflow, audit, ui, auth) — Maritime DB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0D1F3C;color:#E8EEF8;min-height:100vh}
+.topbar{background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 32px;display:flex;align-items:center;gap:16px}
+.topbar a{color:#8AACCC;font-size:11px;text-decoration:none;font-weight:500}.topbar a:hover{color:#fff}
+.sep{color:#3A5070}
+.hero{background:linear-gradient(135deg,#0D1F3C,#1A2F52);padding:36px 40px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.18em;color:#4A9EFF;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+h1 span{color:#4A9EFF}
+.sub{font-size:13px;color:#7A9CBB;line-height:1.6;max-width:700px}
+.main{max-width:1200px;margin:0 auto;padding:32px}
+.schema-section{margin-bottom:40px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 10px;font-size:10px;font-weight:600;color:#8AACCC;font-family:'JetBrains Mono',monospace}
+h2{font-size:20px;font-weight:700;color:#fff;margin:32px 0 16px;display:flex;align-items:center;gap:10px}
+h2 .sc{font-size:11px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;color:#93B8D8}
+h2::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);margin-left:8px}
+h3{font-size:14px;font-weight:700;color:#93B8D8;margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:rgba(255,255,255,.06);color:#7A9CBB;font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:9px 14px;color:#C8D8EC;vertical-align:top;line-height:1.5}
+td.col{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#93B8D8;font-weight:600}
+td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
+.pk{font-size:9px;font-weight:700;background:rgba(255,153,0,.15);color:#FF9900;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.fk{font-size:9px;font-weight:700;background:rgba(74,158,255,.15);color:#60A5FA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.uq{font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:#34D399;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.ck{font-size:9px;font-weight:700;background:rgba(167,139,250,.15);color:#A78BFA;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.rl{font-size:9px;font-weight:700;background:rgba(248,113,113,.15);color:#F87171;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.cc{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.purpose{background:rgba(255,255,255,.03);border-left:3px solid #4A9EFF;border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8AACCC;line-height:1.6}
+.purpose strong{color:#fff}
+.rule-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:12px 16px;font-size:11.5px;color:#FCA5A5;margin:8px 0 16px;font-family:'JetBrains Mono',monospace}
+.rule-box strong{color:#F87171}
+.idx-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px;margin-top:8px;margin-bottom:20px}
+.idx-section h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.idx-row{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;margin-bottom:4px}
+.idx-name{font-family:'JetBrains Mono',monospace;color:#60A5FA;min-width:220px;flex-shrink:0}
+.idx-def{color:#7A9CBB}
+.er-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px;margin:24px 0;overflow-x:auto}
+.er-wrap h4{font-size:11px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px}
+.nav-row{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:all .18s}
+.btn-pri{background:#4A9EFF;color:#000}.btn-pri:hover{background:#60B4FF}
+.btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}.btn-sec:hover{background:rgba(255,255,255,.12)}
+.fk-chain{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px;margin-bottom:20px}
+.fk-chain h4{font-size:10px;font-weight:700;color:#5A7AAA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.fk-item{font-size:11px;color:#8AACCC;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace}
+.fk-item span{color:#60A5FA}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../aws_index.html">AWS Hub</a><span class="sep">/</span>
+  <a href="index.html">DB Schema Docs</a><span class="sep">/</span>
+  <span style="color:#fff">Platform Schemas</span>
+  <div style="margin-left:auto;display:flex;gap:12px">
+    <a href="schema_registry.html">← Registry</a>
+    <a href="schema_vessel.html">Next: Vessel →</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Schema Documentation · Platform Layer</div>
+  <h1>Platform <span>Schemas</span></h1>
+  <p class="sub">Four supporting schemas that govern the human layer of the platform: <strong>workflow</strong> (promotion gate, edit drafts &amp; approvals), <strong>audit</strong> (immutable change log), <strong>ui</strong> (personas, saved filters, dashboard layouts) and <strong>auth</strong> (users, roles, RBAC permissions).</p>
+</div>
+
+<div class="main">
+
+  <div class="badge-row">
+    <span class="badge">4 schemas</span>
+    <span class="badge">13 tables</span>
+    <span class="badge">audit insert-only (RULE)</span>
+    <span class="badge">personas.json seeded to ui.persona</span>
+    <span class="badge">RBAC via auth.permission</span>
+  </div>
+
+  <!-- ═══════ workflow ═══════ -->
+  <h2><span class="sc">workflow</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Human-in-the-loop approvals &amp; edit drafts</span></h2>
+
+  <h3>workflow.promotion_request</h3>
+  <div class="purpose"><strong>Purpose:</strong> The explicit promotion gate between the vendor layer (<code>*.attr_value</code>) and the master layer (<code>*.master_value</code>). The ETL pipeline creates a <strong>PENDING</strong> request for every new or changed vendor value that diverges from the current master. Conflict resolution and manual triggers also route through here. <strong>No value enters <code>*.master_value</code> without an APPROVED promotion_request</strong> (vendor path) or an APPROVED edit_draft (manual/backdated path). The sole exception is sources where <code>registry.source_attr_weight.auto_promote_to_master = TRUE</code>, which allows programmatic approval.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">pr_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">entity_type / entity_id</td><td class="typ">VARCHAR(30) / TEXT</td><td>NOT NULL</td><td>—</td><td>Entity whose attribute is being proposed for master (e.g. 'vessel' / '9234567')</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute is being promoted</td></tr>
+        <tr><td class="col">av_id</td><td class="typ">BIGINT</td><td>NOT NULL</td><td>—</td><td>The vendor <code>*.attr_value.av_id</code> being proposed. No FK constraint — cross-partition table reference.</td></tr>
+        <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Vendor that supplied the candidate value</td></tr>
+        <tr><td class="col">candidate_value</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Denormalised value snapshot for the review UI — avoids a cross-partition join during review</td></tr>
+        <tr><td class="col">confidence</td><td class="typ">NUMERIC(4,3)</td><td>NULLABLE</td><td>NULL</td><td>Composite confidence score computed from <code>source_attr_weight</code> + <code>attr_source_preference</code> at creation time</td></tr>
+        <tr><td class="col">trigger_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>NEW_VALUE | CHANGED_VALUE | CONFLICT_RESOLVED | MANUAL_TRIGGER</td></tr>
+        <tr><td class="col">cq_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→ingest.conflict_queue</span></div></td><td>NULL</td><td>Run-level conflict that triggered this request (if trigger_type = CONFLICT_RESOLVED)</td></tr>
+        <tr><td class="col">wf_conflict_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.conflict</span></div></td><td>NULL</td><td>Persistent workflow conflict that triggered this request</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→workflow.edit_draft</span></div></td><td>NULL</td><td>Linked edit draft (for manual or backdated entries that also create a promotion request)</td></tr>
+        <tr><td class="col">state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | APPROVED | REJECTED | SUPERSEDED | WITHDRAWN</td></tr>
+        <tr><td class="col">reviewed_by</td><td class="typ">INTEGER</td><td>NULLABLE</td><td>NULL</td><td>auth.app_user.user_id — no FK (auth schema defined later in DDL)</td></tr>
+        <tr><td class="col">reviewed_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>When the review decision was made</td></tr>
+        <tr><td class="col">rejection_note</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Reviewer's reason for rejection (required when state = REJECTED)</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When this promotion request was created by the pipeline or user</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on workflow.promotion_request</h4>
+    <div class="idx-row"><span class="idx-name">idx_pr_entity</span><span class="idx-def">(entity_type, entity_id, attr_id) WHERE state='PENDING' — pending review queue per entity</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pr_pending</span><span class="idx-def">(created_at DESC) WHERE state='PENDING' — global pending queue ordered by age</span></div>
+    <div class="idx-row"><span class="idx-name">idx_pr_source</span><span class="idx-def">(source_id, state) — filter queue by vendor source</span></div>
+  </div>
+
+  <h3>workflow.conflict</h3>
+  <div class="purpose"><strong>Purpose:</strong> Human-raised data conflicts (analyst notices inconsistency between sources). Separate from machine-detected ingest.conflict_queue — these are raised manually and require human resolution. When resolved, the chosen value triggers a <code>workflow.promotion_request</code> (trigger_type = CONFLICT_RESOLVED) rather than writing directly to master. Linked to auth.app_user via deferred FKs added after auth schema is created.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">conflict_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">entity_type / entity_id</td><td class="typ">VARCHAR(30) / TEXT</td><td>NOT NULL</td><td>—</td><td>Entity with the conflict (e.g. 'vessel' / '9234567')</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute is in dispute</td></tr>
+        <tr><td class="col">source_a_id / value_a</td><td class="typ">SMALLINT / TEXT</td><td><div class="cc"><span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>First source and its reported value</td></tr>
+        <tr><td class="col">source_b_id / value_b</td><td class="typ">SMALLINT / TEXT</td><td><div class="cc"><span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Second source and its reported value</td></tr>
+        <tr><td class="col">detected_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When the conflict was first noticed</td></tr>
+        <tr><td class="col">resolved_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>NULL = still open; SET when resolved</td></tr>
+        <tr><td class="col">resolved_by</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>User who resolved the conflict (FK added via ALTER TABLE after auth schema created)</td></tr>
+        <tr><td class="col">resolution</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NULLABLE <span class="ck">CHECK</span></div></td><td>NULL</td><td>ACCEPTED_A | ACCEPTED_B | MANUAL | DEFERRED</td></tr>
+        <tr><td class="col">notes</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Resolution notes or justification</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Index</h4>
+    <div class="idx-row"><span class="idx-name">idx_conflict_entity</span><span class="idx-def">(entity_type, entity_id, attr_id) WHERE resolved_at IS NULL — open conflict queue</span></div>
+  </div>
+
+  <h3>workflow.edit_draft</h3>
+  <div class="purpose"><strong>Purpose:</strong> Analyst-proposed manual or backdated value changes that require approval. Supports the 4-state approval machine: PENDING → APPROVED/REJECTED or WITHDRAWN. When APPROVED, the pipeline writes the value to <code>*.attr_value</code> (source_type='MANUAL') <em>and</em> directly to <code>*.master_value</code> (entry_type = MANUAL_ENTRY or BACKDATED) — bypassing the promotion_request gate because the human reviewer <em>is</em> the approver.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">draft_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key; referenced by attr_value.draft_id for traceability</td></tr>
+        <tr><td class="col">entity_type / entity_id</td><td class="typ">VARCHAR(30) / TEXT</td><td>NOT NULL</td><td>—</td><td>Entity being edited</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Attribute being changed</td></tr>
+        <tr><td class="col">draft_value</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Proposed new value (serialized as text regardless of data_type)</td></tr>
+        <tr><td class="col">draft_note</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Analyst's justification for the proposed change</td></tr>
+        <tr><td class="col">state</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | APPROVED | REJECTED | WITHDRAWN</td></tr>
+        <tr><td class="col">created_by</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>Analyst who created the draft</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Draft creation timestamp</td></tr>
+        <tr><td class="col">reviewed_by</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>Approver/rejector</td></tr>
+        <tr><td class="col">reviewed_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>When the review decision was made</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>workflow.draft_transition</h3>
+  <div class="purpose"><strong>Purpose:</strong> Immutable state transition log for edit drafts. Each state change (PENDING→APPROVED, PENDING→REJECTED, etc.) adds one row. Enables full audit trail of the approval workflow.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">transition_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">draft_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→edit_draft</span></div></td><td>—</td><td>Draft being transitioned</td></tr>
+        <tr><td class="col">from_state</td><td class="typ">VARCHAR(20)</td><td>NULLABLE</td><td>NULL</td><td>Previous state (NULL for initial creation)</td></tr>
+        <tr><td class="col">to_state</td><td class="typ">VARCHAR(20)</td><td>NOT NULL</td><td>—</td><td>New state</td></tr>
+        <tr><td class="col">actor_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>User who triggered the transition</td></tr>
+        <tr><td class="col">reason</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Transition reason / rejection note</td></tr>
+        <tr><td class="col">transitioned_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Transition timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════ audit ═══════ -->
+  <h2><span class="sc">audit</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Immutable change log</span></h2>
+
+  <h3>audit.change_log</h3>
+  <div class="purpose"><strong>Purpose:</strong> Every data change across all entities is written here. Immutable by PostgreSQL RULE — UPDATE and DELETE are silently suppressed. Used for regulatory audit trails, change history display in vessel/port/company detail panels, and forensic investigation.</div>
+  <div class="rule-box">
+    <strong>INSERT-ONLY RULES:</strong><br>
+    CREATE RULE audit_no_update AS ON UPDATE TO audit.change_log DO INSTEAD NOTHING;<br>
+    CREATE RULE audit_no_delete AS ON DELETE TO audit.change_log DO INSTEAD NOTHING;
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">log_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Monotonically increasing log entry ID</td></tr>
+        <tr><td class="col">entity_type / entity_id</td><td class="typ">VARCHAR(30) / TEXT</td><td>NOT NULL</td><td>—</td><td>Entity affected by the change</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.attribute_def</span></div></td><td>NULL</td><td>Attribute changed (NULL for entity-level events)</td></tr>
+        <tr><td class="col">operation</td><td class="typ">VARCHAR(10)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>INSERT | UPDATE | DELETE | APPROVE | REJECT</td></tr>
+        <tr><td class="col">old_value / new_value</td><td class="typ">JSONB</td><td>NULLABLE</td><td>NULL</td><td>Full value snapshot before/after the change (typed JSONB for queryability)</td></tr>
+        <tr><td class="col">actor_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>User who made the change (NULL for automated pipeline changes)</td></tr>
+        <tr><td class="col">actor_source</td><td class="typ">VARCHAR(30)</td><td>NULLABLE</td><td>NULL</td><td>Source code for automated changes (e.g. 'AIS_ORBCOMM', 'IHS_SEAWEB')</td></tr>
+        <tr><td class="col">source_ref</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>External reference (run_id, S3 path, API call ID)</td></tr>
+        <tr><td class="col">logged_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Immutable timestamp (cannot be changed by RULE)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="idx-section">
+    <h4>Indexes on audit.change_log</h4>
+    <div class="idx-row"><span class="idx-name">idx_audit_entity</span><span class="idx-def">(entity_type, entity_id, logged_at DESC) — change history per entity</span></div>
+    <div class="idx-row"><span class="idx-name">idx_audit_attr</span><span class="idx-def">(attr_id, logged_at DESC) — change history per attribute</span></div>
+  </div>
+
+  <!-- ═══════ ui ═══════ -->
+  <h2><span class="sc">ui</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Personas, saved filters, dashboard layouts</span></h2>
+
+  <h3>ui.persona</h3>
+  <div class="purpose"><strong>Purpose:</strong> Stores pre-configured user personas. Seeded from personas.json (Cargo Analyst, Fleet Manager, Port Operator, Compliance Officer, etc.). The persona_key exactly matches the JSON "id" field. attr_sections, vessel_columns and dashboard_cards arrays drive the entire UI layout for each persona type.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">persona_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key; referenced by ui.persona_attr_config, ui.saved_filter, ui.dashboard_layout, auth.app_user</td></tr>
+        <tr><td class="col">persona_key</td><td class="typ">VARCHAR(60)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>Machine key matching personas.json "id" (e.g. 'cargo_analyst', 'port_ops')</td></tr>
+        <tr><td class="col">label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Display name: 'Cargo Analyst', 'Fleet Manager'</td></tr>
+        <tr><td class="col">description</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Persona description shown in onboarding/settings</td></tr>
+        <tr><td class="col">icon</td><td class="typ">VARCHAR(10)</td><td>NULLABLE</td><td>NULL</td><td>Emoji icon from personas.json (e.g. '📦', '🏭')</td></tr>
+        <tr><td class="col">color</td><td class="typ">VARCHAR(7)</td><td>NULLABLE</td><td>NULL</td><td>Hex accent color from personas.json (e.g. '#1558d6')</td></tr>
+        <tr><td class="col">attr_sections</td><td class="typ">TEXT[]</td><td>NOT NULL</td><td>'{}'</td><td>Ordered array of section IDs visible in attribute panel for this persona</td></tr>
+        <tr><td class="col">vessel_columns</td><td class="typ">TEXT[]</td><td>NOT NULL</td><td>'{}'</td><td>Ordered short column IDs (COL_ID_MAP values) for the vessel list table</td></tr>
+        <tr><td class="col">dashboard_cards</td><td class="typ">JSONB</td><td>NOT NULL</td><td>'[]'</td><td>Array of {card_id, width} objects defining dashboard layout. Mirrors personas.json "dashboard_cards"</td></tr>
+        <tr><td class="col">default_filters</td><td class="typ">JSONB</td><td>NOT NULL</td><td>'[]'</td><td>Pre-applied filters when persona is activated</td></tr>
+        <tr><td class="col">is_system</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>TRUE = seeded system persona (cannot be deleted by users)</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Row creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>ui.persona_attr_config</h3>
+  <div class="purpose"><strong>Purpose:</strong> Fine-grained per-persona attribute visibility overrides. Optional — if a persona row doesn't exist here for an attribute, the attribute_def.is_column / is_filterable defaults apply. Allows persona-specific column ordering.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">persona_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→ui.persona</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">is_visible</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Whether this attribute column/filter is shown for this persona</td></tr>
+        <tr><td class="col">column_order</td><td class="typ">SMALLINT</td><td>NULLABLE</td><td>NULL</td><td>Override column position (if persona needs different order from default)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>ui.saved_filter</h3>
+  <div class="purpose"><strong>Purpose:</strong> User-saved filter presets for quick recall. Can be personal (user_id set, is_shared=FALSE) or shared across a persona (is_shared=TRUE). filter_json stores the full filter state as a JSON object matching the applyFilters() format.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">filter_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">user_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>Owner user (NULL for shared/system presets)</td></tr>
+        <tr><td class="col">persona_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→ui.persona</span></div></td><td>NULL</td><td>Persona context for this filter preset</td></tr>
+        <tr><td class="col">entity_type</td><td class="typ">VARCHAR(30)</td><td>NOT NULL</td><td>'vessel'</td><td>Entity type the filter applies to</td></tr>
+        <tr><td class="col">label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>User-defined name for the saved filter</td></tr>
+        <tr><td class="col">filter_json</td><td class="typ">JSONB</td><td>NOT NULL</td><td>—</td><td>Complete filter state object (keys match filter_field values in attribute_def)</td></tr>
+        <tr><td class="col">is_shared</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>FALSE</td><td>Whether visible to all users with the same persona</td></tr>
+        <tr><td class="col">created_at / updated_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>Audit timestamps</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>ui.dashboard_layout</h3>
+  <div class="purpose"><strong>Purpose:</strong> Per-user dashboard card arrangement overrides. When user_id is NULL, it represents the persona default layout (seeded from dashboard_cards.json). User overrides have user_id set. card_id matches dashboard_cards.json "card_id" values.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">layout_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">user_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→auth.app_user</span></div></td><td>NULL</td><td>NULL = persona default layout; SET = user override</td></tr>
+        <tr><td class="col">persona_id</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→ui.persona</span></div></td><td>NULL</td><td>Persona this layout applies to</td></tr>
+        <tr><td class="col">card_id</td><td class="typ">VARCHAR(60)</td><td>NOT NULL</td><td>—</td><td>Dashboard card identifier (matches dashboard_cards.json "card_id")</td></tr>
+        <tr><td class="col">col_span</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>4</td><td>Card width in 12-column grid (4=33%, 6=50%, 12=100%)</td></tr>
+        <tr><td class="col">row_order</td><td class="typ">SMALLINT</td><td>NOT NULL</td><td>0</td><td>Vertical ordering of cards within the dashboard</td></tr>
+        <tr><td class="col">is_visible</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Allow users to hide individual cards without deleting the layout row</td></tr>
+        <tr><td class="col">— </td><td class="typ">—</td><td><div class="cc"><span class="uq">UNIQUE(user_id, persona_id, card_id)</span></div></td><td>—</td><td>One layout row per user+persona+card combination</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════ auth ═══════ -->
+  <h2><span class="sc">auth</span> Schema <span style="font-size:13px;color:#7A9CBB;font-weight:400">Users, roles &amp; RBAC permissions</span></h2>
+
+  <h3>auth.app_user</h3>
+  <div class="purpose"><strong>Purpose:</strong> Application user registry. Integrates with SSO (Okta / AWS Cognito) — email is the primary identity. default_persona drives the UI layout on first login. Referenced by workflow, audit and ui schemas via deferred FK constraints.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">user_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Internal user ID; referenced throughout platform schemas</td></tr>
+        <tr><td class="col">email</td><td class="typ">VARCHAR(255)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>SSO email address (primary identity)</td></tr>
+        <tr><td class="col">display_name</td><td class="typ">VARCHAR(120)</td><td>NULLABLE</td><td>NULL</td><td>Full name for display in audit trail and workflow UI</td></tr>
+        <tr><td class="col">default_persona</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→ui.persona</span></div></td><td>NULL</td><td>Persona applied on login (NULL = system picks 'default' persona)</td></tr>
+        <tr><td class="col">is_active</td><td class="typ">BOOLEAN</td><td>NOT NULL</td><td>TRUE</td><td>Soft-deactivation (deprovisioned users retain audit history)</td></tr>
+        <tr><td class="col">last_login_at</td><td class="typ">TIMESTAMPTZ</td><td>NULLABLE</td><td>NULL</td><td>Last successful login timestamp</td></tr>
+        <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>User creation timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>auth.role</h3>
+  <div class="purpose"><strong>Purpose:</strong> Named roles for RBAC. Examples: 'admin', 'analyst', 'compliance_officer', 'read_only'. Each role has one or more permissions in auth.permission.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">role_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">role_key</td><td class="typ">VARCHAR(60)</td><td><div class="cc">NOT NULL <span class="uq">UNIQUE</span></div></td><td>—</td><td>Machine key: 'admin', 'analyst', 'compliance_officer'</td></tr>
+        <tr><td class="col">label</td><td class="typ">VARCHAR(120)</td><td>NOT NULL</td><td>—</td><td>Human-readable role name</td></tr>
+        <tr><td class="col">description</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Role description</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>auth.user_role</h3>
+  <div class="purpose"><strong>Purpose:</strong> Many-to-many assignment of roles to users. A user can have multiple roles (e.g. analyst + compliance_officer).</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">user_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→app_user</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">role_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→role</span></div></td><td>—</td><td>Composite PK component</td></tr>
+        <tr><td class="col">granted_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When the role was assigned</td></tr>
+        <tr><td class="col">granted_by</td><td class="typ">INTEGER</td><td><div class="cc">NULLABLE <span class="fk">FK→app_user</span></div></td><td>NULL</td><td>Admin who granted the role</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>auth.permission</h3>
+  <div class="purpose"><strong>Purpose:</strong> Role-to-resource action grants. Resource is a logical name (e.g. 'vessel_data', 'psc_records', 'fixtures', 'admin_settings'). Action is READ | WRITE | APPROVE | ADMIN. The API layer checks these before serving or mutating data.</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="col">permission_id</td><td class="typ">SERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key</td></tr>
+        <tr><td class="col">role_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→role</span></div></td><td>—</td><td>Role being granted the permission</td></tr>
+        <tr><td class="col">resource</td><td class="typ">VARCHAR(60)</td><td>NOT NULL</td><td>—</td><td>Protected resource (e.g. 'vessel_data', 'psc_records', 'market_fixtures')</td></tr>
+        <tr><td class="col">action</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>READ | WRITE | APPROVE | ADMIN</td></tr>
+        <tr><td class="col">—</td><td class="typ">—</td><td><div class="cc"><span class="uq">UNIQUE(role_id, resource, action)</span></div></td><td>—</td><td>No duplicate grants</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Cross-schema FK chain -->
+  <div class="fk-chain">
+    <h4>Cross-Schema FK Chain (added via ALTER TABLE after auth schema is created)</h4>
+    <div class="fk-item">workflow.promotion_request.reviewed_by → <span>auth.app_user(user_id)</span> (no FK — schema ordering; enforced at app layer)</div>
+    <div class="fk-item">workflow.conflict.resolved_by → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">workflow.edit_draft.created_by → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">workflow.edit_draft.reviewed_by → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">workflow.draft_transition.actor_id → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">*.master_value.entered_by / approved_by → <span>auth.app_user(user_id)</span> (no FK — schema ordering)</div>
+    <div class="fk-item">vessel.attr_source_preference.set_by → <span>auth.app_user(user_id)</span> (no FK — schema ordering)</div>
+    <div class="fk-item">audit.change_log.actor_id → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">ui.saved_filter.user_id → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">ui.dashboard_layout.user_id → <span>auth.app_user(user_id)</span></div>
+    <div class="fk-item">auth.app_user.default_persona → <span>ui.persona(persona_id)</span> (circular — app_user references persona which is in a schema above)</div>
+  </div>
+
+  <!-- ER Diagram -->
+  <div class="er-wrap">
+    <h4>Entity-Relationship Diagram — Platform Schemas (workflow · audit · ui · auth)</h4>
+    <svg width="900" height="520" viewBox="0 0 900 520" style="font-family:'JetBrains Mono',monospace;font-size:10px">
+      <!-- auth.app_user -->
+      <g>
+        <rect x="360" y="10" width="200" height="110" rx="6" fill="#1A2F52" stroke="#4A9EFF" stroke-width="2"/>
+        <rect x="360" y="10" width="200" height="26" rx="6" fill="#4A9EFF" fill-opacity=".2"/>
+        <text x="460" y="28" text-anchor="middle" fill="#4A9EFF" font-weight="700" font-size="11">auth.app_user</text>
+        <text x="370" y="51" fill="#FF9900" font-size="9">PK</text><text x="390" y="51" fill="#93B8D8">user_id SERIAL</text>
+        <text x="370" y="65" fill="#93B8D8" font-size="9">   email VARCHAR(255) UQ</text>
+        <text x="370" y="79" fill="#93B8D8" font-size="9">   display_name VARCHAR(120)</text>
+        <text x="370" y="93" fill="#60A5FA" font-size="9">FK</text><text x="390" y="93" fill="#93B8D8">default_persona → persona</text>
+        <text x="370" y="107" fill="#93B8D8" font-size="9">   is_active, last_login_at</text>
+      </g>
+      <!-- auth.role -->
+      <g>
+        <rect x="650" y="10" width="200" height="90" rx="6" fill="#1A2F52" stroke="#34D399" stroke-width="1.5"/>
+        <rect x="650" y="10" width="200" height="26" rx="6" fill="#34D399" fill-opacity=".12"/>
+        <text x="750" y="28" text-anchor="middle" fill="#34D399" font-weight="700" font-size="11">auth.role</text>
+        <text x="660" y="51" fill="#FF9900" font-size="9">PK</text><text x="680" y="51" fill="#93B8D8">role_id SERIAL</text>
+        <text x="660" y="65" fill="#93B8D8" font-size="9">   role_key VARCHAR(60) UQ</text>
+        <text x="660" y="79" fill="#93B8D8" font-size="9">   label, description</text>
+      </g>
+      <!-- auth.user_role -->
+      <g>
+        <rect x="650" y="130" width="200" height="80" rx="6" fill="#1A2F52" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="750" y="155" text-anchor="middle" fill="#34D399" font-size="10">auth.user_role</text>
+        <text x="660" y="172" fill="#FF9900" font-size="9">PK</text><text x="680" y="172" fill="#93B8D8">user_id FK + role_id FK</text>
+        <text x="660" y="186" fill="#93B8D8" font-size="9">   granted_at, granted_by FK</text>
+      </g>
+      <!-- auth.permission -->
+      <g>
+        <rect x="650" y="240" width="200" height="90" rx="6" fill="#1A2F52" stroke="#34D399" stroke-width="1.5"/>
+        <text x="750" y="258" text-anchor="middle" fill="#34D399" font-size="10" font-weight="700">auth.permission</text>
+        <text x="660" y="274" fill="#FF9900" font-size="9">PK</text><text x="680" y="274" fill="#93B8D8">permission_id SERIAL</text>
+        <text x="660" y="288" fill="#60A5FA" font-size="9">FK</text><text x="680" y="288" fill="#93B8D8">role_id → auth.role</text>
+        <text x="660" y="302" fill="#93B8D8" font-size="9">   resource VARCHAR(60)</text>
+        <text x="660" y="316" fill="#93B8D8" font-size="9">   action CHECK (4 values)</text>
+      </g>
+      <!-- ui.persona -->
+      <g>
+        <rect x="20" y="10" width="200" height="130" rx="6" fill="#1A2F52" stroke="#A78BFA" stroke-width="1.5"/>
+        <rect x="20" y="10" width="200" height="26" rx="6" fill="#A78BFA" fill-opacity=".15"/>
+        <text x="120" y="28" text-anchor="middle" fill="#A78BFA" font-weight="700" font-size="11">ui.persona</text>
+        <text x="30" y="51" fill="#FF9900" font-size="9">PK</text><text x="50" y="51" fill="#93B8D8">persona_id SERIAL</text>
+        <text x="30" y="65" fill="#93B8D8" font-size="9">   persona_key UQ</text>
+        <text x="30" y="79" fill="#93B8D8" font-size="9">   label, icon, color</text>
+        <text x="30" y="93" fill="#93B8D8" font-size="9">   attr_sections TEXT[]</text>
+        <text x="30" y="107" fill="#93B8D8" font-size="9">   vessel_columns TEXT[]</text>
+        <text x="30" y="121" fill="#93B8D8" font-size="9">   dashboard_cards JSONB</text>
+      </g>
+      <!-- workflow.edit_draft -->
+      <g>
+        <rect x="20" y="200" width="200" height="120" rx="6" fill="#1A2F52" stroke="#FB923C" stroke-width="1.5"/>
+        <rect x="20" y="200" width="200" height="26" rx="6" fill="#FB923C" fill-opacity=".15"/>
+        <text x="120" y="218" text-anchor="middle" fill="#FB923C" font-weight="700" font-size="11">workflow.edit_draft</text>
+        <text x="30" y="240" fill="#FF9900" font-size="9">PK</text><text x="50" y="240" fill="#93B8D8">draft_id BIGSERIAL</text>
+        <text x="30" y="254" fill="#93B8D8" font-size="9">   entity_type, entity_id</text>
+        <text x="30" y="268" fill="#60A5FA" font-size="9">FK</text><text x="50" y="268" fill="#93B8D8">attr_id → attribute_def</text>
+        <text x="30" y="282" fill="#93B8D8" font-size="9">   draft_value, draft_note</text>
+        <text x="30" y="296" fill="#93B8D8" font-size="9">   state CK / created_by FK</text>
+      </g>
+      <!-- workflow.promotion_request -->
+      <g>
+        <rect x="20" y="370" width="220" height="130" rx="6" fill="#1A2F52" stroke="#34D399" stroke-width="1.5"/>
+        <rect x="20" y="370" width="220" height="26" rx="6" fill="#34D399" fill-opacity=".15"/>
+        <text x="130" y="388" text-anchor="middle" fill="#34D399" font-weight="700" font-size="10">workflow.promotion_request</text>
+        <text x="30" y="410" fill="#FF9900" font-size="9">PK</text><text x="50" y="410" fill="#93B8D8">pr_id BIGSERIAL</text>
+        <text x="30" y="424" fill="#93B8D8" font-size="9">   entity_type, entity_id</text>
+        <text x="30" y="438" fill="#60A5FA" font-size="9">FK</text><text x="50" y="438" fill="#93B8D8">attr_id · source_id · cq_id</text>
+        <text x="30" y="452" fill="#93B8D8" font-size="9">   av_id (no FK — partitioned)</text>
+        <text x="30" y="466" fill="#93B8D8" font-size="9">   trigger_type CK · state CK</text>
+        <text x="30" y="480" fill="#34D399" font-size="9">   PENDING→APPROVED→*.master_value</text>
+      </g>
+      <!-- audit.change_log -->
+      <g>
+        <rect x="250" y="200" width="200" height="120" rx="6" fill="#1A2F52" stroke="#F87171" stroke-width="1.5"/>
+        <rect x="250" y="200" width="200" height="26" rx="6" fill="#F87171" fill-opacity=".15"/>
+        <text x="350" y="218" text-anchor="middle" fill="#F87171" font-weight="700" font-size="11">audit.change_log</text>
+        <text x="260" y="240" fill="#FF9900" font-size="9">PK</text><text x="280" y="240" fill="#93B8D8">log_id BIGSERIAL</text>
+        <text x="260" y="254" fill="#93B8D8" font-size="9">   entity_type, entity_id</text>
+        <text x="260" y="268" fill="#93B8D8" font-size="9">   operation CK</text>
+        <text x="260" y="282" fill="#93B8D8" font-size="9">   old_value / new_value JSONB</text>
+        <text x="260" y="296" fill="#60A5FA" font-size="9">FK</text><text x="280" y="296" fill="#93B8D8">actor_id → app_user</text>
+        <text x="260" y="310" fill="#F87171" font-size="9">   INSERT-ONLY (RULE)</text>
+      </g>
+      <!-- Arrows -->
+      <line x1="560" y1="65" x2="650" y2="65" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <line x1="750" y1="100" x2="750" y2="130" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <line x1="750" y1="210" x2="750" y2="240" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <line x1="360" y1="65" x2="220" y2="50" stroke="#A78BFA" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <line x1="460" y1="120" x2="460" y2="200" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2"/>
+      <line x1="460" y1="120" x2="350" y2="200" stroke="#F87171" stroke-width="1" stroke-dasharray="4,2"/>
+      <line x1="120" y1="140" x2="120" y2="200" stroke="#FB923C" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <line x1="120" y1="320" x2="120" y2="370" stroke="#34D399" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+      <defs>
+        <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#60A5FA" opacity=".7"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="nav-row">
+    <a class="nav-btn btn-sec" href="schema_registry.html">← Registry &amp; Ingest</a>
+    <a class="nav-btn btn-pri" href="schema_vessel.html">Next: Vessel Schema →</a>
+  </div>
+</div>
+</body>
+</html>
