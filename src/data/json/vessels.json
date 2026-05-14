@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "vessel_id":1,
     "imo_number": "9412345",
     "mmsi_number": "240987654",
     "call_sign": "SVAZ3",
@@ -22,7 +22,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 2,
+    "vessel_id":2,
     "imo_number": "9287631",
     "mmsi_number": "566234567",
     "call_sign": "9VEC2",
@@ -44,7 +44,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": true, "crude_oil_washing": true, "inert_gas_system": true, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 3,
+    "vessel_id":3,
     "imo_number": "9534892",
     "mmsi_number": "431445566",
     "call_sign": "7JGS1",
@@ -66,7 +66,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 4,
+    "vessel_id":4,
     "imo_number": "9412340",
     "mmsi_number": "403123456",
     "call_sign": "HZGV1",
@@ -88,7 +88,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 5,
+    "vessel_id":5,
     "imo_number": "9341122",
     "mmsi_number": "352001234",
     "call_sign": "3EMR9",
@@ -110,7 +110,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 6,
+    "vessel_id":6,
     "imo_number": "9601234",
     "mmsi_number": "477881234",
     "call_sign": "VRPA1",
@@ -132,7 +132,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 7,
+    "vessel_id":7,
     "imo_number": "9188741",
     "mmsi_number": "257891234",
     "call_sign": "LNNS1",
@@ -154,7 +154,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": true, "stern_discharge": true, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 8,
+    "vessel_id":8,
     "imo_number": "9778532",
     "mmsi_number": "219001231",
     "call_sign": "OZMC1",
@@ -176,7 +176,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": "Open Loop", "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 9,
+    "vessel_id":9,
     "imo_number": "9501238",
     "mmsi_number": "311041122",
     "call_sign": "C6AB1",
@@ -198,7 +198,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 10,
+    "vessel_id":10,
     "imo_number": "9703291",
     "mmsi_number": "255803000",
     "call_sign": "CSMO1",
@@ -220,7 +220,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 11,
+    "vessel_id":11,
     "imo_number": "9241061",
     "mmsi_number": "310627000",
     "call_sign": "GBQM2",
@@ -242,7 +242,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": true, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 12,
+    "vessel_id":12,
     "imo_number": "9612988",
     "mmsi_number": "538006000",
     "call_sign": "V7PM1",
@@ -264,7 +264,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 13,
+    "vessel_id":13,
     "imo_number": "9320116",
     "mmsi_number": "205001122",
     "call_sign": "OOEN1",
@@ -286,7 +286,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": true, "crude_oil_washing": true, "inert_gas_system": true, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 14,
+    "vessel_id":14,
     "imo_number": "9680042",
     "mmsi_number": "440301122",
     "call_sign": "D7GC1",
@@ -308,7 +308,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 15,
+    "vessel_id":15,
     "imo_number": "9388021",
     "mmsi_number": "257641122",
     "call_sign": "V7NG1",
@@ -330,7 +330,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 16,
+    "vessel_id":16,
     "imo_number": "9593513",
     "mmsi_number": "259511000",
     "call_sign": "LNBT1",
@@ -352,7 +352,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": true, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 17,
+    "vessel_id":17,
     "imo_number": "9871234",
     "mmsi_number": "477111234",
     "call_sign": "BPCU1",
@@ -374,7 +374,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": "Closed Loop", "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 18,
+    "vessel_id":18,
     "imo_number": "9412888",
     "mmsi_number": "351881234",
     "call_sign": "3ESC1",
@@ -396,7 +396,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 19,
+    "vessel_id":19,
     "imo_number": "9388042",
     "mmsi_number": "211222000",
     "call_sign": "DKND1",
@@ -418,7 +418,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 20,
+    "vessel_id":20,
     "imo_number": "9450993",
     "mmsi_number": "228082000",
     "call_sign": "FNBL1",
@@ -440,7 +440,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 21,
+    "vessel_id":21,
     "imo_number": "9234567",
     "mmsi_number": "441001234",
     "call_sign": "HLKL1",
@@ -462,7 +462,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 22,
+    "vessel_id":22,
     "imo_number": "9501882",
     "mmsi_number": "538081234",
     "call_sign": "V7DB1",
@@ -484,7 +484,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 23,
+    "vessel_id":23,
     "imo_number": "9445677",
     "mmsi_number": "229001122",
     "call_sign": "SWAS1",
@@ -506,7 +506,7 @@
     "safety": { "firefighting_capacity": false, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": false, "ballast_water_mgmt_plan": false }
   },
   {
-    "id": 24,
+    "vessel_id":24,
     "imo_number": "9484948",
     "mmsi_number": "218001122",
     "call_sign": "DKBR1",
@@ -528,7 +528,7 @@
     "safety": { "firefighting_capacity": true, "bow_discharge": false, "stern_discharge": false, "crude_oil_washing": false, "inert_gas_system": false, "scrubber_type": null, "helideck": true, "ballast_water_mgmt_plan": true }
   },
   {
-    "id": 25,
+    "vessel_id":25,
     "imo_number": "9499283",
     "mmsi_number": "636018000",
     "call_sign": "A8PT1",

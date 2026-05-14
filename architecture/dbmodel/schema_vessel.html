@@ -97,12 +97,13 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
 
   <!-- entity -->
   <h3>vessel.entity</h3>
-  <div class="purpose"><strong>Purpose:</strong> Anchor table — one row per vessel. The IMO number is the primary key and the universal join key across all vessel tables. All EAV values, positions, PSC inspections, voyages and market records reference imo_number here.</div>
+  <div class="purpose"><strong>Purpose:</strong> Anchor table — one row per vessel. <code>vessel_id</code> is the internal surrogate primary key and universal join key across all vessel tables. <code>imo_number</code> is retained as a nullable unique field — vessels without an assigned IMO number (e.g. inland barges, newbuilds, non-IMO craft) are fully supported. All EAV values, positions, PSC inspections, voyages and market records reference <code>vessel_id</code>.</div>
   <div class="tbl-wrap">
     <table>
       <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><span class="pk">PK</span></td><td>—</td><td>IMO number — 7-digit international vessel identifier. Universal join key.</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc"><span class="pk">PK</span> <span class="gen">GENERATED ALWAYS AS IDENTITY</span></div></td><td>—</td><td>Internal surrogate key — platform-assigned unique identifier. Universal join key for all child tables.</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><span class="uq">UNIQUE</span> NULLABLE</td><td>NULL</td><td>7-digit IMO number. NULL for vessels without an assigned IMO (inland craft, newbuilds, non-IMO vessels). Unique when present.</td></tr>
         <tr><td class="col">created_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When vessel was first added to the platform</td></tr>
         <tr><td class="col">first_seen_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL</td><td>NOW()</td><td>When first data was received for this vessel (may differ from created_at if backdated)</td></tr>
         <tr><td class="col">first_source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NULLABLE <span class="fk">FK→registry.source_def</span></div></td><td>NULL</td><td>Data source that first reported this vessel</td></tr>
@@ -123,7 +124,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
       <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td class="col">av_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (auto-partitioned)</td></tr>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this value belongs to</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this value belongs to (references vessel.entity.vessel_id)</td></tr>
         <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute this value is for</td></tr>
         <tr><td class="col">value_text</td><td class="typ">TEXT</td><td>NULLABLE</td><td>NULL</td><td>Text value (used when attribute_def.data_type = 'text')</td></tr>
         <tr><td class="col">value_numeric</td><td class="typ">NUMERIC(20,6)</td><td>NULLABLE</td><td>NULL</td><td>Numeric value (data_type = 'numeric') — high precision for DWT, speed, etc.</td></tr>
@@ -163,8 +164,8 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
   </div>
   <div class="idx-section">
     <h4>Indexes on vessel.attr_value</h4>
-    <div class="idx-row"><span class="idx-name">idx_vav_imo_attr</span><span class="idx-def">(imo_number, attr_id) — baseline lookup per vessel+attribute</span></div>
-    <div class="idx-row"><span class="idx-name">idx_vav_current</span><span class="idx-def">(imo_number, attr_id, confidence DESC) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — current value fast path</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vav_vessel_attr</span><span class="idx-def">(vessel_id, attr_id) — baseline lookup per vessel+attribute</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vav_current</span><span class="idx-def">(vessel_id, attr_id, confidence DESC) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — current value fast path</span></div>
     <div class="idx-row"><span class="idx-name">idx_vav_run</span><span class="idx-def">(run_id) WHERE run_id IS NOT NULL — lineage query per ETL run</span></div>
   </div>
 
@@ -176,7 +177,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
       <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td class="col">mv_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span></td><td>—</td><td>Surrogate key (auto-partitioned)</td></tr>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this master value belongs to</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this master value belongs to (references vessel.entity.vessel_id)</td></tr>
         <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Which attribute this master value is for</td></tr>
         <tr><td class="col">value_text / value_numeric / value_boolean / value_date / value_json</td><td class="typ">various</td><td>NULLABLE</td><td>NULL</td><td>The approved master value in the appropriate typed column</td></tr>
         <tr><td class="col">entry_type</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>—</td><td>VENDOR_PROMOTED | MANUAL_ENTRY | BACKDATED | CONFLICT_RESOLVED — how this value entered master</td></tr>
@@ -203,8 +204,8 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
   </div>
   <div class="idx-section">
     <h4>Indexes on vessel.master_value</h4>
-    <div class="idx-row"><span class="idx-name">idx_vmv_imo_attr</span><span class="idx-def">(imo_number, attr_id) — lookup per vessel+attribute across all partitions</span></div>
-    <div class="idx-row"><span class="idx-name">idx_vmv_current</span><span class="idx-def">(imo_number, attr_id) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — v_current fast path</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vmv_vessel_attr</span><span class="idx-def">(vessel_id, attr_id) — lookup per vessel+attribute across all partitions</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vmv_current</span><span class="idx-def">(vessel_id, attr_id) WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state='APPROVED' — v_current fast path</span></div>
   </div>
 
   <!-- attr_source_preference -->
@@ -214,7 +215,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
     <table>
       <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this preference applies to</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel this preference applies to (references vessel.entity.vessel_id)</td></tr>
         <tr><td class="col">attr_id</td><td class="typ">INTEGER</td><td><div class="cc"><span class="pk">PK</span> <span class="fk">FK→registry.attribute_def</span></div></td><td>—</td><td>Attribute this preference applies to</td></tr>
         <tr><td class="col">source_id</td><td class="typ">SMALLINT</td><td><div class="cc">NOT NULL <span class="fk">FK→registry.source_def</span></div></td><td>—</td><td>Preferred vendor for this vessel+attribute</td></tr>
         <tr><td class="col">weight_override</td><td class="typ">NUMERIC(4,3)</td><td><div class="cc">NOT NULL <span class="ck">CHECK 0–1</span></div></td><td>1.0</td><td>Confidence weight to apply when scoring promotion_requests for this source+vessel+attribute</td></tr>
@@ -234,7 +235,8 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
         <tr><td class="col">raw_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span> (+ received_at)</td><td>—</td><td>Composite PK with received_at for partitioning</td></tr>
         <tr><td class="col">feed_id</td><td class="typ">INTEGER</td><td><div class="cc">NOT NULL <span class="fk">FK→ingest.feed_config</span></div></td><td>—</td><td>Which feed produced this raw payload</td></tr>
         <tr><td class="col">run_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→ingest.feed_run</span></div></td><td>—</td><td>ETL run that received this payload</td></tr>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td>NULLABLE</td><td>NULL</td><td>IMO extracted from payload (NULL if could not be parsed)</td></tr>
+        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td>NULLABLE</td><td>NULL</td><td>IMO extracted from raw payload (NULL if could not be parsed). Data field only — not a FK.</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc">NULLABLE <span class="fk">FK→vessel.entity</span></div></td><td>NULL</td><td>Resolved vessel reference — populated after the parser matches imo_number to a vessel.entity row.</td></tr>
         <tr><td class="col">received_at</td><td class="typ">TIMESTAMPTZ</td><td>NOT NULL <span class="pk">PK</span></td><td>NOW()</td><td>Partition key — exact receipt time</td></tr>
         <tr><td class="col">raw_payload</td><td class="typ">JSONB</td><td>NOT NULL</td><td>—</td><td>Full raw payload (JSON, parsed XML, or CSV row as JSON object)</td></tr>
         <tr><td class="col">parse_status</td><td class="typ">VARCHAR(20)</td><td><div class="cc">NOT NULL <span class="ck">CHECK</span></div></td><td>'PENDING'</td><td>PENDING | MAPPED | PARTIAL | REJECTED</td></tr>
@@ -263,7 +265,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
       <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td class="col">pos_id</td><td class="typ">BIGSERIAL</td><td><span class="pk">PK</span> (+ position_ts)</td><td>—</td><td>Composite PK with position_ts for partitioning</td></tr>
-        <tr><td class="col">imo_number</td><td class="typ">CHAR(7)</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel that reported this position</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">BIGINT</td><td><div class="cc">NOT NULL <span class="fk">FK→vessel.entity</span></div></td><td>—</td><td>Vessel that reported this position (references vessel.entity.vessel_id)</td></tr>
         <tr><td class="col">mmsi</td><td class="typ">CHAR(9)</td><td>NULLABLE</td><td>NULL</td><td>MMSI from AIS message (may differ from vessel.attr_value MMSI if transponder changed)</td></tr>
         <tr><td class="col">latitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc">NOT NULL <span class="ck">CHECK -90–90</span></div></td><td>—</td><td>WGS-84 latitude in decimal degrees</td></tr>
         <tr><td class="col">longitude</td><td class="typ">NUMERIC(9,6)</td><td><div class="cc">NOT NULL <span class="ck">CHECK -180–180</span></div></td><td>—</td><td>WGS-84 longitude in decimal degrees</td></tr>
@@ -292,7 +294,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
   </div>
   <div class="idx-section">
     <h4>Indexes on vessel.position</h4>
-    <div class="idx-row"><span class="idx-name">idx_vpos_imo_ts</span><span class="idx-def">(imo_number, position_ts DESC) — time-series position history per vessel</span></div>
+    <div class="idx-row"><span class="idx-name">idx_vpos_vessel_ts</span><span class="idx-def">(vessel_id, position_ts DESC) — time-series position history per vessel</span></div>
     <div class="idx-row"><span class="idx-name">idx_vpos_geom</span><span class="idx-def">GIST (geom) — spatial queries (bounding box, radius, within area)</span></div>
   </div>
 
@@ -300,12 +302,12 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
   <h2><span class="sc">vessel</span> Materialized Views</h2>
 
   <h3>vessel.latest_position (Materialized View)</h3>
-  <div class="purpose"><strong>Purpose:</strong> DISTINCT ON (imo_number) deduplicated view of the most recent position per vessel. Refreshed CONCURRENTLY after each AIS ingest run. Used by GisAis.jsx and the vessel list for live position display. Contains a GIST index for spatial queries.</div>
+  <div class="purpose"><strong>Purpose:</strong> DISTINCT ON (vessel_id) deduplicated view of the most recent position per vessel. Refreshed CONCURRENTLY after each AIS ingest run. Used by GisAis.jsx and the vessel list for live position display. Contains a GIST index for spatial queries.</div>
   <div class="tbl-wrap">
     <table>
       <thead><tr><th>Column</th><th>Source</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td class="col">imo_number</td><td class="typ">DISTINCT ON</td><td>Unique index key — one row per vessel</td></tr>
+        <tr><td class="col">vessel_id</td><td class="typ">DISTINCT ON</td><td>Unique index key — one row per vessel (references vessel.entity.vessel_id)</td></tr>
         <tr><td class="col">mmsi</td><td class="typ">vessel.position</td><td>Most recent MMSI from AIS</td></tr>
         <tr><td class="col">latitude / longitude</td><td class="typ">vessel.position</td><td>WGS-84 coordinates of latest position</td></tr>
         <tr><td class="col">geom</td><td class="typ">vessel.position</td><td>PostGIS Point for spatial operations (GIST indexed)</td></tr>
@@ -325,7 +327,7 @@ td.typ{font-family:'JetBrains Mono',monospace;font-size:10px;color:#FB923C}
     <div class="mv-col-group">
       <strong>Identity (vessels.js: nm, imo, mmsi, cs, fn, fl, ty, st, up)</strong>
       <div class="mv-cols">
-        <span>nm</span> = vessel_name &nbsp;·&nbsp; <span>imo</span> = imo_number &nbsp;·&nbsp; <span>mmsi</span> = mmsi_number &nbsp;·&nbsp; <span>cs</span> = call_sign &nbsp;·&nbsp; <span>fn</span> = flag_name &nbsp;·&nbsp; <span>fl</span> = flag_code &nbsp;·&nbsp; <span>ty</span> = vessel_type &nbsp;·&nbsp; <span>st</span> = vessel_status &nbsp;·&nbsp; <span>up</span> = last_updated
+        <span>vessel_id</span> = vessel.entity PK &nbsp;·&nbsp; <span>imo_number</span> = nullable IMO (retained for display) &nbsp;·&nbsp; <span>nm</span> = vessel_name &nbsp;·&nbsp; <span>imo</span> = imo_number &nbsp;·&nbsp; <span>mmsi</span> = mmsi_number &nbsp;·&nbsp; <span>cs</span> = call_sign &nbsp;·&nbsp; <span>fn</span> = flag_name &nbsp;·&nbsp; <span>fl</span> = flag_code &nbsp;·&nbsp; <span>ty</span> = vessel_type &nbsp;·&nbsp; <span>st</span> = vessel_status &nbsp;·&nbsp; <span>up</span> = last_updated
       </div>
     </div>
     <div class="mv-col-group">

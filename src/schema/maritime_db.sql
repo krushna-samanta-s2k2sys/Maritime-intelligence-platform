@@ -485,7 +485,8 @@ ALTER TABLE ui.dashboard_layout    ADD CONSTRAINT fk_dl_user            FOREIGN 
 CREATE SCHEMA IF NOT EXISTS vessel;
 
 CREATE TABLE vessel.entity (
-    imo_number      CHAR(7)         PRIMARY KEY,
+    vessel_id       BIGINT          GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    imo_number      CHAR(7)         UNIQUE,          -- NULL for vessels without an assigned IMO number
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     first_seen_at   TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     first_source_id SMALLINT        REFERENCES registry.source_def (source_id)
@@ -494,7 +495,7 @@ CREATE TABLE vessel.entity (
 -- Bi-temporal EAV — insert-only, never UPDATE/DELETE
 CREATE TABLE vessel.attr_value (
     av_id           BIGSERIAL       NOT NULL,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
     value_text      TEXT,
     value_numeric   NUMERIC(20,6),
@@ -529,10 +530,10 @@ CREATE TABLE vessel.attr_value_2028 PARTITION OF vessel.attr_value FOR VALUES FR
 CREATE TABLE vessel.attr_value_2029 PARTITION OF vessel.attr_value FOR VALUES FROM ('2029-01-01') TO ('2030-01-01');
 CREATE TABLE vessel.attr_value_overflow PARTITION OF vessel.attr_value DEFAULT;
 
-CREATE INDEX idx_vav_imo_attr  ON vessel.attr_value (imo_number, attr_id);
-CREATE INDEX idx_vav_current   ON vessel.attr_value (imo_number, attr_id, confidence DESC)
+CREATE INDEX idx_vav_vessel_attr ON vessel.attr_value (vessel_id, attr_id);
+CREATE INDEX idx_vav_current     ON vessel.attr_value (vessel_id, attr_id, confidence DESC)
     WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state = 'APPROVED';
-CREATE INDEX idx_vav_run       ON vessel.attr_value (run_id) WHERE run_id IS NOT NULL;
+CREATE INDEX idx_vav_run         ON vessel.attr_value (run_id) WHERE run_id IS NOT NULL;
 
 CREATE RULE vessel_av_no_update AS ON UPDATE TO vessel.attr_value DO INSTEAD NOTHING;
 CREATE RULE vessel_av_no_delete AS ON DELETE TO vessel.attr_value DO INSTEAD NOTHING;
@@ -545,7 +546,7 @@ CREATE RULE vessel_av_no_delete AS ON DELETE TO vessel.attr_value DO INSTEAD NOT
 -- workflow_state = APPROVED means this row IS the current master for the given attribute period.
 CREATE TABLE vessel.master_value (
     mv_id           BIGSERIAL       NOT NULL,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
     value_text      TEXT,
     value_numeric   NUMERIC(20,6),
@@ -586,21 +587,21 @@ CREATE TABLE vessel.master_value_2028 PARTITION OF vessel.master_value FOR VALUE
 CREATE TABLE vessel.master_value_2029 PARTITION OF vessel.master_value FOR VALUES FROM ('2029-01-01') TO ('2030-01-01');
 CREATE TABLE vessel.master_value_overflow PARTITION OF vessel.master_value DEFAULT;
 
-CREATE INDEX idx_vmv_imo_attr ON vessel.master_value (imo_number, attr_id);
-CREATE INDEX idx_vmv_current  ON vessel.master_value (imo_number, attr_id)
+CREATE INDEX idx_vmv_vessel_attr ON vessel.master_value (vessel_id, attr_id);
+CREATE INDEX idx_vmv_current     ON vessel.master_value (vessel_id, attr_id)
     WHERE valid_to IS NULL AND sys_to IS NULL AND workflow_state = 'APPROVED';
 
 -- Vessel-level source preference — feeds the confidence scoring engine when generating
 -- promotion_requests. Does NOT auto-promote. Overrides the global source_attr_weight for
 -- this specific vessel+attribute combination.
 CREATE TABLE vessel.attr_source_preference (
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     attr_id         INTEGER         NOT NULL REFERENCES registry.attribute_def (attr_id),
     source_id       SMALLINT        NOT NULL REFERENCES registry.source_def (source_id),
     weight_override NUMERIC(4,3)    NOT NULL DEFAULT 1.0 CHECK (weight_override BETWEEN 0 AND 1),
     set_by          INTEGER,                    -- auth.app_user.user_id
     set_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (imo_number, attr_id)
+    PRIMARY KEY (vessel_id, attr_id)
 );
 
 -- Bronze layer — raw feed payloads
@@ -609,6 +610,7 @@ CREATE TABLE vessel.raw_ingest (
     feed_id         INTEGER         NOT NULL REFERENCES ingest.feed_config (feed_id),
     run_id          BIGINT          NOT NULL REFERENCES ingest.feed_run (run_id),
     imo_number      CHAR(7),
+    vessel_id       BIGINT          REFERENCES vessel.entity (vessel_id),
     received_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     raw_payload     JSONB           NOT NULL,
     parse_status    VARCHAR(20)     NOT NULL DEFAULT 'PENDING'
@@ -631,7 +633,7 @@ CREATE TABLE vessel.raw_ingest_overflow PARTITION OF vessel.raw_ingest DEFAULT;
 -- AIS position — high-volume, NOT EAV
 CREATE TABLE vessel.position (
     pos_id          BIGSERIAL       NOT NULL,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     mmsi            CHAR(9),
     latitude        NUMERIC(9,6)    NOT NULL CHECK (latitude  BETWEEN -90  AND 90),
     longitude       NUMERIC(9,6)    NOT NULL CHECK (longitude BETWEEN -180 AND 180),
@@ -660,18 +662,18 @@ CREATE TABLE vessel.position_2025_q4 PARTITION OF vessel.position FOR VALUES FRO
 CREATE TABLE vessel.position_2026_q1 PARTITION OF vessel.position FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
 CREATE TABLE vessel.position_overflow PARTITION OF vessel.position DEFAULT;
 
-CREATE INDEX idx_vpos_imo_ts ON vessel.position (imo_number, position_ts DESC);
+CREATE INDEX idx_vpos_vessel_ts ON vessel.position (vessel_id, position_ts DESC);
 CREATE INDEX idx_vpos_geom   ON vessel.position USING GIST (geom);
 
 CREATE MATERIALIZED VIEW vessel.latest_position AS
-SELECT DISTINCT ON (imo_number)
-    imo_number, mmsi, latitude, longitude, geom,
+SELECT DISTINCT ON (vessel_id)
+    vessel_id, mmsi, latitude, longitude, geom,
     speed_kn, course_deg, heading_deg, nav_status,
     draught_m, destination, eta, position_ts, source_id
 FROM vessel.position
-ORDER BY imo_number, position_ts DESC;
+ORDER BY vessel_id, position_ts DESC;
 
-CREATE UNIQUE INDEX ON vessel.latest_position (imo_number);
+CREATE UNIQUE INDEX ON vessel.latest_position (vessel_id);
 CREATE INDEX ON vessel.latest_position USING GIST (geom);
 
 -- Current-state wide view — column aliases match vessels.js VESSELS property names
@@ -680,6 +682,7 @@ CREATE INDEX ON vessel.latest_position USING GIST (geom);
 -- Source: vessel.master_value (gold layer) — only explicitly approved master values appear here.
 CREATE MATERIALIZED VIEW vessel.v_current AS
 SELECT
+    e.vessel_id,
     e.imo_number,
     -- Identity (vessels.js fields: nm, imo, mmsi, cs, fn, fl, flag, ty, st, up)
     MAX(CASE WHEN ad.attr_key = 'vessel_name'        THEN mv.value_text    END) AS nm,
@@ -752,17 +755,17 @@ SELECT
     lp.position_ts  AS last_position_ts
 FROM vessel.entity e
 LEFT JOIN vessel.master_value mv
-    ON  mv.imo_number     = e.imo_number
+    ON  mv.vessel_id      = e.vessel_id
     AND mv.valid_to       IS NULL
     AND mv.sys_to         IS NULL
     AND mv.workflow_state = 'APPROVED'
 LEFT JOIN registry.attribute_def ad ON ad.attr_id = mv.attr_id
-LEFT JOIN vessel.latest_position  lp ON lp.imo_number = e.imo_number
-GROUP BY e.imo_number,
+LEFT JOIN vessel.latest_position  lp ON lp.vessel_id = e.vessel_id
+GROUP BY e.vessel_id, e.imo_number,
          lp.latitude, lp.longitude, lp.speed_kn, lp.course_deg,
          lp.nav_status, lp.destination, lp.eta, lp.position_ts;
 
-CREATE UNIQUE INDEX ON vessel.v_current (imo_number);
+CREATE UNIQUE INDEX ON vessel.v_current (vessel_id);
 CREATE INDEX ON vessel.v_current (ty);
 CREATE INDEX ON vessel.v_current (fn);
 CREATE INDEX ON vessel.v_current (st);
@@ -1175,7 +1178,7 @@ CREATE SCHEMA IF NOT EXISTS voyage;
 
 CREATE TABLE voyage.voyage (
     voyage_id       BIGSERIAL       PRIMARY KEY,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     voyage_number   VARCHAR(30),
     departure_port  VARCHAR(5)      REFERENCES port.entity (unlocode),
     arrival_port    VARCHAR(5)      REFERENCES port.entity (unlocode),
@@ -1191,13 +1194,13 @@ CREATE TABLE voyage.voyage (
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_voyage_imo   ON voyage.voyage (imo_number, departure_at DESC);
+CREATE INDEX idx_voyage_vessel ON voyage.voyage (vessel_id, departure_at DESC);
 CREATE INDEX idx_voyage_ports ON voyage.voyage (departure_port, arrival_port);
 
 CREATE TABLE voyage.port_call (
     call_id         BIGSERIAL       PRIMARY KEY,
     voyage_id       BIGINT          REFERENCES voyage.voyage (voyage_id),
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     unlocode        VARCHAR(5)      NOT NULL REFERENCES port.entity (unlocode),
     port_name       VARCHAR(120),                         -- denormalised; matches port_calls.json "port"
     ata             TIMESTAMPTZ,                          -- actual time of arrival  (port_calls.json "ata")
@@ -1211,7 +1214,7 @@ CREATE TABLE voyage.port_call (
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_pcall_imo      ON voyage.port_call (imo_number, ata DESC);
+CREATE INDEX idx_pcall_vessel   ON voyage.port_call (vessel_id, ata DESC);
 CREATE INDEX idx_pcall_unlocode ON voyage.port_call (unlocode,   ata DESC);
 
 -- Voyage route waypoints — normalised from movements.json nested "route" array.
@@ -1219,7 +1222,7 @@ CREATE INDEX idx_pcall_unlocode ON voyage.port_call (unlocode,   ata DESC);
 CREATE TABLE voyage.route_waypoint (
     waypoint_id     BIGSERIAL       PRIMARY KEY,
     voyage_id       BIGINT          REFERENCES voyage.voyage (voyage_id),
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     seq_no          SMALLINT        NOT NULL DEFAULT 0,   -- waypoint order along the route
     port_name       VARCHAR(120)    NOT NULL,
     unlocode        VARCHAR(10),                          -- movements.json "locode" (space-separated: 'SG SIN')
@@ -1235,7 +1238,7 @@ CREATE TABLE voyage.route_waypoint (
 );
 
 CREATE INDEX idx_rwp_voyage   ON voyage.route_waypoint (voyage_id, seq_no);
-CREATE INDEX idx_rwp_imo      ON voyage.route_waypoint (imo_number);
+CREATE INDEX idx_rwp_vessel   ON voyage.route_waypoint (vessel_id);
 CREATE INDEX idx_rwp_geom     ON voyage.route_waypoint USING GIST (geom) WHERE geom IS NOT NULL;
 
 
@@ -1246,7 +1249,7 @@ CREATE SCHEMA IF NOT EXISTS compliance;
 CREATE TABLE compliance.psc_inspection (
     inspection_id       BIGSERIAL       PRIMARY KEY,
     external_id         VARCHAR(40)     UNIQUE,               -- psc_inspections.json "id" (e.g. 'PSC-2024-0130-001')
-    imo_number          CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id           BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     vessel_name         VARCHAR(120),                         -- denormalised for PSC reporting
     inspection_date     DATE            NOT NULL,
     inspection_type     VARCHAR(20)
@@ -1265,7 +1268,7 @@ CREATE TABLE compliance.psc_inspection (
     created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_psc_imo  ON compliance.psc_inspection (imo_number, inspection_date DESC);
+CREATE INDEX idx_psc_vessel ON compliance.psc_inspection (vessel_id, inspection_date DESC);
 CREATE INDEX idx_psc_port ON compliance.psc_inspection (port_unlocode, inspection_date DESC);
 CREATE INDEX idx_psc_mou  ON compliance.psc_inspection (mou_region, inspection_date DESC);
 
@@ -1287,7 +1290,7 @@ CREATE INDEX idx_pscdef_category   ON compliance.psc_deficiency (category);
 
 CREATE TABLE compliance.certificate (
     cert_id         BIGSERIAL       PRIMARY KEY,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     cert_type       VARCHAR(60)     NOT NULL,             -- 'SMC','DOC','ISSC','MLC','IOPP', etc.
     issuing_authority VARCHAR(120),
     issue_date      DATE,
@@ -1299,7 +1302,7 @@ CREATE TABLE compliance.certificate (
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_cert_imo    ON compliance.certificate (imo_number, cert_type);
+CREATE INDEX idx_cert_vessel ON compliance.certificate (vessel_id, cert_type);
 CREATE INDEX idx_cert_expiry ON compliance.certificate (expiry_date) WHERE is_valid;
 
 CREATE TABLE compliance.sanction (
@@ -1376,7 +1379,7 @@ CREATE INDEX idx_freight_type_date ON market.freight_rate (vessel_type, rate_dat
 
 CREATE TABLE market.valuation (
     val_id          BIGSERIAL       PRIMARY KEY,
-    imo_number      CHAR(7)         NOT NULL REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          NOT NULL REFERENCES vessel.entity (vessel_id),
     val_date        DATE            NOT NULL,
     val_type        VARCHAR(20)
                     CHECK (val_type IN ('MARKET','SCRAP','INSURANCE','BOOK')),
@@ -1385,17 +1388,17 @@ CREATE TABLE market.valuation (
     methodology     VARCHAR(60),
     source_id       SMALLINT        REFERENCES registry.source_def (source_id),
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    UNIQUE (imo_number, val_date, val_type, source_id)
+    UNIQUE (vessel_id, val_date, val_type, source_id)
 );
 
-CREATE INDEX idx_val_imo_date ON market.valuation (imo_number, val_date DESC);
+CREATE INDEX idx_val_vessel_date ON market.valuation (vessel_id, val_date DESC);
 
 -- Fixture reports — mirrors src/data/json/fixtures.json
 -- One row per chartering fixture (voyage charter, spot fixture, etc.)
 CREATE TABLE market.fixture (
     fixture_id      BIGSERIAL       PRIMARY KEY,
     external_id     VARCHAR(10)     UNIQUE,               -- fixtures.json "id" (e.g. 'F001')
-    imo_number      CHAR(7)         REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          REFERENCES vessel.entity (vessel_id),
     vessel_name     VARCHAR(120)    NOT NULL,
     vessel_type     VARCHAR(60),                          -- 'VLCC','Suezmax','Capesize','LNG', etc.
     dwt             INTEGER,
@@ -1416,14 +1419,14 @@ CREATE TABLE market.fixture (
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_fixture_imo    ON market.fixture (imo_number)                   WHERE imo_number IS NOT NULL;
+CREATE INDEX idx_fixture_vessel ON market.fixture (vessel_id)                    WHERE vessel_id IS NOT NULL;
 CREATE INDEX idx_fixture_status ON market.fixture (fixture_status, fixture_date DESC);
 CREATE INDEX idx_fixture_date   ON market.fixture (fixture_date DESC);
 
 -- Time charter and bareboat contracts — mirrors src/data/json/tc_contracts.json
 CREATE TABLE market.tc_contract (
     contract_id     BIGSERIAL       PRIMARY KEY,
-    imo_number      CHAR(7)         REFERENCES vessel.entity (imo_number),
+    vessel_id       BIGINT          REFERENCES vessel.entity (vessel_id),
     vessel_name     VARCHAR(120)    NOT NULL,
     charter_type    VARCHAR(30)     NOT NULL
                     CHECK (charter_type IN ('Time Charter','Bareboat Charter','Demise Charter')),
@@ -1438,7 +1441,7 @@ CREATE TABLE market.tc_contract (
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_tc_imo   ON market.tc_contract (imo_number) WHERE imo_number IS NOT NULL;
+CREATE INDEX idx_tc_vessel ON market.tc_contract (vessel_id) WHERE vessel_id IS NOT NULL;
 CREATE INDEX idx_tc_dates ON market.tc_contract (start_date, end_date);
 
 -- Baltic route benchmark definitions — mirrors src/data/json/freight_routes.json route codes

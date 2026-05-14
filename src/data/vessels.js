@@ -3,7 +3,7 @@ import vesselData from './json/vessels.json';
 // Map normalized JSON fields to the abbreviated field names the rest of the app uses.
 // When the API is live, update this mapping to reflect the API response shape.
 export const VESSELS = vesselData.map(v => ({
-  id:          v.id,
+  id:          v.vessel_id,
   nm:          v.name,
   imo:         v.imo_number,
   mmsi:        v.mmsi_number,
