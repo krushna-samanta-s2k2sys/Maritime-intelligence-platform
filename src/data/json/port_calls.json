@@ -1,0 +1,9 @@
+[
+  {"vessel":"MT NORDIC STAR",   "imo":"9234567","port":"Fujairah Anchorage", "locode":"AE FUJ","ata":"2025-04-30 08:15","atd":"2025-05-01 14:30","purpose":"Bunkering",          "volume":"800 MT IFO380",                         "berth":"Anchorage A4"},
+  {"vessel":"MV OCEAN PIONEER", "imo":"9345678","port":"Hong Kong",          "locode":"HK HKG","ata":"2025-05-03 06:00","atd":"ETA 2025-05-05",  "purpose":"Discharging",          "volume":"180,000 MT Iron Ore",                   "berth":"Kwai Tsing T9"},
+  {"vessel":"MT AEGEAN GLORY",  "imo":"9456789","port":"Port Said",          "locode":"EG PSD","ata":"2025-05-04 10:20","atd":"2025-05-04 22:45","purpose":"Transit / Suez",       "volume":"—",                                     "berth":"Roads"},
+  {"vessel":"MV PACIFIC BRIDGE","imo":"9567890","port":"Yokohama",           "locode":"JP YOK","ata":"2025-05-01 18:00","atd":"2025-05-03 07:30","purpose":"Loading/Discharging",  "volume":"1,200 TEU loaded / 800 discharged",     "berth":"Honmoku C-2"},
+  {"vessel":"LNG ARCTIC SPIRIT","imo":"9678901","port":"Guangzhou Anchorage","locode":"CN CAN","ata":"2025-05-04 00:00","atd":"ETA 2025-05-07",  "purpose":"Waiting berth",         "volume":"—",                                     "berth":"Outer Anchorage"},
+  {"vessel":"MV CASPIAN STAR",  "imo":"9789012","port":"Suez",               "locode":"EG SUE","ata":"2025-05-04 06:30","atd":"2025-05-04 09:15","purpose":"Canal transit",         "volume":"—",                                     "berth":"Waiting anchorage"},
+  {"vessel":"MT PERSEVERANCE",  "imo":"9890123","port":"Rotterdam",          "locode":"NL RTM","ata":"2025-05-02 14:00","atd":"ETA 2025-05-06",  "purpose":"Loading",               "volume":"105,000 MT Crude",                      "berth":"Europoort T11"}
+]

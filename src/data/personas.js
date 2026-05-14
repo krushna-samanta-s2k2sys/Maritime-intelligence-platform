@@ -1,126 +1,21 @@
-export const PERSONAS = {
-  'full-access': {
-    id: 'full-access', name: 'Full Access', icon: '🔐', color: '#1558d6',
-    description: 'Complete access to all maritime data and features',
-    attrSections: ['general','construction','machinery','ownership','classification','safety','cargo','compliance'],
-    dashboardCards: [
-      { id: 'kpi-row',         w: 12 },
-      { id: 'live-map',        w: 8  },
-      { id: 'live-activity',   w: 4  },
-      { id: 'fleet-types',     w: 4  },
-      { id: 'flag-states',     w: 4  },
-      { id: 'certs-expiring',  w: 4  },
-      { id: 'psc-detentions',  w: 6  },
-      { id: 'market-snapshot', w: 6  },
-    ],
-    vesselColumns: ['name','imo','flag','type','dwt','gt','built','loa','owner','manager','class','status','updated'],
-  },
-  'vessel-analyst': {
-    id: 'vessel-analyst', name: 'Vessel Analyst', icon: '🚢', color: '#0094b3',
-    description: 'Vessel registry, technical data and certification analyst',
-    attrSections: ['general','construction','machinery','classification','safety','ownership','cargo','compliance'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 3 },
-      { id: 'kpi-active',      w: 3 },
-      { id: 'kpi-psc',         w: 3 },
-      { id: 'kpi-certs',       w: 3 },
-      { id: 'live-map',        w: 8 },
-      { id: 'live-activity',   w: 4 },
-      { id: 'fleet-types',     w: 6 },
-      { id: 'certs-expiring',  w: 6 },
-    ],
-    vesselColumns: ['name','imo','flag','type','dwt','gt','built','loa','beam','depth','class','class-notation','status'],
-  },
-  'port-analyst': {
-    id: 'port-analyst', name: 'Port Analyst', icon: '⚓', color: '#137333',
-    description: 'Port operations and vessel arrival/departure analyst',
-    attrSections: ['general','cargo','construction','safety','machinery','classification','ownership','compliance'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 4 },
-      { id: 'kpi-ports',       w: 4 },
-      { id: 'kpi-psc',         w: 4 },
-      { id: 'live-map',        w: 8 },
-      { id: 'live-activity',   w: 4 },
-      { id: 'psc-detentions',  w: 12},
-    ],
-    vesselColumns: ['name','imo','flag','type','dwt','loa','max-draft','sum-draft','status','updated'],
-  },
-  'companies-analyst': {
-    id: 'companies-analyst', name: 'Companies Analyst', icon: '🏢', color: '#ea580c',
-    description: 'Company registry, ownership structures and corporate hierarchy',
-    attrSections: ['ownership','general','compliance','classification','safety','construction','machinery','cargo'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 3 },
-      { id: 'kpi-companies',   w: 3 },
-      { id: 'kpi-sanctions',   w: 3 },
-      { id: 'kpi-active',      w: 3 },
-      { id: 'live-activity',   w: 4 },
-      { id: 'fleet-types',     w: 4 },
-      { id: 'flag-states',     w: 4 },
-      { id: 'market-snapshot', w: 12},
-    ],
-    vesselColumns: ['name','imo','flag','type','owner','beneficial-owner','operator','manager','pi','status'],
-  },
-  'registry-analyst': {
-    id: 'registry-analyst', name: 'Vessel Registry', icon: '📋', color: '#6200ea',
-    description: 'Vessel registration, flag state data and IMO identity',
-    attrSections: ['general','classification','safety','ownership','construction','machinery','cargo','compliance'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 4 },
-      { id: 'kpi-active',      w: 4 },
-      { id: 'kpi-companies',   w: 4 },
-      { id: 'flag-states',     w: 6 },
-      { id: 'fleet-types',     w: 6 },
-      { id: 'live-map',        w: 12},
-    ],
-    vesselColumns: ['name','imo','flag','type','built','loa','class','status','updated'],
-  },
-  'ownership-management': {
-    id: 'ownership-management', name: 'Ownership Mgmt', icon: '🤝', color: '#c8102e',
-    description: 'Beneficial ownership, management and P&I club tracking',
-    attrSections: ['ownership','compliance','general','classification','safety','construction','machinery','cargo'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 3 },
-      { id: 'kpi-companies',   w: 3 },
-      { id: 'kpi-sanctions',   w: 3 },
-      { id: 'kpi-active',      w: 3 },
-      { id: 'live-activity',   w: 6 },
-      { id: 'flag-states',     w: 6 },
-      { id: 'market-snapshot', w: 12},
-    ],
-    vesselColumns: ['name','imo','flag','owner','beneficial-owner','operator','manager','pi','type','dwt','status'],
-  },
-  'dimensions-analyst': {
-    id: 'dimensions-analyst', name: 'Dimensions Analyst', icon: '📐', color: '#b45309',
-    description: 'Physical dimensions, technical specifications and machinery',
-    attrSections: ['construction','machinery','general','classification','safety','ownership','cargo','compliance'],
-    dashboardCards: [
-      { id: 'kpi-fleet',       w: 4 },
-      { id: 'kpi-active',      w: 4 },
-      { id: 'kpi-certs',       w: 4 },
-      { id: 'fleet-types',     w: 6 },
-      { id: 'live-map',        w: 6 },
-      { id: 'certs-expiring',  w: 12},
-    ],
-    vesselColumns: ['name','imo','type','dwt','gt','nt','loa','lbp','beam','depth','max-draft','sum-draft','built','class'],
-  },
-  'compliance-officer': {
-    id: 'compliance-officer', name: 'Compliance Officer', icon: '🚨', color: '#c8102e',
-    description: 'Sanctions screening, PSC compliance and risk monitoring',
-    attrSections: ['compliance','safety','classification','ownership','general','construction','machinery','cargo'],
-    dashboardCards: [
-      { id: 'kpi-sanctions',   w: 3 },
-      { id: 'kpi-psc',         w: 3 },
-      { id: 'kpi-certs',       w: 3 },
-      { id: 'kpi-active',      w: 3 },
-      { id: 'psc-detentions',  w: 8 },
-      { id: 'live-activity',   w: 4 },
-      { id: 'certs-expiring',  w: 6 },
-      { id: 'live-map',        w: 6 },
-    ],
-    vesselColumns: ['name','imo','flag','type','owner','manager','class','status','updated'],
-  },
-}
+import personaConfig from './json/personas.json';
 
-export const PERSONA_LIST = Object.values(PERSONAS)
-export const DEFAULT_PERSONA_ID = 'full-access'
+// Build PERSONAS map keyed by persona id — shape preserved for backward compatibility
+export const PERSONAS = Object.fromEntries(
+  personaConfig.personas.map(p => [
+    p.id,
+    {
+      id:           p.id,
+      name:         p.name,
+      icon:         p.icon,
+      color:        p.color,
+      description:  p.description,
+      attrSections: p.attr_sections,
+      dashboardCards: p.dashboard_cards.map(c => ({ id: c.card_id, w: c.width })),
+      vesselColumns:  p.vessel_columns,
+    },
+  ])
+);
+
+export const PERSONA_LIST = Object.values(PERSONAS);
+export const DEFAULT_PERSONA_ID = personaConfig.default_persona_id;

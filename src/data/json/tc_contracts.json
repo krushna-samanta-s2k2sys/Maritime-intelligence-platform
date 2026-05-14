@@ -1,0 +1,7 @@
+[
+  {"vessel":"MT NORDIC STAR",   "type":"Time Charter",    "term":"12 months","start":"2025-01-01","end":"2025-12-31","rate":24500,"charterer":"Trafigura",  "redelivery":"Worldwide","options":"2×6M at $23,000/day"},
+  {"vessel":"MV OCEAN PIONEER", "type":"Time Charter",    "term":"3 years",  "start":"2024-07-01","end":"2027-06-30","rate":18000,"charterer":"Rio Tinto",  "redelivery":"Pacific",   "options":"1×1Y at $17,500/day"},
+  {"vessel":"LNG ARCTIC SPIRIT","type":"Time Charter",    "term":"15 years", "start":"2022-03-01","end":"2037-02-28","rate":85000,"charterer":"Tokyo Gas",  "redelivery":"Japan",     "options":"—"},
+  {"vessel":"MV PACIFIC BRIDGE","type":"Bareboat Charter","term":"5 years",  "start":"2023-06-01","end":"2028-05-31","rate":12000,"charterer":"MSC",        "redelivery":"DWWD",      "options":"Purchase option at $45M"},
+  {"vessel":"MV CASPIAN STAR",  "type":"Time Charter",    "term":"6 months", "start":"2025-02-01","end":"2025-07-31","rate":11200,"charterer":"ADM",        "redelivery":"Atlantic",  "options":"1×3M at $10,500/day"}
+]

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ALL_VESSEL_COLUMNS, COLUMN_GROUPS } from '../../data/vesselColumns'
+import { ALL_VESSEL_COLUMNS, COLUMN_GROUPS } from '../../data/attributeRegistry'
 import { usePreferences } from '../../contexts/PreferencesContext'
 
 export default function ColumnPicker({ onClose }) {

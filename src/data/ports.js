@@ -1,4 +1,8 @@
-// Maps port attribute tree leaf IDs to port data fields
+import portsData from './json/ports_detail.json'
+
+export const PORTS = portsData
+
+// ─── Attribute value getter ───────────────────────────────────────────────────
 
 const MAP = {
   // Identity → Basic
@@ -123,7 +127,7 @@ const MAP = {
   'po-tt-slop':        p => p.terminals?.tanker?.slop ? 'Yes' : 'No',
   'po-tt-pumprate':    p => p.terminals?.tanker?.pumpRate ? p.terminals.tanker.pumpRate + ' m³/hr' : '—',
 
-  // Terminals → RoRo
+  // Terminals → RoRo / Passenger
   'po-rt-exists':      p => p.terminals?.roro?.exists ? 'Yes' : 'No',
   'po-rt-operator':    p => p.terminals?.roro?.operator || '—',
   'po-rt-ramps':       p => p.terminals?.roro?.ramps ? String(p.terminals.roro.ramps) : '—',
@@ -256,7 +260,6 @@ const MAP = {
   'po-psc-mou':        p => p.psc?.mou || p.mou,
   'po-psc-auth-name':  p => p.psc?.authName || '—',
   'po-psc-auth-contact':p=> p.psc?.authContact || '—',
-  'po-psc-auth-email': p => p.psc?.authEmail || '—',
   'po-psc-active':     p => p.psc?.active ? 'Yes' : 'No',
   'po-psc-total-insp': p => p.psc?.totalInsp ? String(p.psc.totalInsp) : '—',
   'po-psc-detentions': p => p.psc?.detentions ? String(p.psc.detentions) : '—',
@@ -276,7 +279,7 @@ const MAP = {
   'po-psc-def-struct': p => p.psc?.defStructure ? String(p.psc.defStructure) : '—',
   'po-psc-def-cert':   p => p.psc?.defCert ? String(p.psc.defCert) : '—',
 
-  // Customs
+  // Customs / Regulatory
   'po-customs-office': p => p.regulatory?.customsOffice ? 'Yes' : 'No',
   'po-customs-ftz':    p => p.regulatory?.ftz ? 'Yes' : 'No',
   'po-customs-cabotage':p=> p.regulatory?.cabotage || '—',
@@ -306,9 +309,7 @@ export function getPortAttrValue(port, leafId) {
   try {
     const v = fn(port)
     return v == null || v === '' ? '—' : String(v)
-  } catch {
-    return '—'
-  }
+  } catch { return '—' }
 }
 
 export function generatePortHistory(label, port, fallbackVal) {
@@ -320,3 +321,65 @@ export function generatePortHistory(label, port, fallbackVal) {
   }
   return rows
 }
+
+// ─── Column / filter config ───────────────────────────────────────────────────
+
+export const PORT_COL_GROUPS = [
+  { key: 'identity',   label: 'Identity & Location' },
+  { key: 'physical',   label: 'Physical & Navigation' },
+  { key: 'traffic',    label: 'Traffic & Operations' },
+  { key: 'services',   label: 'Services & Facilities' },
+  { key: 'psc',        label: 'PSC & Regulatory' },
+]
+
+export const PORT_COLUMNS = [
+  { id: 'name',       label: 'Port Name',    always: true },
+  { id: 'unlocode',   label: 'UN/LOCODE',    always: true },
+  { id: 'country',    label: 'Country',      group: 'identity' },
+  { id: 'type',       label: 'Type',         group: 'identity' },
+  { id: 'maxDraft',   label: 'Max Draft',    group: 'physical' },
+  { id: 'mou',        label: 'MOU',          group: 'psc' },
+  { id: 'totalCalls', label: 'Annual Calls', group: 'traffic' },
+  { id: 'teu',        label: 'TEU',          group: 'traffic' },
+  { id: 'worldRank',  label: 'World Rank',   group: 'traffic' },
+  { id: 'congestion', label: 'Congestion',   group: 'services' },
+]
+
+export function getPortCellValue(port, colId) {
+  switch (colId) {
+    case 'name':       return port.name
+    case 'unlocode':   return port.unlocode
+    case 'country':    return port.country
+    case 'type':       return port.type
+    case 'mou':        return port.mou
+    case 'maxDraft':   return port.channel?.maxDraft ? port.channel.maxDraft + ' m' : '—'
+    case 'totalCalls': return port.traffic?.totalCalls ? port.traffic.totalCalls.toLocaleString() : '—'
+    case 'teu':        return port.traffic?.teu || '—'
+    case 'worldRank':  return port.traffic?.worldRank ? '#' + port.traffic.worldRank : '—'
+    case 'congestion': return port.congestion?.risk || '—'
+    default:           return '—'
+  }
+}
+
+export const PORT_FILTER_FIELDS = [
+  { id: 'mou',        label: 'PSC MOU',              filterType: 'multiselect', getValues: ps => [...new Set(ps.map(p => p.mou).filter(Boolean))].map(v => ({ value: v, label: v, count: ps.filter(p => p.mou === v).length })) },
+  { id: 'type',       label: 'Port Type',            filterType: 'multiselect', getValues: ps => [...new Set(ps.map(p => p.type))].map(v => ({ value: v, label: v, count: ps.filter(p => p.type === v).length })) },
+  { id: 'country',    label: 'Country',              filterType: 'multiselect', getValues: ps => [...new Set(ps.map(p => p.country))].map(v => ({ value: v, label: v, count: ps.filter(p => p.country === v).length })) },
+  { id: 'status',     label: 'Status',               filterType: 'multiselect', getValues: ps => [...new Set(ps.map(p => p.status))].map(v => ({ value: v, label: v, count: ps.filter(p => p.status === v).length })) },
+  { id: 'functions',  label: 'Port Functions',       filterType: 'multiselect', getValues: ps => { const all = [...new Set(ps.flatMap(p => p.functions||[]))]; return all.map(v => ({ value: v, label: v, count: ps.filter(p => (p.functions||[]).includes(v)).length })) } },
+  { id: 'maxDraft',   label: 'Max Draft (m)',        filterType: 'range' },
+  { id: 'maxLoa',     label: 'Max LOA (m)',          filterType: 'range' },
+  { id: 'maxBeam',    label: 'Max Beam (m)',         filterType: 'range' },
+  { id: 'berthCount', label: 'No. of Berths',        filterType: 'range' },
+  { id: 'ecaZone',    label: 'ECA Zone',             filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'ECA Zone', count: 0 }, { value: 'No', label: 'Non-ECA', count: 0 }] },
+  { id: 'calls',      label: 'Annual Calls',         filterType: 'range' },
+  { id: 'congestion', label: 'Congestion Risk',      filterType: 'multiselect', getValues: ps => [...new Set(ps.map(p => p.congestion?.risk).filter(Boolean))].map(v => ({ value: v, label: v, count: ps.filter(p => p.congestion?.risk === v).length })) },
+  { id: 'avgWaiting', label: 'Avg Waiting (hrs)',    filterType: 'range' },
+  { id: 'container',  label: 'Container Terminal',   filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Has Container Terminal', count: 0 }, { value: 'No', label: 'No Container Terminal', count: 0 }] },
+  { id: 'drydock',    label: 'Drydock Available',    filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Has Drydock', count: 0 }, { value: 'No', label: 'No Drydock', count: 0 }] },
+  { id: 'pilotage',   label: 'Pilotage Compulsory',  filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Compulsory', count: 0 }, { value: 'No', label: 'Not Compulsory', count: 0 }] },
+  { id: 'vts',        label: 'VTS Available',        filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'VTS Available', count: 0 }, { value: 'No', label: 'No VTS', count: 0 }] },
+  { id: 'bunker',     label: 'Bunker Available',     filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Available', count: 0 }, { value: 'No', label: 'Not Available', count: 0 }] },
+  { id: 'lngBunker',  label: 'LNG Bunkering',        filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'LNG Available', count: 0 }, { value: 'No', label: 'No LNG', count: 0 }] },
+  { id: 'detRate',    label: 'PSC Detention Rate %', filterType: 'range' },
+]

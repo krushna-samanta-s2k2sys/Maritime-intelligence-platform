@@ -5,122 +5,9 @@ import { usePreferences } from '../../contexts/PreferencesContext'
 import { CARD_CATALOG } from '../../data/dashboardCards'
 import CardCatalog from './CardCatalog'
 
-// ── Static data ────────────────────────────────────────────
-const KPIS = [
-  { id:'kpi-fleet',    v:'847,392', l:'Total Vessels',       delta:'+1,243 this month',      up:true,  color:'#1558d6' },
-  { id:'kpi-active',   v:'94.3%',   l:'Active Fleet',        delta:'−0.4% vs last month',    up:false, color:'#137333' },
-  { id:'kpi-ports',    v:'9,241',   l:'Ports Tracked',       delta:'+18 new ports',           up:true,  color:'#0094b3' },
-  { id:'kpi-psc',      v:'283',     l:'PSC Detentions YTD',  delta:'+12 vs same period',      up:false, color:'#c8102e' },
-  { id:'kpi-certs',    v:'1,047',   l:'Certs Expiring (30d)',delta:'247 critical (<7d)',       up:false, color:'#b45309' },
-  { id:'kpi-sanctions',v:'62',      l:'Active Sanctions',    delta:'+4 new designations',     up:false, color:'#6200ea' },
-  { id:'kpi-companies',v:'42,881',  l:'Companies',           delta:'+312 this quarter',       up:true,  color:'#ea580c' },
-  { id:'kpi-ais',      v:'94.2B',   l:'AIS Points (total)',  delta:'+1.4B this month',        up:true,  color:'#137333' },
-]
 
-const FLEET_TYPES = [
-  ['Bulk Carrier',210841,'#1558d6'],['General Cargo',198422,'#0094b3'],['Oil Tanker',96384,'#c8102e'],
-  ['Container Ship',55912,'#137333'],['Chemical Tanker',48271,'#b45309'],['Offshore Supply',37885,'#6200ea'],
-  ['LNG / LPG Carrier',14022,'#ea580c'],['Passenger / Cruise',11244,'#d93025'],
-  ['RoRo / Car Carrier',9812,'#717a85'],['Other',164599,'#aab2bd'],
-]
-
-const FLAGS = [
-  ['🇵🇦','Panama',91244],['🇱🇷','Liberia',77881],['🇲🇭','Marshall Isls',60129],
-  ['🇭🇰','Hong Kong',43887],['🇸🇬','Singapore',36204],['🇧🇸','Bahamas',29441],
-  ['🇲🇹','Malta',26882],['🇨🇾','Cyprus',22144],['🇬🇷','Greece',17208],['🇨🇳','China',16844],
-]
-
-const CERTS = [
-  { icon:'📄', name:'SMC (ISM)',       sub:'Safety Management Certificate',              count:'312 vessels', cls:'tR' },
-  { icon:'🛡', name:'ISPS / AISSC',   sub:'International Ship & Port Facility Security', count:'218 vessels', cls:'tR' },
-  { icon:'⚓', name:'Load Line Cert', sub:'International Load Line Convention',          count:'197 vessels', cls:'tA' },
-  { icon:'🛢', name:'IOPP (MARPOL I)',sub:'Oil Pollution Prevention Certificate',        count:'156 vessels', cls:'tA' },
-  { icon:'🌊', name:'BWM Certificate',sub:'Ballast Water Management Convention',         count:'89 vessels',  cls:'tA' },
-  { icon:'📊', name:'CII / EEXI',     sub:'Energy Efficiency Existing Ship Index',       count:'75 vessels',  cls:'tN' },
-]
-
-const PSC_DATA = [
-  { vessel:'OCEAN PRIDE',     imo:'9341122', port:'Port of Rotterdam',   mou:'Paris MOU',    defs:14, date:'2024-01-30', status:'Detained' },
-  { vessel:'SUNRISE CARRIER', imo:'9412888', port:'Qingdao, China',      mou:'Tokyo MOU',    defs:8,  date:'2024-01-29', status:'Detained' },
-  { vessel:'PIONEER TRADER',  imo:'9499283', port:'Singapore',           mou:'Tokyo MOU',    defs:11, date:'2024-01-28', status:'Released' },
-  { vessel:'GULF VOYAGER',    imo:'9412340', port:'Port of Houston',     mou:'USCG',         defs:6,  date:'2024-01-27', status:'Released' },
-  { vessel:'NORDIC GRACE',    imo:'9388021', port:'Durban, South Africa',mou:'Indian Ocean', defs:9,  date:'2024-01-25', status:'Released' },
-]
-
-const MARKET = [
-  { idx:'BDI',  name:'Baltic Dry Index',      val:'2,847',  delta:'+124', up:true,  desc:'General dry bulk sentiment' },
-  { idx:'BCI',  name:'Baltic Capesize Index', val:'4,122',  delta:'+88',  up:true,  desc:'Capesize rates (180k+ DWT)' },
-  { idx:'BDTI', name:'Baltic Dirty Tanker',   val:'1,284',  delta:'−36',  up:false, desc:'Dirty tanker freight' },
-  { idx:'BCTI', name:'Baltic Clean Tanker',   val:'924',    delta:'+12',  up:true,  desc:'Clean product tanker' },
-  { idx:'BLNG', name:'Baltic LNG Index',      val:'56,100', delta:'+850', up:true,  desc:'LNG spot rate (USD/day)' },
-  { idx:'SCFI', name:'SCFI Composite',        val:'1,881',  delta:'−44',  up:false, desc:'Shanghai Container Freight' },
-]
-
-const ACT_POOL = [
-  { color:'#c8102e', txt:'PSC detention issued to <strong>OCEAN PRIDE</strong> at Rotterdam — 14 deficiencies' },
-  { color:'#c8102e', txt:'Sanctions alert: <strong>IRAN STAR I</strong> identified via dark activity pattern' },
-  { color:'#c8102e', txt:'PSC detention issued to <strong>SUNRISE CARRIER</strong> at Qingdao — 8 deficiencies' },
-  { color:'#137333', txt:'<strong>MAERSK COLON</strong> arrived at Port of Los Angeles (ATA: 14:32 UTC)' },
-  { color:'#137333', txt:'Certificate renewed: SMC for <strong>STELLAR WIND</strong> — valid to 2029-02-01' },
-  { color:'#137333', txt:'<strong>MSC OSCAR</strong> departed Singapore — Destination: Rotterdam' },
-  { color:'#137333', txt:'<strong>QUEEN MARY 2</strong> departed Southampton — Voyage 2024-Q — Destination: NY' },
-  { color:'#1558d6', txt:'AIS position update: <strong>PACIFIC STAR</strong> — 35.2°N 142.5°E — 18.4 kn' },
-  { color:'#1558d6', txt:'Ownership transfer filed: <strong>ATLANTIC BULKER</strong> — Star Bulk → Diana Shipping' },
-  { color:'#1558d6', txt:'Flag change: <strong>PIONEER TRADER</strong> — Marshall Islands → Liberia' },
-  { color:'#1558d6', txt:'<strong>EASTERN PIONEER</strong> at anchor off Colombo — Est. port entry in 12h' },
-  { color:'#b45309', txt:'Certificate expiry alert: IOPP for <strong>GULF VOYAGER</strong> expires in 8 days' },
-  { color:'#b45309', txt:'Special survey due: <strong>NORDIC GRACE</strong> — next survey 2024-03-15' },
-  { color:'#b45309', txt:'Class condition raised: <strong>BOREALIS</strong> — underwater inspection required within 30 days' },
-]
-const ACT_TIMES = ['Just now','2m ago','4m ago','7m ago','11m ago','15m ago','18m ago','22m ago','28m ago','35m ago','41m ago','48m ago','1h ago','1h 12m ago']
-
-const VESSEL_GEO = { type:'FeatureCollection', features:[
-  {type:'Feature',geometry:{type:'Point',coordinates:[142.5,35.2]},  properties:{name:'PACIFIC STAR',    type:'Container Ship',   speed:18.4,flag:'GR',status:'Underway',   imo:'9412345'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-122.4,37.8]}, properties:{name:'MAERSK COLON',    type:'Container Ship',   speed:0,   flag:'DK',status:'At Port',     imo:'9778532'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[125.0,-8.5]},  properties:{name:'STELLAR WIND',    type:'LNG Carrier',      speed:14.2,flag:'JP',status:'Underway',   imo:'9534892'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[159.0,-15.0]}, properties:{name:'COSCO UNIVERSE',  type:'Container Ship',   speed:19.1,flag:'CN',status:'Underway',   imo:'9871234'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-168.0,24.0]}, properties:{name:'MSC OSCAR',       type:'Container Ship',   speed:17.8,flag:'PT',status:'Underway',   imo:'9703291'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[80.5,8.0]},    properties:{name:'EASTERN PIONEER', type:'Oil Tanker',       speed:0,   flag:'SG',status:'At Anchor',   imo:'9287631'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[65.0,14.0]},   properties:{name:'GULF VOYAGER',    type:'Container Ship',   speed:12.4,flag:'SA',status:'Underway',   imo:'9412340'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[72.8,19.5]},   properties:{name:'LNG JAMAL',       type:'LNG Carrier',      speed:16.1,flag:'KR',status:'Underway',   imo:'9234567'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[5.0,43.5]},    properties:{name:'OCEAN PRIDE',     type:'Bulk Carrier',     speed:0,   flag:'PA',status:'Detained',    imo:'9341122'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[27.0,39.0]},   properties:{name:'BOREALIS',        type:'Research Vessel',  speed:6.2, flag:'DE',status:'Underway',   imo:'9484948'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-35.0,47.0]},  properties:{name:'NORTHERN STAR',   type:'Chemical Tanker',  speed:14.8,flag:'NO',status:'Underway',   imo:'9188741'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-20.0,52.0]},  properties:{name:'NORDERNEY',       type:'RoRo',             speed:18.2,flag:'DE',status:'Underway',   imo:'9388042'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-55.0,40.0]},  properties:{name:'ATLANTIC BULKER', type:'Bulk Carrier',     speed:0,   flag:'BS',status:'In Drydock',  imo:'9501238'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-40.0,55.0]},  properties:{name:'QUEEN MARY 2',    type:'Passenger/Cruise', speed:22.1,flag:'GB',status:'Underway',   imo:'9241061'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[4.2,51.9]},    properties:{name:'PACIFIC ATLAS',   type:'Bulk Carrier',     speed:0,   flag:'HK',status:'At Port',     imo:'9601234'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[103.8,1.3]},   properties:{name:'PIONEER TRADER',  type:'General Cargo',    speed:0,   flag:'LR',status:'At Port',     imo:'9499283'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[54.5,25.5]},   properties:{name:'GLOVIS CAPTAIN',  type:'Car Carrier',      speed:15.4,flag:'KR',status:'Underway',   imo:'9680042'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-43.0,-23.0]}, properties:{name:'SUNRISE CARRIER', type:'Bulk Carrier',     speed:12.8,flag:'PA',status:'Underway',   imo:'9412888'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-15.0,-30.0]}, properties:{name:'NORDIC GRACE',    type:'Bulk Carrier',     speed:0,   flag:'MH',status:'Laid Up',     imo:'9388021'}},
-]}
-
-const ROUTE_GEO = { type:'FeatureCollection', features:[
-  {type:'Feature',properties:{name:'Asia–Europe (Suez)',trade:'container'},geometry:{type:'LineString',coordinates:[[121.5,31.2],[103.8,1.3],[80.5,8],[55,12],[43,23.5],[32.5,29.9],[28,34.5],[5,44],[4.2,51.9]]}},
-  {type:'Feature',properties:{name:'Trans-Pacific',trade:'container'},geometry:{type:'LineString',coordinates:[[121.5,25],[150,35],[-170,35],[-118.5,34]]}},
-  {type:'Feature',properties:{name:'Trans-Atlantic',trade:'container'},geometry:{type:'LineString',coordinates:[[4.2,51.9],[-25,47],[-74,40.7]]}},
-  {type:'Feature',properties:{name:'Persian Gulf–Asia',trade:'tanker'},geometry:{type:'LineString',coordinates:[[50,26.5],[72,10],[103.8,1.3],[121.5,25]]}},
-]}
-
-const PORT_GEO = { type:'FeatureCollection', features:[
-  {type:'Feature',geometry:{type:'Point',coordinates:[103.8,1.3]},  properties:{name:'Singapore',  calls:82442,type:'mega'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[121.6,31.2]}, properties:{name:'Shanghai',   calls:43888,type:'mega'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[4.5,51.9]},   properties:{name:'Rotterdam',  calls:29441,type:'major'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-118.2,33.7]},properties:{name:'Los Angeles',calls:18022,type:'major'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[55.3,25.3]},  properties:{name:'Jebel Ali',  calls:15882,type:'major'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[10,53.5]},    properties:{name:'Hamburg',    calls:12441,type:'major'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[129,35.1]},   properties:{name:'Busan',      calls:10442,type:'major'}},
-  {type:'Feature',geometry:{type:'Point',coordinates:[-74,40.7]},   properties:{name:'New York/NJ',calls:8882, type:'major'}},
-]}
-
-const CHOKE_POINTS = [
-  { latlng:[30.8,32.3], name:'Suez Canal', stat:'47 vessels/day'  },
-  { latlng:[26.6,56.4], name:'Hormuz',     stat:'21Mb oil/day'    },
-  { latlng:[1.2,103.9], name:'Malacca',    stat:'84k vessels/yr'  },
-  { latlng:[9.1,-79.5], name:'Panama',     stat:'14k vessels/yr'  },
-  { latlng:[55.0,-13.0],name:'Dover',      stat:'500 vessels/day' },
-]
+import { KPIS, FLEET_TYPES, FLAGS, CERTS, PSC_DATA, MARKET, ACT_POOL, ACT_TIMES } from '../../data/dashboardData'
+import { VESSEL_GEO, ROUTE_GEO, PORT_GEO, CHOKE_POINTS } from '../../data/mapData'
 
 function vesselColor(p) {
   if (p.status === 'Detained')  return '#c8102e'
@@ -216,8 +103,8 @@ const LiveMapCard = memo(function LiveMapCard() {
 
     const chokeLayer = L.layerGroup()
     CHOKE_POINTS.forEach(c => {
-      L.marker(c.latlng, { icon:L.divIcon({ className:'', html:`<div class="chokeLabel">${c.name}</div>`, iconAnchor:[0,0] }) })
-        .bindTooltip(c.stat, { direction:'top' }).addTo(chokeLayer)
+      L.marker([c.lat, c.lng], { icon:L.divIcon({ className:'', html:`<div class="chokeLabel">${c.name}</div>`, iconAnchor:[0,0] }) })
+        .addTo(chokeLayer)
     })
     chokeLayer.addTo(map)
 

@@ -1,0 +1,14 @@
+[
+  {"id":"c01","name":"A.P. Moller-Maersk","type":"Shipping Line",    "country":"Denmark",     "hq_lat":55.68,"hq_lon":12.57, "vessel_count":700,"dwt_label":"43M DWT","fleet_type":"Container"},
+  {"id":"c02","name":"MSC Mediterranean", "type":"Shipping Line",    "country":"Switzerland", "hq_lat":46.20,"hq_lon":6.15,  "vessel_count":620,"dwt_label":"40M DWT","fleet_type":"Container"},
+  {"id":"c03","name":"COSCO Shipping",    "type":"Shipping Line",    "country":"China",       "hq_lat":31.23,"hq_lon":121.47,"vessel_count":450,"dwt_label":"48M DWT","fleet_type":"Mixed"},
+  {"id":"c04","name":"CMA CGM",           "type":"Shipping Line",    "country":"France",      "hq_lat":43.30,"hq_lon":5.37,  "vessel_count":580,"dwt_label":"32M DWT","fleet_type":"Container"},
+  {"id":"c05","name":"Euronav NV",        "type":"Tanker Owner",     "country":"Belgium",     "hq_lat":51.22,"hq_lon":4.40,  "vessel_count":74, "dwt_label":"22M DWT","fleet_type":"VLCC Crude"},
+  {"id":"c06","name":"Star Bulk Carriers","type":"Dry Bulk",         "country":"Greece",      "hq_lat":37.98,"hq_lon":23.73, "vessel_count":128,"dwt_label":"14M DWT","fleet_type":"Dry Bulk"},
+  {"id":"c07","name":"Hapag-Lloyd",       "type":"Shipping Line",    "country":"Germany",     "hq_lat":53.55,"hq_lon":9.99,  "vessel_count":260,"dwt_label":"18M DWT","fleet_type":"Container"},
+  {"id":"c08","name":"Stolt-Nielsen",     "type":"Chemical Tanker",  "country":"Norway",      "hq_lat":59.91,"hq_lon":10.75, "vessel_count":150,"dwt_label":"4M DWT", "fleet_type":"Chemical"},
+  {"id":"c09","name":"Maran Tankers",     "type":"Tanker Owner",     "country":"Greece",      "hq_lat":37.98,"hq_lon":23.73, "vessel_count":60, "dwt_label":"19M DWT","fleet_type":"VLCC/Suezmax"},
+  {"id":"c10","name":"TotalEnergies",     "type":"Oil Major",        "country":"France",      "hq_lat":48.89,"hq_lon":2.24,  "vessel_count":30, "dwt_label":"6M DWT", "fleet_type":"LNG/Tanker"},
+  {"id":"c11","name":"BHP",               "type":"Commodity Major",  "country":"Australia",   "hq_lat":-33.86,"hq_lon":151.21,"vessel_count":0,"dwt_label":"0",      "fleet_type":"Charterer"},
+  {"id":"c12","name":"CNOOC",             "type":"Oil Major",        "country":"China",       "hq_lat":22.28,"hq_lon":114.16,"vessel_count":45, "dwt_label":"8M DWT", "fleet_type":"Tanker/LNG"}
+]

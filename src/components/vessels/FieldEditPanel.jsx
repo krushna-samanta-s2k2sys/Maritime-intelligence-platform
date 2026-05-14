@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { getFieldDef, COUNTRIES, simulateVendorDiff } from '../../data/fieldTypes'
 import { dRand } from '../../data/entities'
+import { SRC_SHORT_CLASSES } from '../../data/vessels'
 
 const TODAY = '2024-01-30'
 
-const SRC_CLS = { IHS:'sIHS', AIS:'sAIS', LR:'sLR', BV:'sBV', DNV:'sDNV', NK:'sNK', KR:'sKR' }
 function Src({ s }) {
-  return <span className={`src ${SRC_CLS[s] || 'sIHS'}`} style={{ fontSize: 8 }}>{s}</span>
+  return <span className={`src ${SRC_SHORT_CLASSES[s] || 'sIHS'}`} style={{ fontSize: 8 }}>{s}</span>
 }
 
 // ── File upload zone ─────────────────────────────────────────────────────────

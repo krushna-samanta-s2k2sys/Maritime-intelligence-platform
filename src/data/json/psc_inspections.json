@@ -1,0 +1,106 @@
+[
+  {
+    "id":"PSC-2024-0130-001","vessel_name":"OCEAN PRIDE","imo_number":"9341122",
+    "flag_display":"🇵🇦 Panama","port_name":"Rotterdam","port_unlocode":"NLRTM",
+    "mou_region":"Paris","inspection_date":"2024-01-30","inspection_type":"Expanded",
+    "total_deficiencies":14,"detained":true,"detention_start":"2024-01-30","detention_end":null,"status":"Detained",
+    "deficiencies":[
+      {"code":"01111","description":"ISM — ship-specific SMS not implemented",  "category":"ISM",                    "severity":"high",   "action":"Detain"},
+      {"code":"01113","description":"ISM — non-conformities not corrected",       "category":"ISM",                    "severity":"high",   "action":"Detain"},
+      {"code":"07106","description":"Fire damper defective",                      "category":"Fire safety",            "severity":"high",   "action":"Detain"},
+      {"code":"02111","description":"Stability information not available",        "category":"Stability",              "severity":"high",   "action":"Detain"},
+      {"code":"04101","description":"Bilge system defective",                     "category":"Machinery",              "severity":"medium", "action":"Rectify before departure"},
+      {"code":"07114","description":"Emergency lighting — not operational",       "category":"Life-saving appliances", "severity":"medium", "action":"Rectify before departure"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0129-001","vessel_name":"SUNRISE CARRIER","imo_number":"9412888",
+    "flag_display":"🇵🇦 Panama","port_name":"Qingdao","port_unlocode":"CNQDG",
+    "mou_region":"Tokyo","inspection_date":"2024-01-29","inspection_type":"Expanded",
+    "total_deficiencies":8,"detained":true,"detention_start":"2024-01-29","detention_end":null,"status":"Detained",
+    "deficiencies":[
+      {"code":"07101","description":"Fire main pressure insufficient",    "category":"Fire safety", "severity":"high",   "action":"Detain"},
+      {"code":"04108","description":"Bilge pump inoperative",             "category":"Machinery",   "severity":"high",   "action":"Detain"},
+      {"code":"06104","description":"Hygiene — accommodation",            "category":"MARPOL",      "severity":"medium", "action":"Rectify before departure"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0128-001","vessel_name":"PIONEER TRADER","imo_number":"9499283",
+    "flag_display":"🇱🇷 Liberia","port_name":"Singapore","port_unlocode":"SGSIN",
+    "mou_region":"Tokyo","inspection_date":"2024-01-28","inspection_type":"Initial",
+    "total_deficiencies":3,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[
+      {"code":"01101","description":"ISPS — drill records incomplete",         "category":"ISPS",        "severity":"low", "action":"Rectify at next port"},
+      {"code":"04201","description":"Garbage management plan — minor",         "category":"MARPOL",      "severity":"low", "action":"Rectify at next port"},
+      {"code":"07201","description":"Fire door — damaged",                     "category":"Fire safety", "severity":"low", "action":"Rectify at next port"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0127-001","vessel_name":"GULF VOYAGER","imo_number":"9412340",
+    "flag_display":"🇸🇦 Saudi Arabia","port_name":"Houston","port_unlocode":"USHOU",
+    "mou_region":"USCG","inspection_date":"2024-01-27","inspection_type":"Initial",
+    "total_deficiencies":6,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[
+      {"code":"02114","description":"Crew rest hours — violation",               "category":"Crew / MLC compliance", "severity":"medium", "action":"Rectify before departure"},
+      {"code":"07108","description":"Portable extinguisher — not recharged",     "category":"Fire safety",           "severity":"low",    "action":"Rectify at next port"},
+      {"code":"04101","description":"Bilge system — minor defect",               "category":"Machinery",             "severity":"low",    "action":"Rectify at next port"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0125-001","vessel_name":"NORDIC GRACE","imo_number":"9388021",
+    "flag_display":"🇲🇭 Marshall Islands","port_name":"Durban","port_unlocode":"ZADUR",
+    "mou_region":"Indian Ocean","inspection_date":"2024-01-25","inspection_type":"Expanded",
+    "total_deficiencies":9,"detained":true,"detention_start":"2024-01-25","detention_end":null,"status":"Detained",
+    "deficiencies":[
+      {"code":"01111","description":"ISM — safety management deficiencies",       "category":"ISM",                    "severity":"high",   "action":"Detain"},
+      {"code":"04109","description":"Lifeboat — release mechanism stiff",         "category":"Life-saving appliances", "severity":"high",   "action":"Detain"},
+      {"code":"07116","description":"Fire detection — sensor faulty",             "category":"Fire safety",            "severity":"high",   "action":"Detain"},
+      {"code":"02101","description":"Manning — officer watch certificate",        "category":"Crew / MLC compliance",  "severity":"medium", "action":"Rectify before departure"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0124-001","vessel_name":"BOREALIS","imo_number":"9484948",
+    "flag_display":"🇩🇪 Germany","port_name":"Piraeus","port_unlocode":"GRPIR",
+    "mou_region":"Paris","inspection_date":"2024-01-24","inspection_type":"Initial",
+    "total_deficiencies":0,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[]
+  },
+  {
+    "id":"PSC-2024-0122-001","vessel_name":"NORTHERN STAR","imo_number":"9188741",
+    "flag_display":"🇳🇴 Norway","port_name":"Marseille","port_unlocode":"FRMRS",
+    "mou_region":"Mediterranean","inspection_date":"2024-01-22","inspection_type":"Initial",
+    "total_deficiencies":2,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[
+      {"code":"04201","description":"SOPEP plan minor amendment required",  "category":"MARPOL",      "severity":"low", "action":"Rectify at next port"},
+      {"code":"07201","description":"Foam applicator — nozzle condition",   "category":"Fire safety", "severity":"low", "action":"Rectify at next port"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0120-001","vessel_name":"EURONAV NINA","imo_number":"9320116",
+    "flag_display":"🇧🇪 Belgium","port_name":"Singapore","port_unlocode":"SGSIN",
+    "mou_region":"Tokyo","inspection_date":"2024-01-20","inspection_type":"Initial",
+    "total_deficiencies":1,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[
+      {"code":"01101","description":"ISPS — drill log minor discrepancy", "category":"ISPS", "severity":"low", "action":"Rectify at next port"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0118-001","vessel_name":"GLOVIS CAPTAIN","imo_number":"9680042",
+    "flag_display":"🇰🇷 South Korea","port_name":"Jebel Ali","port_unlocode":"AEJEA",
+    "mou_region":"Riyadh","inspection_date":"2024-01-18","inspection_type":"Initial",
+    "total_deficiencies":4,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[
+      {"code":"07101","description":"Fire hose — coupling damaged",           "category":"Fire safety",           "severity":"low",    "action":"Rectify at next port"},
+      {"code":"04202","description":"Waste management log — missing entry",   "category":"MARPOL",                "severity":"low",    "action":"Rectify at next port"},
+      {"code":"01112","description":"SMS non-conformity record",              "category":"ISM",                   "severity":"medium", "action":"Rectify before departure"},
+      {"code":"02201","description":"Work/rest hours — recording",            "category":"Crew / MLC compliance", "severity":"low",    "action":"Rectify at next port"}
+    ]
+  },
+  {
+    "id":"PSC-2024-0115-001","vessel_name":"PIONEER MAX","imo_number":"9612988",
+    "flag_display":"🇲🇭 Marshall Islands","port_name":"Rotterdam","port_unlocode":"NLRTM",
+    "mou_region":"Paris","inspection_date":"2024-01-15","inspection_type":"Initial",
+    "total_deficiencies":0,"detained":false,"detention_start":null,"detention_end":null,"status":"No detention",
+    "deficiencies":[]
+  }
+]

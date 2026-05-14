@@ -1,32 +1,6 @@
 import { useState, useRef } from 'react'
-import { ATTRIBUTE_TREE } from '../../data/attributeTree'
+import { ATTRIBUTE_TREE, NODE_ENTITY_KEYS } from '../../data/attributeRegistry'
 import { getChangedFieldCount } from '../../data/vesselTimeline'
-
-const NODE_ENTITY_KEYS = {
-  'general':          ['imo', 'flag'],
-  'gen-identity':     ['imo', 'flag'],
-  'gen-status':       ['imo'],
-  'gen-crew':         ['crew'],
-  'ownership':        ['ownership', 'finance'],
-  'own-regowner':     ['ownership'],
-  'own-techman':      ['ownership'],
-  'own-shipman':      ['ownership'],
-  'own-docco':        ['ownership'],
-  'own-bareboat':     ['ownership'],
-  'own-charterer':    ['ownership'],
-  'own-sp':           ['finance'],
-  'classification':   ['class', 'certs'],
-  'class-society':    ['class'],
-  'class-notation':   ['class'],
-  'class-surveys':    ['class', 'certs'],
-  'safety':           ['certs'],
-  'safety-doc':       ['certs'],
-  'safety-smc':       ['certs'],
-  'safety-iopp':      ['certs'],
-  'safety-insurance': ['ownership'],
-  'compliance':       ['sanctions'],
-  'comp-sanctions':   ['sanctions'],
-}
 
 function getNodeChg(vessel, nodeId, curDate) {
   const keys = NODE_ENTITY_KEYS[nodeId]

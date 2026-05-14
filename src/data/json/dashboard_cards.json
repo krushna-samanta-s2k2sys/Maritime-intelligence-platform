@@ -1,0 +1,28 @@
+{
+  "categories": [
+    { "key": "kpi",    "label": "KPI Cards",  "icon": "▦"  },
+    { "key": "map",    "label": "Maps",       "icon": "🌍" },
+    { "key": "feed",   "label": "Feeds",      "icon": "⚡" },
+    { "key": "chart",  "label": "Charts",     "icon": "📊" },
+    { "key": "table",  "label": "Tables",     "icon": "📋" },
+    { "key": "market", "label": "Market",     "icon": "📈" }
+  ],
+  "cards": [
+    { "id": "kpi-row",         "title": "All KPI Summary",         "icon": "▦",  "category": "kpi",    "default_width": 12, "description": "Full row of all 8 KPI cards side-by-side" },
+    { "id": "kpi-fleet",       "title": "Total Vessels",           "icon": "🚢", "category": "kpi",    "default_width": 3,  "description": "Total vessels tracked globally" },
+    { "id": "kpi-active",      "title": "Active Fleet",            "icon": "✅", "category": "kpi",    "default_width": 3,  "description": "Percentage of fleet currently in service" },
+    { "id": "kpi-ports",       "title": "Ports Tracked",           "icon": "⚓", "category": "kpi",    "default_width": 3,  "description": "Number of ports in the database" },
+    { "id": "kpi-psc",         "title": "PSC Detentions YTD",      "icon": "🔍", "category": "kpi",    "default_width": 3,  "description": "Port State Control detentions year-to-date" },
+    { "id": "kpi-certs",       "title": "Certs Expiring (30d)",    "icon": "📄", "category": "kpi",    "default_width": 3,  "description": "Certificates expiring within 30 days" },
+    { "id": "kpi-sanctions",   "title": "Active Sanctions",        "icon": "🚨", "category": "kpi",    "default_width": 3,  "description": "Active sanctions designations" },
+    { "id": "kpi-companies",   "title": "Companies",               "icon": "🏢", "category": "kpi",    "default_width": 3,  "description": "Total companies in registry" },
+    { "id": "kpi-ais",         "title": "AIS Points (total)",      "icon": "📡", "category": "kpi",    "default_width": 3,  "description": "Total AIS data points ingested" },
+    { "id": "live-map",        "title": "Global Fleet — Live AIS", "icon": "🌍", "category": "map",    "default_width": 8,  "description": "World map with live AIS vessel positions and trade routes" },
+    { "id": "live-activity",   "title": "Live Activity Feed",      "icon": "⚡", "category": "feed",   "default_width": 4,  "description": "Real-time stream of maritime events" },
+    { "id": "fleet-types",     "title": "Fleet by Ship Type",      "icon": "📊", "category": "chart",  "default_width": 4,  "description": "Vessel count distribution by ship type" },
+    { "id": "flag-states",     "title": "Top Flag States",         "icon": "🏴", "category": "chart",  "default_width": 4,  "description": "Largest flag state registries by vessel count" },
+    { "id": "certs-expiring",  "title": "Certificates Expiring",   "icon": "⚠️", "category": "table",  "default_width": 4,  "description": "Upcoming certificate expirations by type" },
+    { "id": "psc-detentions",  "title": "Recent PSC Detentions",   "icon": "🔍", "category": "table",  "default_width": 6,  "description": "Latest Port State Control detention records" },
+    { "id": "market-snapshot", "title": "Market Snapshot",         "icon": "📈", "category": "market", "default_width": 6,  "description": "Baltic freight indices and shipping market rates" }
+  ]
+}

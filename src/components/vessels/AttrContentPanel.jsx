@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ATTRIBUTE_TREE } from '../../data/attributeTree'
-import { getAttrValue, getAttrValueAtDate } from '../../data/attrValueMap'
+import { ATTRIBUTE_TREE, getAttrValue, getAttrValueAtDate } from '../../data/attributeRegistry'
 import { dRand, buildVendorList } from '../../data/entities'
 import { simulateVendorDiff } from '../../data/fieldTypes'
 

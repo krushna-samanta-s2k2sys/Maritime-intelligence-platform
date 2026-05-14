@@ -1,4 +1,8 @@
-// Maps company attribute tree leaf IDs to company data fields
+import companiesData from './json/companies_detail.json'
+
+export const COMPANIES = companiesData
+
+// ─── Attribute value getter ───────────────────────────────────────────────────
 
 const MAP = {
   // Identity → Legal
@@ -105,7 +109,7 @@ const MAP = {
   'co-fleet-managed':  c => c.fleet?.managed ? String(c.fleet.managed) : '—',
   'co-fleet-avgdwt':   c => c.fleet?.avgDwt || '—',
   'co-fleet-totaldwt': c => c.fleet?.totalDwt || '—',
-  'co-fleet-avgage':   c => c.fleet?.avgAge ? c.fleet.avgAge + ' yrs' : '—',
+  'co-fleet-avgage':   c => c.fleet?.avgage ? c.fleet.avgage + ' yrs' : '—',
   'co-fleet-newbuild': c => c.fleet?.newbuildOrders ? String(c.fleet.newbuildOrders) : '—',
   'co-fleet-scrapped': c => c.fleet?.scrapped ? String(c.fleet.scrapped) : '—',
   'co-fleet-sold':     c => c.fleet?.sold ? String(c.fleet.sold) : '—',
@@ -143,7 +147,7 @@ const MAP = {
   // PSC Performance
   'co-psc-totalinsp':  c => c.psc?.totalInsp ? String(c.psc.totalInsp) : '—',
   'co-psc-detentions': c => c.psc?.detentions ? String(c.psc.detentions) : '—',
-  'co-psc-detrate':    c => c.psc?.detRate ? c.psc.detRate + '%' : '—',
+  'co-psc-detrate':    c => c.psc?.detRate || '—',
   'co-psc-deficiencies':c=> c.psc?.deficiencies ? String(c.psc.deficiencies) : '—',
   'co-psc-defrate':    c => c.psc?.defRate ? c.psc.defRate.toFixed(1) : '—',
   'co-psc-lastinsp':   c => c.psc?.lastInsp || '—',
@@ -151,8 +155,6 @@ const MAP = {
   'co-psc-lastresult': c => c.psc?.lastResult || '—',
   'co-psc-risk':       c => c.psc?.risk || '—',
   'co-psc-blacklisted':c => c.psc?.blacklisted ? 'Yes' : 'No',
-
-  // PSC Deficiency Categories
   'co-psc-def-fire':   c => c.psc?.defFire ? String(c.psc.defFire) : '—',
   'co-psc-def-lsa':    c => c.psc?.defLSA ? String(c.psc.defLSA) : '—',
   'co-psc-def-ism':    c => c.psc?.defISM ? String(c.psc.defISM) : '—',
@@ -197,9 +199,6 @@ const MAP = {
   'co-sanc-australia': c => c.sanctions?.australia ? 'Yes' : 'No',
   'co-sanc-japan':     c => c.sanctions?.japan ? 'Yes' : 'No',
   'co-sanc-canada':    c => c.sanctions?.canada ? 'Yes' : 'No',
-  'co-sanc-date':      c => c.sanctions?.date || '—',
-  'co-sanc-reason':    c => c.sanctions?.reason || '—',
-  'co-sanc-notes':     c => c.sanctions?.notes || '—',
   'co-sanc-lastscreened': c => c.sanctions?.lastScreened || '—',
   'co-sanc-risk':      c => c.sanctions?.risk || 'Low',
 
@@ -266,25 +265,84 @@ export function getCompanyAttrValue(company, leafId) {
   try {
     const v = fn(company)
     return v == null || v === '' ? '—' : String(v)
-  } catch {
-    return '—'
-  }
+  } catch { return '—' }
 }
 
-// Simple history generator for company attributes
 export function generateCompanyHistory(label, company, fallbackVal) {
   const val = fallbackVal || '—'
   const baseYear = company.foundedYear || 2010
   const rows = []
-
-  // Current value
   rows.push({ val, from: '2024-01-01', to: null, src: 'IHS Fairplay' })
-
-  // Simulate 1-2 historical values
   if (val !== '—') {
     const prevYear = Math.max(baseYear, new Date().getFullYear() - 4)
     rows.push({ val: val + ' (prev)', from: `${prevYear}-01-01`, to: '2023-12-31', src: 'IHS Fairplay' })
   }
-
   return rows
 }
+
+// ─── Column / filter config ───────────────────────────────────────────────────
+
+export const CO_COL_GROUPS = [
+  { key: 'identity',   label: 'Identity & Location' },
+  { key: 'fleet',      label: 'Fleet & Operations' },
+  { key: 'financial',  label: 'Financial' },
+  { key: 'psc',        label: 'PSC & Safety' },
+  { key: 'compliance', label: 'Sanctions & Compliance' },
+]
+
+export const CO_COLUMNS = [
+  { id: 'name',      label: 'Company Name', always: true },
+  { id: 'lrnum',     label: 'LR Number',    always: true },
+  { id: 'type',      label: 'Type',         group: 'identity' },
+  { id: 'country',   label: 'Country',      group: 'identity' },
+  { id: 'city',      label: 'City',         group: 'identity' },
+  { id: 'status',    label: 'Status',       group: 'identity' },
+  { id: 'fleet',     label: 'Fleet',        group: 'fleet' },
+  { id: 'employees', label: 'Employees',    group: 'fleet' },
+  { id: 'revenue',   label: 'Revenue',      group: 'financial' },
+  { id: 'pscRisk',   label: 'PSC Risk',     group: 'psc' },
+  { id: 'sanc',      label: 'Sanctions',    group: 'compliance' },
+]
+
+export const STATUS_CLS = { Active: 'stA', Inactive: 'stI', Dissolved: 'stR', Dormant: 'stI' }
+
+export function getCompanyCellValue(co, colId) {
+  switch (colId) {
+    case 'name':      return co.name
+    case 'lrnum':     return co.lrNumber
+    case 'type':      return co.type
+    case 'country':   return co.country
+    case 'city':      return co.city
+    case 'status':    return co.status
+    case 'fleet':     return co.fleet?.total ? String(co.fleet.total) : '—'
+    case 'employees': return co.employees ? co.employees.toLocaleString() : '—'
+    case 'revenue':   return co.financial?.revenue || '—'
+    case 'pscRisk':   return co.psc?.risk || '—'
+    case 'sanc':      return [co.sanctions?.ofac, co.sanctions?.un, co.sanctions?.eu].some(Boolean) ? 'Listed' : 'Clear'
+    default:          return '—'
+  }
+}
+
+export const CO_FILTER_FIELDS = [
+  { id: 'type',       label: 'Company Type',          filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.type))].map(v => ({ value: v, label: v, count: cos.filter(c => c.type === v).length })) },
+  { id: 'country',    label: 'Country',               filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.country))].map(v => ({ value: v, label: v, count: cos.filter(c => c.country === v).length })) },
+  { id: 'status',     label: 'Status',                filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.status))].map(v => ({ value: v, label: v, count: cos.filter(c => c.status === v).length })) },
+  { id: 'pp',         label: 'Public / Private',      filterType: 'multiselect', getValues: () => [{ value: 'Public', label: 'Public', count: 0 }, { value: 'Private', label: 'Private', count: 0 }] },
+  { id: 'roles',      label: 'Company Role',          filterType: 'multiselect', getValues: cos => { const all = [...new Set(cos.flatMap(c => c.roles || []))]; return all.map(v => ({ value: v, label: v, count: cos.filter(c => (c.roles||[]).includes(v)).length })) } },
+  { id: 'foundedYear',label: 'Founded Year',          filterType: 'range' },
+  { id: 'employees',  label: 'Employees',             filterType: 'range' },
+  { id: 'fleet',      label: 'Fleet Size (vessels)',  filterType: 'range' },
+  { id: 'avgage',     label: 'Fleet Avg Age (years)', filterType: 'range' },
+  { id: 'psc-risk',   label: 'PSC Risk',              filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.psc?.risk).filter(Boolean))].map(v => ({ value: v, label: v, count: cos.filter(c => c.psc?.risk === v).length })) },
+  { id: 'detRate',    label: 'PSC Detention Rate %',  filterType: 'range' },
+  { id: 'ism-auditor',label: 'ISM Auditor',           filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.ism?.auditor).filter(Boolean))].map(v => ({ value: v, label: v, count: cos.filter(c => c.ism?.auditor === v).length })) },
+  { id: 'mlc',        label: 'MLC Status',            filterType: 'multiselect', getValues: () => [{ value: 'Compliant', label: 'Compliant', count: 0 }, { value: 'Non-compliant', label: 'Non-compliant', count: 0 }] },
+  { id: 'sanctions',  label: 'Sanctions',             filterType: 'multiselect', getValues: () => [{ value: 'Clear', label: 'Clear', count: 0 }, { value: 'Listed', label: 'Listed', count: 0 }] },
+  { id: 'ofac',       label: 'OFAC Listed',           filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Yes', count: 0 }, { value: 'No', label: 'No', count: 0 }] },
+  { id: 'amlRisk',    label: 'AML Risk',              filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.kyc?.amlRisk).filter(Boolean))].map(v => ({ value: v, label: v, count: cos.filter(c => c.kyc?.amlRisk === v).length })) },
+  { id: 'kycTier',    label: 'KYC Tier',              filterType: 'multiselect', getValues: cos => [...new Set(cos.map(c => c.kyc?.tier).filter(Boolean))].map(v => ({ value: v, label: v, count: cos.filter(c => c.kyc?.tier === v).length })) },
+  { id: 'cii',        label: 'Average CII Rating',   filterType: 'multiselect', getValues: () => ['A','B','C','D','E'].map(v => ({ value: v, label: 'CII ' + v, count: 0 })) },
+  { id: 'poseidon',   label: 'Poseidon Principles',  filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Signatory', count: 0 }, { value: 'No', label: 'Non-signatory', count: 0 }] },
+  { id: 'iso14001',   label: 'ISO 14001',             filterType: 'multiselect', getValues: () => [{ value: 'Yes', label: 'Certified', count: 0 }, { value: 'No', label: 'Not Certified', count: 0 }] },
+  { id: 'creditRisk', label: 'Payment Risk',         filterType: 'multiselect', getValues: () => ['Very Low','Low','Medium','High'].map(v => ({ value: v, label: v, count: 0 })) },
+]

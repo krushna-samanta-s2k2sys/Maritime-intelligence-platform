@@ -1,62 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import L from 'leaflet';
-
-const VESSELS = [
-  {id:'v01',name:'MT NORDIC STAR',imo:'9234567',type:'Crude Oil Tanker',flag:'Marshall Islands',status:'Underway',spd:13.2,hdg:285,lat:25.5,lon:58.2,dest:'SINGAPORE',eta:'2025-05-10',lastPort:'KHARG ISLAND',atd:'2025-04-28',cargo:'2,000,000 BBL Crude',dwt:298000,
-   route:[{port:'Kharg Island',locode:'IR KHK',lat:29.2,lon:50.3,atd:'2025-04-28',type:'done'},
-          {port:'Fujairah',locode:'AE FUJ',lat:25.1,lon:56.3,ata:'2025-04-30',atd:'2025-05-01',type:'done'},
-          {port:'Singapore',locode:'SG SIN',lat:1.26,lon:103.8,eta:'2025-05-10',type:'future'}]},
-  {id:'v02',name:'MV OCEAN PIONEER',imo:'9345678',type:'Bulk Carrier',flag:'Liberia',status:'In Port',spd:0,hdg:0,lat:22.5,lon:114.1,dest:'PORT HEDLAND',eta:'2025-05-15',lastPort:'HONG KONG',ata:'2025-05-03',cargo:'Iron Ore',dwt:180000,
-   route:[{port:'Port Hedland',locode:'AU PHE',lat:-20.3,lon:118.6,atd:'2025-04-20',type:'done'},
-          {port:'Hong Kong',locode:'HK HKG',lat:22.3,lon:114.2,ata:'2025-05-03',type:'current'},
-          {port:'Port Hedland',locode:'AU PHE',lat:-20.3,lon:118.6,eta:'2025-05-15',type:'future'}]},
-  {id:'v03',name:'MT AEGEAN GLORY',imo:'9456789',type:'Product Tanker',flag:'Greece',status:'Underway',spd:14.8,hdg:330,lat:36.5,lon:24.2,dest:'ROTTERDAM',eta:'2025-05-08',lastPort:'PORTSAID',atd:'2025-05-04',cargo:'Naphtha 45,000 MT',dwt:52000,
-   route:[{port:'Yanbu',locode:'SA YNB',lat:24.1,lon:38.1,atd:'2025-04-30',type:'done'},
-          {port:'Port Said',locode:'EG PSD',lat:31.3,lon:32.3,ata:'2025-05-04',atd:'2025-05-04',type:'done'},
-          {port:'Rotterdam',locode:'NL RTM',lat:51.9,lon:4.5,eta:'2025-05-08',type:'future'}]},
-  {id:'v04',name:'MV PACIFIC BRIDGE',imo:'9567890',type:'Container',flag:'Panama',status:'Underway',spd:18.4,hdg:270,lat:28.3,lon:155.2,dest:'LONG BEACH',eta:'2025-05-09',lastPort:'YOKOHAMA',atd:'2025-05-03',cargo:'4,200 TEU',dwt:65000,
-   route:[{port:'Shanghai',locode:'CN SHA',lat:31.2,lon:121.5,atd:'2025-04-29',type:'done'},
-          {port:'Yokohama',locode:'JP YOK',lat:35.4,lon:139.7,ata:'2025-05-01',atd:'2025-05-03',type:'done'},
-          {port:'Long Beach',locode:'US LGB',lat:33.75,lon:-118.2,eta:'2025-05-09',type:'future'}]},
-  {id:'v05',name:'LNG ARCTIC SPIRIT',imo:'9678901',type:'LNG Carrier',flag:'Bermuda',status:'At Anchor',spd:0,hdg:180,lat:22.3,lon:113.6,dest:'TOKYO',eta:'2025-05-12',lastPort:'QATAR RAS LAFFAN',atd:'2025-04-25',cargo:'135,000 CBM LNG',dwt:95000,
-   route:[{port:'Ras Laffan',locode:'QA RAS',lat:25.9,lon:51.6,atd:'2025-04-25',type:'done'},
-          {port:'Guangzhou Anchorage',locode:'CN CAN',lat:22.3,lon:113.6,ata:'2025-05-04',type:'current'},
-          {port:'Tokyo LNG Terminal',locode:'JP TKO',lat:35.6,lon:139.8,eta:'2025-05-12',type:'future'}]},
-  {id:'v06',name:'MV CASPIAN STAR',imo:'9789012',type:'Bulk Carrier',flag:'Cyprus',status:'Underway',spd:11.5,hdg:200,lat:12.2,lon:44.5,dest:'DJIBOUTI',eta:'2025-05-06',lastPort:'SUEZ',atd:'2025-05-04',cargo:'Grain 60,000 MT',dwt:76000,
-   route:[{port:'Nikolaev',locode:'UA NLK',lat:46.9,lon:32.0,atd:'2025-04-26',type:'done'},
-          {port:'Suez',locode:'EG SUE',lat:29.9,lon:32.5,ata:'2025-05-04',atd:'2025-05-04',type:'done'},
-          {port:'Djibouti',locode:'DJ JIB',lat:11.6,lon:43.1,eta:'2025-05-06',type:'future'}]},
-  {id:'v07',name:'MT PERSEVERANCE',imo:'9890123',type:'Crude Oil Tanker',flag:'Greece',status:'In Port',spd:0,hdg:0,lat:51.95,lon:4.13,dest:'NOVOROSSIYSK',eta:'2025-05-20',lastPort:'ROTTERDAM',ata:'2025-05-02',cargo:'Ballast',dwt:105000,
-   route:[{port:'Rotterdam',locode:'NL RTM',lat:51.9,lon:4.5,ata:'2025-05-02',type:'current'},
-          {port:'Novorossiysk',locode:'RU NOV',lat:44.7,lon:37.8,eta:'2025-05-20',type:'future'}]},
-  {id:'v08',name:'MV GLOBAL HARMONY',imo:'9901234',type:'Container',flag:'Singapore',status:'Drifting',spd:0.3,hdg:45,lat:1.5,lon:105.0,dest:'SINGAPORE',eta:'2025-05-06',lastPort:'MANILA',atd:'2025-05-03',cargo:'2,800 TEU',dwt:38000,
-   route:[{port:'Manila',locode:'PH MNL',lat:14.6,lon:120.9,atd:'2025-05-03',type:'done'},
-          {port:'Singapore',locode:'SG SIN',lat:1.26,lon:103.8,eta:'2025-05-06',type:'future'}]},
-];
-
-const PORT_CALLS = [
-  {vessel:'MT NORDIC STAR',imo:'9234567',port:'Fujairah Anchorage',locode:'AE FUJ',ata:'2025-04-30 08:15',atd:'2025-05-01 14:30',purpose:'Bunkering',vol:'800 MT IFO380',berth:'Anchorage A4'},
-  {vessel:'MV OCEAN PIONEER',imo:'9345678',port:'Hong Kong',locode:'HK HKG',ata:'2025-05-03 06:00',atd:'ETA 2025-05-05',purpose:'Discharging',vol:'180,000 MT Iron Ore',berth:'Kwai Tsing T9'},
-  {vessel:'MT AEGEAN GLORY',imo:'9456789',port:'Port Said',locode:'EG PSD',ata:'2025-05-04 10:20',atd:'2025-05-04 22:45',purpose:'Transit / Suez',vol:'—',berth:'Roads'},
-  {vessel:'MV PACIFIC BRIDGE',imo:'9567890',port:'Yokohama',locode:'JP YOK',ata:'2025-05-01 18:00',atd:'2025-05-03 07:30',purpose:'Loading/Discharging',vol:'1,200 TEU loaded / 800 discharged',berth:'Honmoku C-2'},
-  {vessel:'LNG ARCTIC SPIRIT',imo:'9678901',port:'Guangzhou Anchorage',locode:'CN CAN',ata:'2025-05-04 00:00',atd:'ETA 2025-05-07',purpose:'Waiting berth',vol:'—',berth:'Outer Anchorage'},
-  {vessel:'MV CASPIAN STAR',imo:'9789012',port:'Suez',locode:'EG SUE',ata:'2025-05-04 06:30',atd:'2025-05-04 09:15',purpose:'Canal transit',vol:'—',berth:'Waiting anchorage'},
-  {vessel:'MT PERSEVERANCE',imo:'9890123',port:'Rotterdam',locode:'NL RTM',ata:'2025-05-02 14:00',atd:'ETA 2025-05-06',purpose:'Loading',vol:'105,000 MT Crude',berth:'Europoort T11'},
-];
-
-const STATUS_COLOR = {Underway:'#137333','In Port':'#1558d6','At Anchor':'#b45309',Drifting:'#888'};
-const SC = {Underway:'sdG','In Port':'sdB','At Anchor':'sdA',Drifting:'sdR'};
-
-const MAP_PORTS = [
-  {n:'Singapore',lat:1.26,lon:103.8},{n:'Rotterdam',lat:51.9,lon:4.5},{n:'Hong Kong',lat:22.3,lon:114.2},
-  {n:'Fujairah',lat:25.1,lon:56.3},{n:'Kharg Island',lat:29.2,lon:50.3},{n:'Ras Laffan',lat:25.9,lon:51.6},
-  {n:'Long Beach',lat:33.75,lon:-118.2},{n:'Yokohama',lat:35.4,lon:139.7},{n:'Djibouti',lat:11.6,lon:43.1},
-  {n:'Port Hedland',lat:-20.3,lon:118.6},{n:'Manila',lat:14.6,lon:120.9},{n:'Novorossiysk',lat:44.7,lon:37.8},
-];
-const CHOKE = [
-  {n:'Suez Canal',lat:30.2,lon:32.5},{n:'Strait of Hormuz',lat:26.6,lon:56.2},
-  {n:'Strait of Malacca',lat:2.3,lon:103.5},{n:'Bab-el-Mandeb',lat:12.6,lon:43.3},
-];
+import { MOVEMENT_VESSELS, PORT_CALLS } from '../data/movementsData';
+import { AIS_STATUS_COLORS, AIS_CHOKE, GIS_PORTS } from '../data/mapData';
 
 export default function Movements() {
   const [srch, setSrch] = useState('');
@@ -74,7 +19,7 @@ export default function Movements() {
   const markersRef = useRef({});
   const tileRef = useRef({});
 
-  const filtered = useMemo(() => VESSELS.filter(v => {
+  const filtered = useMemo(() => MOVEMENT_VESSELS.filter(v => {
     if (typFil && v.type !== typFil) return false;
     if (stFil && v.status !== stFil) return false;
     if (srch) {
@@ -84,7 +29,7 @@ export default function Movements() {
     return true;
   }), [srch, typFil, stFil]);
 
-  const selVessel = VESSELS.find(v => v.id === selId);
+  const selVessel = MOVEMENT_VESSELS.find(v => v.id === selId);
 
   useEffect(() => {
     if (mapInst.current) return;
@@ -101,15 +46,15 @@ export default function Movements() {
     const dkLayer = L.layerGroup();
     layerRefs.current = {routes:rLayer,vessels:vLayer,ports:pLayer,choke:cLayer,dark:dkLayer};
 
-    VESSELS.forEach(v => {
+    MOVEMENT_VESSELS.forEach(v => {
       const coords = v.route.map(r => [r.lat, r.lon]);
       if (coords.length > 1) {
         L.polyline(coords, {color:'#4d7ef7',weight:1.5,opacity:0.5,dashArray:'4 4'}).addTo(rLayer);
       }
     });
 
-    VESSELS.forEach(v => {
-      const col = STATUS_COLOR[v.status] || '#888';
+    MOVEMENT_VESSELS.forEach(v => {
+      const col = AIS_STATUS_COLORS[v.status] || '#888';
       const m = L.circleMarker([v.lat, v.lon], {radius:7,color:col,fillColor:col,fillOpacity:.85,weight:2});
       m.bindTooltip(`<strong>${v.name}</strong><br>IMO ${v.imo}<br>${v.status} · ${v.spd} kts<br>→ ${v.dest}`, {sticky:true});
       m.on('click', () => setSelId(v.id));
@@ -117,12 +62,12 @@ export default function Movements() {
       markersRef.current[v.id] = {marker: m, lat: v.lat, lon: v.lon};
     });
 
-    MAP_PORTS.forEach(p => {
+    GIS_PORTS.forEach(p => {
       L.circleMarker([p.lat, p.lon], {radius:5,color:'#f59e0b',fillColor:'#f59e0b',fillOpacity:.9,weight:1})
        .bindTooltip(p.n).addTo(pLayer);
     });
 
-    CHOKE.forEach(c => {
+    AIS_CHOKE.forEach(c => {
       L.circleMarker([c.lat, c.lon], {radius:8,color:'#ea580c',fillColor:'#ea580c',fillOpacity:.3,weight:2,dashArray:'3 3'}).addTo(cLayer);
       L.circleMarker([c.lat, c.lon], {radius:3,color:'#ea580c',fillColor:'#ea580c',fillOpacity:1,weight:1})
        .bindTooltip(`⛔ ${c.n}`, {sticky:true}).addTo(cLayer);
@@ -157,7 +102,7 @@ export default function Movements() {
 
   useEffect(() => {
     if (!selId || !mapInst.current) return;
-    const v = VESSELS.find(x => x.id === selId);
+    const v = MOVEMENT_VESSELS.find(x => x.id === selId);
     if (v) mapInst.current.setView([v.lat, v.lon], 6, {animate:true});
   }, [selId]);
 
@@ -270,7 +215,7 @@ export default function Movements() {
                       <div style={{fontSize:12,fontWeight:700,color:'var(--txt)'}}>{v.name}</div>
                       <div style={{fontSize:10,color:'var(--txt3)',marginTop:1}}>IMO {v.imo} · {v.type}</div>
                       <div style={{fontSize:10,marginTop:3,display:'flex',gap:5,alignItems:'center',flexWrap:'wrap'}}>
-                        <div style={{width:7,height:7,borderRadius:'50%',background:STATUS_COLOR[v.status]||'#888',flexShrink:0}}/>
+                        <div style={{width:7,height:7,borderRadius:'50%',background:AIS_STATUS_COLORS[v.status]||'#888',flexShrink:0}}/>
                         <span style={{fontSize:10,color:'var(--txt2)'}}>{v.status}</span>
                         {v.spd > 0 && <span style={{fontSize:10,color:'var(--txt3)'}}>{v.spd} kts</span>}
                         {v.dest && <span className="tag tB" style={{fontSize:9}}>→ {v.dest}</span>}
@@ -308,7 +253,7 @@ export default function Movements() {
             )}
             {lTab === 'voyages' && (
               <div style={{padding:10}}>
-                {VESSELS.map(v => (
+                {MOVEMENT_VESSELS.map(v => (
                   <div key={v.id} onClick={()=>setSelId(v.id)}
                     style={{background:'#fff',border:'1px solid var(--bd)',borderRadius:5,padding:10,marginBottom:8,cursor:'pointer'}}>
                     <div style={{fontSize:11,fontWeight:700,marginBottom:4}}>🚢 {v.name}</div>

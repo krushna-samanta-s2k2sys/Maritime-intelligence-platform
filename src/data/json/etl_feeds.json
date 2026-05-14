@@ -1,0 +1,209 @@
+[
+  {
+    "id": "f01", "name": "Liberia Registry",     "category": "flag",   "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "SFTP", "host": "ftp.liscr.com",                      "user": "sp_extract",  "file_pattern": "vessels_*.csv",  "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 2 * * *",    "frequency": "Daily",     "mode": "Delta", "timeout_s": 120, "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-F01", "field": "imo_number",    "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-F02", "field": "vessel_name",   "severity": "warn",  "expression": "len>1 && len<100"  },
+      { "id": "QC-F03", "field": "gross_tonnage", "severity": "warn",  "expression": "val>0 && val<500000" }
+    ],
+    "field_mappings": [
+      { "source_field": "IMO",         "target_entity": "vessel", "target_field": "imo_number",    "transform": "trim"       },
+      { "source_field": "VESSEL_NAME", "target_entity": "vessel", "target_field": "name",          "transform": "titlecase"  },
+      { "source_field": "GT",          "target_entity": "vessel", "target_field": "gross_t",       "transform": "to_int"     },
+      { "source_field": "FLAG",        "target_entity": "vessel", "target_field": "flag_code",     "transform": "iso3166"    }
+    ]
+  },
+  {
+    "id": "f02", "name": "Panama Registry",      "category": "flag",   "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.segumar.com",                     "user": "sp_api",      "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "0 3 * * *",    "frequency": "Daily",     "mode": "Full",  "timeout_s": 180, "retry_count": 2 },
+    "qc_rules": [
+      { "id": "QC-F04", "field": "imo_number",       "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-F05", "field": "registration_date", "severity": "warn",  "expression": "isdate && not_future" }
+    ],
+    "field_mappings": [
+      { "source_field": "imoNo",      "target_entity": "vessel", "target_field": "imo_number", "transform": "trim"      },
+      { "source_field": "vesselName", "target_entity": "vessel", "target_field": "name",       "transform": "titlecase" },
+      { "source_field": "flagState",  "target_entity": "vessel", "target_field": "flag_code",  "transform": "iso3166"   }
+    ]
+  },
+  {
+    "id": "f03", "name": "Marshall Islands",     "category": "flag",   "frequency": "Daily",     "status": "amber",  "enabled": true,
+    "connection": { "type": "SFTP", "host": "ftp.register.marshallislands-mahi.com", "user": "sp_mahi", "file_pattern": "MI_vessels_*.csv", "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 4 * * *",    "frequency": "Daily",     "mode": "Delta", "timeout_s": 90,  "retry_count": 3 },
+    "qc_rules": [{ "id": "QC-F06", "field": "imo_number", "severity": "error", "expression": "len==7 && isdigit" }],
+    "field_mappings": [
+      { "source_field": "IMO",  "target_entity": "vessel", "target_field": "imo_number", "transform": "trim"      },
+      { "source_field": "Name", "target_entity": "vessel", "target_field": "name",       "transform": "titlecase" }
+    ]
+  },
+  {
+    "id": "f04", "name": "Bahamas Registry",     "category": "flag",   "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "EMAIL", "host": "mail.bahamasmaritimeauthority.com", "user": "extracts@", "file_pattern": "BMA_*.xlsx", "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 6 * * *",    "frequency": "Daily",     "mode": "Full",  "timeout_s": 60,  "retry_count": 2 },
+    "qc_rules": [{ "id": "QC-F07", "field": "imo_number", "severity": "error", "expression": "len==7 && isdigit" }],
+    "field_mappings": [
+      { "source_field": "IMO Number",  "target_entity": "vessel", "target_field": "imo_number", "transform": "trim"      },
+      { "source_field": "Vessel Name", "target_entity": "vessel", "target_field": "name",       "transform": "titlecase" }
+    ]
+  },
+  {
+    "id": "f05", "name": "Singapore MPA",        "category": "flag",   "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.mpa.gov.sg",                      "user": "sp_mpa",      "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "30 1 * * *",   "frequency": "Daily",     "mode": "Delta", "timeout_s": 120, "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-F08", "field": "imo_number",       "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-F09", "field": "port_of_registry", "severity": "info",  "expression": "not_empty"         }
+    ],
+    "field_mappings": [
+      { "source_field": "imoNumber",       "target_entity": "vessel", "target_field": "imo_number",      "transform": "trim"      },
+      { "source_field": "vesselName",      "target_entity": "vessel", "target_field": "name",            "transform": "titlecase" },
+      { "source_field": "portOfRegistry",  "target_entity": "vessel", "target_field": "port_of_registry","transform": "trim"      }
+    ]
+  },
+  {
+    "id": "c01", "name": "DNV GL",               "category": "class",  "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.dnv.com",                         "user": "sp_dnv",      "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "0 1 * * *",    "frequency": "Daily",     "mode": "Delta", "timeout_s": 300, "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-C01", "field": "imo_number",     "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-C02", "field": "class_notation", "severity": "warn",  "expression": "not_empty"         },
+      { "id": "QC-C03", "field": "survey_due",     "severity": "warn",  "expression": "isdate"            }
+    ],
+    "field_mappings": [
+      { "source_field": "imoNumber",     "target_entity": "vessel",         "target_field": "imo_number",    "transform": "trim"     },
+      { "source_field": "classNotation", "target_entity": "classification", "target_field": "class_notation","transform": "trim"     },
+      { "source_field": "surveyDue",     "target_entity": "classification", "target_field": "survey_due",    "transform": "to_date"  },
+      { "source_field": "classStatus",   "target_entity": "classification", "target_field": "status",        "transform": "enum_map" }
+    ]
+  },
+  {
+    "id": "c02", "name": "Lloyd's Register",     "category": "class",  "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.lr.org",                          "user": "sp_lr",       "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "30 1 * * *",   "frequency": "Daily",     "mode": "Delta", "timeout_s": 240, "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-C04", "field": "imo_number",  "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-C05", "field": "class_status","severity": "warn",  "expression": "in_enum"           }
+    ],
+    "field_mappings": [
+      { "source_field": "imo",       "target_entity": "vessel",         "target_field": "imo_number",    "transform": "trim"     },
+      { "source_field": "className", "target_entity": "classification", "target_field": "class_notation","transform": "trim"     },
+      { "source_field": "status",    "target_entity": "classification", "target_field": "status",        "transform": "enum_map" }
+    ]
+  },
+  {
+    "id": "c03", "name": "Bureau Veritas",       "category": "class",  "frequency": "Daily",     "status": "amber",  "enabled": true,
+    "connection": { "type": "SFTP", "host": "ftp.bureauveritas.com",               "user": "sp_bv",       "file_pattern": "BV_fleet_*.csv", "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 2 * * *",    "frequency": "Daily",     "mode": "Full",  "timeout_s": 180, "retry_count": 2 },
+    "qc_rules": [{ "id": "QC-C06", "field": "imo_number", "severity": "error", "expression": "len==7 && isdigit" }],
+    "field_mappings": [
+      { "source_field": "IMO",   "target_entity": "vessel",         "target_field": "imo_number",    "transform": "trim" },
+      { "source_field": "Class", "target_entity": "classification", "target_field": "class_notation","transform": "trim" }
+    ]
+  },
+  {
+    "id": "a01", "name": "ExactEarth",           "category": "ais",    "frequency": "Real-time", "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.exactearth.com",                  "user": "sp_ee",       "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "*/5 * * * *", "frequency": "Real-time", "mode": "Delta", "timeout_s": 30,  "retry_count": 5 },
+    "qc_rules": [
+      { "id": "QC-A01", "field": "mmsi",      "severity": "error", "expression": "len==9 && isdigit"   },
+      { "id": "QC-A02", "field": "latitude",  "severity": "error", "expression": "val>=-90 && val<=90" },
+      { "id": "QC-A03", "field": "longitude", "severity": "error", "expression": "val>=-180 && val<=180" },
+      { "id": "QC-A04", "field": "sog",       "severity": "warn",  "expression": "val>=0 && val<=50"   }
+    ],
+    "field_mappings": [
+      { "source_field": "mmsi", "target_entity": "ais_position", "target_field": "mmsi_number",       "transform": "trim"     },
+      { "source_field": "lat",  "target_entity": "ais_position", "target_field": "latitude",          "transform": "to_float" },
+      { "source_field": "lon",  "target_entity": "ais_position", "target_field": "longitude",         "transform": "to_float" },
+      { "source_field": "sog",  "target_entity": "ais_position", "target_field": "speed_over_ground", "transform": "to_float" },
+      { "source_field": "cog",  "target_entity": "ais_position", "target_field": "course_over_ground","transform": "to_float" }
+    ]
+  },
+  {
+    "id": "a02", "name": "Spire Maritime",       "category": "ais",    "frequency": "Real-time", "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.spire.com",                       "user": "sp_spire",    "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "*/5 * * * *", "frequency": "Real-time", "mode": "Delta", "timeout_s": 30,  "retry_count": 5 },
+    "qc_rules": [
+      { "id": "QC-A05", "field": "mmsi",     "severity": "error", "expression": "len==9 && isdigit"   },
+      { "id": "QC-A06", "field": "latitude", "severity": "error", "expression": "val>=-90 && val<=90" }
+    ],
+    "field_mappings": [
+      { "source_field": "mmsi",      "target_entity": "ais_position", "target_field": "mmsi_number", "transform": "trim"     },
+      { "source_field": "latitude",  "target_entity": "ais_position", "target_field": "latitude",    "transform": "to_float" },
+      { "source_field": "longitude", "target_entity": "ais_position", "target_field": "longitude",   "transform": "to_float" }
+    ]
+  },
+  {
+    "id": "a03", "name": "MarineTraffic",        "category": "ais",    "frequency": "Real-time", "status": "amber",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.marinetraffic.com",               "user": "sp_mt",       "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "*/10 * * * *","frequency": "Real-time", "mode": "Delta", "timeout_s": 45,  "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-A07", "field": "mmsi",  "severity": "error", "expression": "len==9 && isdigit" },
+      { "id": "QC-A08", "field": "speed", "severity": "warn",  "expression": "val>=0 && val<=50" }
+    ],
+    "field_mappings": [
+      { "source_field": "MMSI", "target_entity": "ais_position", "target_field": "mmsi_number", "transform": "trim"     },
+      { "source_field": "LAT",  "target_entity": "ais_position", "target_field": "latitude",    "transform": "to_float" },
+      { "source_field": "LON",  "target_entity": "ais_position", "target_field": "longitude",   "transform": "to_float" }
+    ]
+  },
+  {
+    "id": "co01", "name": "OFAC Sanctions List",  "category": "compliance", "frequency": "Daily", "status": "green", "enabled": true,
+    "connection": { "type": "REST", "host": "ofac.treasury.gov",                   "user": "public",      "file_pattern": "N/A",            "encoding": "XML" },
+    "schedule":   { "cron": "30 0 * * *",   "frequency": "Daily",     "mode": "Full",  "timeout_s": 120, "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-CO01", "field": "imo_number", "severity": "warn",  "expression": "len==7 || empty" },
+      { "id": "QC-CO02", "field": "program",    "severity": "error", "expression": "not_empty"       },
+      { "id": "QC-CO03", "field": "list_type",  "severity": "error", "expression": "in_enum"         }
+    ],
+    "field_mappings": [
+      { "source_field": "ID_VALUE", "target_entity": "sanction", "target_field": "imo_number",  "transform": "extract_imo" },
+      { "source_field": "PROGRAMS", "target_entity": "sanction", "target_field": "programs",    "transform": "split_pipe"  },
+      { "source_field": "SDN_TYPE", "target_entity": "sanction", "target_field": "entity_type", "transform": "enum_map"    }
+    ]
+  },
+  {
+    "id": "co04", "name": "Equasis PSC",          "category": "compliance", "frequency": "Weekly","status": "green", "enabled": true,
+    "connection": { "type": "SFTP", "host": "ftp.equasis.org",                     "user": "sp_equasis",  "file_pattern": "PSC_*.csv",      "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 3 * * 1",    "frequency": "Weekly",    "mode": "Full",  "timeout_s": 180, "retry_count": 2 },
+    "qc_rules": [
+      { "id": "QC-CO07", "field": "imo_number",      "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-CO08", "field": "deficiency_code", "severity": "warn",  "expression": "not_empty"         }
+    ],
+    "field_mappings": [
+      { "source_field": "IMO",        "target_entity": "vessel",         "target_field": "imo_number",  "transform": "trim"    },
+      { "source_field": "DefCode",    "target_entity": "psc_deficiency", "target_field": "code",        "transform": "trim"    },
+      { "source_field": "DetainDate", "target_entity": "psc_detention",  "target_field": "date",        "transform": "to_date" }
+    ]
+  },
+  {
+    "id": "m01", "name": "Baltic Exchange",       "category": "market", "frequency": "Daily",     "status": "green",  "enabled": true,
+    "connection": { "type": "REST", "host": "api.balticexchange.com",              "user": "sp_baltic",   "file_pattern": "N/A",            "encoding": "JSON" },
+    "schedule":   { "cron": "30 16 * * 1-5","frequency": "Daily",    "mode": "Full",  "timeout_s": 60,  "retry_count": 3 },
+    "qc_rules": [
+      { "id": "QC-M01", "field": "index_value", "severity": "error", "expression": "val>0"               },
+      { "id": "QC-M02", "field": "trade_date",  "severity": "error", "expression": "isdate && is_business_day" }
+    ],
+    "field_mappings": [
+      { "source_field": "indexCode", "target_entity": "market_index", "target_field": "code",       "transform": "trim"     },
+      { "source_field": "value",     "target_entity": "market_index", "target_field": "value",      "transform": "to_float" },
+      { "source_field": "date",      "target_entity": "market_index", "target_field": "trade_date", "transform": "to_date"  }
+    ]
+  },
+  {
+    "id": "p01", "name": "Gard P&I Club",         "category": "pni",    "frequency": "Weekly",    "status": "green",  "enabled": true,
+    "connection": { "type": "EMAIL", "host": "mail.gard.no",                       "user": "extracts@",   "file_pattern": "Gard_*.xlsx",    "encoding": "UTF-8" },
+    "schedule":   { "cron": "0 8 * * 1",    "frequency": "Weekly",    "mode": "Full",  "timeout_s": 60,  "retry_count": 2 },
+    "qc_rules": [
+      { "id": "QC-P01", "field": "imo_number",      "severity": "error", "expression": "len==7 && isdigit" },
+      { "id": "QC-P02", "field": "certificate_expiry","severity": "warn", "expression": "isdate && not_past" }
+    ],
+    "field_mappings": [
+      { "source_field": "IMO",        "target_entity": "vessel",      "target_field": "imo_number",  "transform": "trim"    },
+      { "source_field": "ExpiryDate", "target_entity": "certificate", "target_field": "expiry_date", "transform": "to_date" },
+      { "source_field": "CertType",   "target_entity": "certificate", "target_field": "cert_type",   "transform": "trim"    }
+    ]
+  }
+]

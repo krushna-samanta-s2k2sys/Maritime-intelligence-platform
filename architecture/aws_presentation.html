@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Architecture — S&amp;P Maritime Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F0F4FA;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.deck{width:980px;max-width:100%}
+.slide{width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,43,94,.1);aspect-ratio:16/9;display:none;flex-direction:column}
+.slide.active{display:flex}
+
+/* Fullscreen */
+:fullscreen body,:-webkit-full-screen body{background:#111;padding:0}
+:fullscreen .deck,:-webkit-full-screen .deck{width:100vw;max-width:100vw}
+:fullscreen .slide.active,:-webkit-full-screen .slide.active{border-radius:0;box-shadow:none;aspect-ratio:unset;height:100vh}
+:fullscreen .pnav,:-webkit-full-screen .pnav{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;background:rgba(0,0,0,.55);padding:7px 18px;border-radius:24px;backdrop-filter:blur(8px)}
+:fullscreen .nbtn,:-webkit-full-screen .nbtn{background:rgba(255,255,255,.15)!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important}
+:fullscreen .nbtn:hover,:-webkit-full-screen .nbtn:hover{background:rgba(255,153,0,.8)!important;border-color:#FF9900!important}
+:fullscreen .nlabel,:-webkit-full-screen .nlabel{color:rgba(255,255,255,.55)!important}
+:fullscreen .dot,:-webkit-full-screen .dot{background:rgba(255,255,255,.3)}
+:fullscreen .dot.on,:-webkit-full-screen .dot.on{background:#FF9900}
+
+/* Header */
+.s-header{background:#232F3E;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#FF9900}
+h2{font-size:20px;font-weight:800;color:#fff;margin-top:3px}
+.tag{font-size:10px;color:rgba(255,255,255,.4)}
+
+/* Slide bodies */
+.s-body{flex:1;overflow:hidden;background:#F4F8FF}
+#s1 .s-body{padding:8px 12px;display:flex;align-items:center;justify-content:center}
+#s2 .s-body{padding:7px 10px;display:flex;align-items:center;justify-content:center}
+#s3 .s-body{padding:14px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start}
+#s4 .s-body{padding:10px 16px}
+#s5 .s-body{padding:10px 18px;display:flex;flex-direction:column;gap:8px}
+
+/* Slide 3: Cards */
+.card{background:#fff;border:1px solid #C8D8EC;border-radius:8px;padding:11px 13px}
+.card-title{font-size:11px;font-weight:700;color:#232F3E;margin-bottom:6px}
+.aws-tag{font-size:7.5px;font-weight:600;background:#FFF3E0;color:#E07000;border:1px solid #FFCC80;border-radius:10px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+ul{list-style:none;padding:0}
+li{font-size:9.5px;color:#3A5070;line-height:1.7;padding-left:10px;position:relative}
+li::before{content:'›';position:absolute;left:0;color:#FF9900;font-weight:700}
+
+/* Slide 4+5: Tables */
+.cost-wrap{overflow:auto;height:100%;display:flex;flex-direction:column;gap:6px}
+.savings-banner{background:#E8F5EE;border:1px solid #70BE90;border-radius:6px;padding:6px 12px;font-size:9.5px;color:#1A5A28;display:flex;gap:16px;align-items:center;flex-shrink:0}
+.savings-banner strong{font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:10px}
+thead th{background:#232F3E;color:#fff;padding:6px 9px;text-align:left;font-weight:700;font-size:9.5px}
+tbody tr:nth-child(even){background:#EEF4FF}
+tbody td{padding:5px 9px;color:#0D1F3C;border-bottom:1px solid #dde8f5;vertical-align:top;line-height:1.3}
+tbody td:first-child{font-weight:600;color:#232F3E}
+.tenv td{background:#E6EEF8;font-weight:700;color:#1A4A8A;padding:4px 9px;font-size:9px}
+.ttotal td{background:#FFF8EC;font-weight:700;color:#232F3E;border-top:2px solid #FF9900}
+.thighlight{background:#FFF3E0 !important}
+.thighlight td{font-weight:700;color:#7A4A00}
+.note{font-size:8.5px;color:#7A90B0;line-height:1.4;flex-shrink:0}
+.sec-label{font-size:9px;font-weight:700;color:#232F3E;letter-spacing:.06em;flex-shrink:0}
+
+/* Nav */
+.pnav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.nbtn{padding:6px 20px;border-radius:20px;border:1px solid #C8D8EC;background:#fff;color:#232F3E;font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .18s;box-shadow:0 1px 4px rgba(13,43,94,.08)}
+.nbtn:hover{background:#FFF3E0;border-color:#FF9900;color:#7A4A00;box-shadow:0 2px 8px rgba(255,153,0,.2)}
+.nbtn.fs{background:#232F3E;color:#fff;border-color:#232F3E}
+.nbtn.fs:hover{background:#FF9900;border-color:#FF9900;color:#000}
+.nlabel{font-size:10px;color:#8AACCC;font-weight:500}
+.dots{display:flex;gap:6px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:#C8D8EC;cursor:pointer;transition:background .2s}
+.dot.on{background:#FF9900}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ═══════════════════════════════════════════════════════════ SLIDE 1 -->
+  <div class="slide active" id="s1">
+    <div class="s-header">
+      <div><div class="eyebrow">1 of 5 · AWS Stack</div><h2>System Architecture</h2></div>
+      <div class="tag">S3 Medallion · Airflow · DuckDB · SageMaker · OpenSearch · Aurora</div>
+    </div>
+    <div class="s-body">
+      <svg viewBox="0 0 880 385" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+        <defs>
+          <marker id="a1" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#7A9ABE"/></marker>
+          <marker id="a2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#FF9900"/></marker>
+        </defs>
+        <!-- ZONE 0: External Sources -->
+        <rect x="1" y="1" width="878" height="50" rx="5" fill="#EBF1FA" stroke="#B8CCE4"/>
+        <text x="7" y="11" font-size="7" font-weight="700" fill="#5A7AAA" letter-spacing=".8">EXTERNAL SOURCES &amp; FEEDS</text>
+        <rect x="5" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="44" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">AIS Streams</text>
+        <text x="44" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Real-time · Batch</text>
+        <rect x="91" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="130" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">SFTP / FTP</text>
+        <text x="130" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">CSV · Excel · XML</text>
+        <rect x="177" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="216" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">REST APIs</text>
+        <text x="216" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">JSON · Webhooks</text>
+        <rect x="263" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="302" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Email Feeds</text>
+        <text x="302" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Structured attach.</text>
+        <rect x="349" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="388" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">WebSocket</text>
+        <text x="388" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Live event streams</text>
+        <rect x="435" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="474" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Manual Entry</text>
+        <text x="474" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Admin editors</text>
+        <rect x="521" y="14" width="88" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="565" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Terahelix</text>
+        <text x="565" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">IMO → Canonical ID</text>
+        <rect x="617" y="14" width="88" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="661" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Gearbox</text>
+        <text x="661" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Relationship graph</text>
+        <rect x="713" y="14" width="78" height="30" rx="3" fill="#fff" stroke="#B8CCE4"/>
+        <text x="752" y="26" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Contentful</text>
+        <text x="752" y="36" font-size="6.5" fill="#7A9ABE" text-anchor="middle">CMS · Media</text>
+        <rect x="799" y="14" width="78" height="30" rx="3" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="838" y="26" font-size="7.5" font-weight="700" fill="#7A4A00" text-anchor="middle">D6 (200+ feeds)</text>
+        <text x="838" y="36" font-size="6.5" fill="#9A6A20" text-anchor="middle">Adapters</text>
+        <!-- ZONE 1: Ingestion + Auth + Entity -->
+        <rect x="1" y="57" width="878" height="56" rx="5" fill="#E6EFFC" stroke="#92B4E0"/>
+        <text x="7" y="68" font-size="7" font-weight="700" fill="#1A4A8A" letter-spacing=".8">INGESTION (SQS · MWAA AIRFLOW)  ·  AUTH  ·  ENTITY RESOLUTION</text>
+        <rect x="5" y="72" width="94" height="34" rx="3" fill="#fff" stroke="#92B4E0"/>
+        <text x="52" y="83" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Lambda Adapters</text>
+        <text x="52" y="93" font-size="6.5" fill="#5A7AAA" text-anchor="middle">Feed ingestion ×20</text>
+        <text x="52" y="102" font-size="6.5" fill="#5A7AAA" text-anchor="middle">SQS · SNS · DLQ</text>
+        <rect x="107" y="72" width="94" height="34" rx="3" fill="#fff" stroke="#92B4E0"/>
+        <text x="154" y="83" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">MWAA Airflow</text>
+        <text x="154" y="93" font-size="6.5" fill="#5A7AAA" text-anchor="middle">Orchestrate DAGs</text>
+        <text x="154" y="102" font-size="6.5" fill="#5A7AAA" text-anchor="middle">EventBridge trigger</text>
+        <rect x="216" y="72" width="94" height="34" rx="3" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="263" y="83" font-size="7.5" font-weight="700" fill="#7A4A00" text-anchor="middle">Okta SSO/MFA</text>
+        <text x="263" y="93" font-size="6.5" fill="#9A6A20" text-anchor="middle">OIDC · SAML</text>
+        <text x="263" y="102" font-size="6.5" fill="#9A6A20" text-anchor="middle">JWT 15-min</text>
+        <rect x="318" y="72" width="94" height="34" rx="3" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="365" y="83" font-size="7.5" font-weight="700" fill="#7A4A00" text-anchor="middle">AWS WAF+Shield</text>
+        <text x="365" y="93" font-size="6.5" fill="#9A6A20" text-anchor="middle">DDoS · Rules</text>
+        <text x="365" y="102" font-size="6.5" fill="#9A6A20" text-anchor="middle">API Gateway</text>
+        <rect x="427" y="72" width="98" height="34" rx="3" fill="#F0F8F0" stroke="#80C080"/>
+        <text x="476" y="83" font-size="7.5" font-weight="700" fill="#1A5A20" text-anchor="middle">Terahelix</text>
+        <text x="476" y="93" font-size="6.5" fill="#3A7A3A" text-anchor="middle">IMO → Canonical</text>
+        <text x="476" y="102" font-size="6.5" fill="#3A7A3A" text-anchor="middle">MMSI · Fuzzy</text>
+        <rect x="533" y="72" width="98" height="34" rx="3" fill="#F0F8F0" stroke="#80C080"/>
+        <text x="582" y="83" font-size="7.5" font-weight="700" fill="#1A5A20" text-anchor="middle">Gearbox</text>
+        <text x="582" y="93" font-size="6.5" fill="#3A7A3A" text-anchor="middle">Relationship Graph</text>
+        <text x="582" y="102" font-size="6.5" fill="#3A7A3A" text-anchor="middle">Temporal validity</text>
+        <rect x="645" y="72" width="98" height="34" rx="3" fill="#FFF0E0" stroke="#E89000"/>
+        <text x="694" y="83" font-size="7.5" font-weight="700" fill="#7A4A00" text-anchor="middle">SageMaker</text>
+        <text x="694" y="93" font-size="6.5" fill="#9A6A20" text-anchor="middle">Confidence Scorer</text>
+        <text x="694" y="102" font-size="6.5" fill="#9A6A20" text-anchor="middle">0.0 – 1.0 score</text>
+        <rect x="751" y="72" width="124" height="34" rx="3" fill="#FFF0E0" stroke="#E89000"/>
+        <text x="813" y="83" font-size="7.5" font-weight="700" fill="#7A4A00" text-anchor="middle">Source Hierarchy</text>
+        <text x="813" y="93" font-size="6.5" fill="#9A6A20" text-anchor="middle">Conflict Detector</text>
+        <text x="813" y="102" font-size="6.5" fill="#9A6A20" text-anchor="middle">Review Queue</text>
+        <!-- ZONE 2: S3 Medallion + DuckDB + Search -->
+        <rect x="1" y="119" width="878" height="82" rx="5" fill="#EDF2FF" stroke="#96AEE4" stroke-width="1.5"/>
+        <text x="7" y="130" font-size="7" font-weight="700" fill="#2A4A9A" letter-spacing=".8">S3 MEDALLION DATA LAKE  ·  AIRFLOW DAGs  ·  DUCKDB TRANSFORMS  ·  ATHENA  ·  GLUE CATALOG</text>
+        <rect x="5" y="133" width="100" height="60" rx="3" fill="#fff" stroke="#96AEE4"/>
+        <text x="55" y="146" font-size="8" font-weight="800" fill="#6A3800" text-anchor="middle">BRONZE</text>
+        <text x="55" y="158" font-size="7" fill="#8A5820" text-anchor="middle">s3://raw/bronze/</text>
+        <text x="55" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Parquet · partitioned</text>
+        <text x="55" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">SHA-256 dedup</text>
+        <text x="55" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Glue Catalog</text>
+        <rect x="113" y="133" width="100" height="60" rx="3" fill="#fff" stroke="#96AEE4"/>
+        <text x="163" y="146" font-size="8" font-weight="800" fill="#1A4A8A" text-anchor="middle">SILVER</text>
+        <text x="163" y="158" font-size="7" fill="#2A5AAA" text-anchor="middle">s3://staged/silver/</text>
+        <text x="163" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Validated · typed</text>
+        <text x="163" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">DuckDB transform</text>
+        <text x="163" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Airflow DAG</text>
+        <rect x="221" y="133" width="100" height="60" rx="3" fill="#fff" stroke="#96AEE4"/>
+        <text x="271" y="146" font-size="8" font-weight="800" fill="#1A5A28" text-anchor="middle">GOLD</text>
+        <text x="271" y="158" font-size="7" fill="#1A6A30" text-anchor="middle">s3://gold/master/</text>
+        <text x="271" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Master · curated</text>
+        <text x="271" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Bi-temporal</text>
+        <text x="271" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">DuckDB + Athena</text>
+        <rect x="329" y="133" width="100" height="60" rx="3" fill="#fff" stroke="#96AEE4"/>
+        <text x="379" y="146" font-size="8" font-weight="800" fill="#6A1A00" text-anchor="middle">EDIT LAYER</text>
+        <text x="379" y="158" font-size="7" fill="#8A3A10" text-anchor="middle">s3://edit/draft/</text>
+        <text x="379" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">DRAFT→APPROVED</text>
+        <text x="379" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">4-state workflow</text>
+        <text x="379" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Airflow DAG</text>
+        <rect x="437" y="133" width="100" height="60" rx="3" fill="#fff" stroke="#96AEE4"/>
+        <text x="487" y="146" font-size="8" font-weight="800" fill="#5A1A7A" text-anchor="middle">AUDIT</text>
+        <text x="487" y="158" font-size="7" fill="#6A2A8A" text-anchor="middle">s3://audit/ (WORM)</text>
+        <text x="487" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">S3 Object Lock</text>
+        <text x="487" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Immutable log</text>
+        <text x="487" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Every change</text>
+        <rect x="545" y="133" width="100" height="60" rx="3" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="595" y="146" font-size="8" font-weight="800" fill="#7A4A00" text-anchor="middle">DuckDB</text>
+        <text x="595" y="158" font-size="7" fill="#9A6A20" text-anchor="middle">In-process SQL</text>
+        <text x="595" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Fargate task</text>
+        <text x="595" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Parquet on S3</text>
+        <text x="595" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">No cluster cost</text>
+        <rect x="653" y="133" width="100" height="60" rx="3" fill="#F4F0FC" stroke="#C0A8E8"/>
+        <text x="703" y="146" font-size="8" font-weight="800" fill="#5A2A8A" text-anchor="middle">ATHENA</text>
+        <text x="703" y="158" font-size="7" fill="#6A3A9A" text-anchor="middle">Serverless SQL</text>
+        <text x="703" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">$5/TB scanned</text>
+        <text x="703" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">Glue Catalog</text>
+        <text x="703" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">QuickSight BI</text>
+        <rect x="761" y="133" width="114" height="60" rx="3" fill="#EDF2FF" stroke="#96AEE4"/>
+        <text x="818" y="146" font-size="7.5" font-weight="800" fill="#1A4A8A" text-anchor="middle">REDSHIFT SVLS</text>
+        <text x="818" y="158" font-size="7" fill="#2A5AAA" text-anchor="middle">Analytics queries</text>
+        <text x="818" y="168" font-size="6.5" fill="#7A9ABE" text-anchor="middle">On-demand RPU</text>
+        <text x="818" y="178" font-size="6.5" fill="#7A9ABE" text-anchor="middle">S3 Spectrum</text>
+        <text x="818" y="188" font-size="6.5" fill="#7A9ABE" text-anchor="middle">QuickSight</text>
+        <line x1="105" y1="163" x2="113" y2="163" stroke="#96AEE4" stroke-width="1" marker-end="url(#a1)"/>
+        <line x1="213" y1="163" x2="221" y2="163" stroke="#96AEE4" stroke-width="1" marker-end="url(#a1)"/>
+        <line x1="321" y1="163" x2="329" y2="163" stroke="#96AEE4" stroke-width="1" marker-end="url(#a1)"/>
+        <line x1="429" y1="163" x2="437" y2="163" stroke="#96AEE4" stroke-width="1" marker-end="url(#a1)"/>
+        <!-- ZONE 3: Application + Delivery -->
+        <rect x="1" y="207" width="878" height="52" rx="5" fill="#E8F5EE" stroke="#76BE96"/>
+        <text x="7" y="218" font-size="7" font-weight="700" fill="#1A6A40" letter-spacing=".8">APPLICATION LAYER — EKS  ·  FARGATE  ·  CLOUDFRONT</text>
+        <rect x="5" y="221" width="106" height="32" rx="3" fill="#fff" stroke="#76BE96"/>
+        <text x="58" y="232" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Vessel Search+Detail</text>
+        <text x="58" y="242" font-size="6.5" fill="#5A7AAA" text-anchor="middle">EKS · 650+ attrs</text>
+        <rect x="119" y="221" width="106" height="32" rx="3" fill="#fff" stroke="#76BE96"/>
+        <text x="172" y="232" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Analytics · QuickSight</text>
+        <text x="172" y="242" font-size="6.5" fill="#5A7AAA" text-anchor="middle">Redshift · Athena</text>
+        <rect x="233" y="221" width="106" height="32" rx="3" fill="#fff" stroke="#76BE96"/>
+        <text x="286" y="232" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Notifications</text>
+        <text x="286" y="242" font-size="6.5" fill="#5A7AAA" text-anchor="middle">SES · Slack · SNS</text>
+        <rect x="347" y="221" width="106" height="32" rx="3" fill="#fff" stroke="#76BE96"/>
+        <text x="400" y="232" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">Admin Console</text>
+        <text x="400" y="242" font-size="6.5" fill="#5A7AAA" text-anchor="middle">Edit · Approve · RBAC</text>
+        <rect x="461" y="221" width="106" height="32" rx="3" fill="#fff" stroke="#76BE96"/>
+        <text x="514" y="232" font-size="7.5" font-weight="700" fill="#232F3E" text-anchor="middle">File / Image Mgmt</text>
+        <text x="514" y="242" font-size="6.5" fill="#5A7AAA" text-anchor="middle">S3 · CloudFront CDN</text>
+        <rect x="580" y="207" width="299" height="52" rx="5" fill="#F0EEF8" stroke="#B0A0E0"/>
+        <text x="586" y="218" font-size="7" font-weight="700" fill="#5A2A8A" letter-spacing=".8">SEARCH &amp; OPERATIONAL DB</text>
+        <rect x="584" y="221" width="136" height="32" rx="3" fill="#fff" stroke="#B0A0E0"/>
+        <text x="652" y="232" font-size="7.5" font-weight="700" fill="#5A2A8A" text-anchor="middle">Amazon OpenSearch</text>
+        <text x="652" y="242" font-size="6.5" fill="#7A9ABE" text-anchor="middle">vessel/port/route idx</text>
+        <rect x="728" y="221" width="143" height="32" rx="3" fill="#fff" stroke="#B0A0E0"/>
+        <text x="799" y="232" font-size="7.5" font-weight="700" fill="#004A5A" text-anchor="middle">Aurora PostgreSQL</text>
+        <text x="799" y="242" font-size="6.5" fill="#7A9ABE" text-anchor="middle">PostGIS · Serverless v2</text>
+        <!-- ZONE 4: Security + Observability -->
+        <rect x="1" y="265" width="430" height="42" rx="5" fill="#FFF0F0" stroke="#E09090"/>
+        <text x="7" y="276" font-size="7" font-weight="700" fill="#8A1A1A" letter-spacing=".8">SECURITY &amp; GOVERNANCE</text>
+        <rect x="5" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#E09090"/>
+        <text x="53" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">AWS KMS · Macie</text>
+        <rect x="109" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#E09090"/>
+        <text x="157" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">GuardDuty · SCPs</text>
+        <rect x="213" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#E09090"/>
+        <text x="261" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">Secrets Manager</text>
+        <rect x="317" y="280" width="110" height="20" rx="3" fill="#fff" stroke="#E09090"/>
+        <text x="372" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">IAM · Org Policies</text>
+        <rect x="439" y="265" width="440" height="42" rx="5" fill="#F0F4F8" stroke="#A0A0D0"/>
+        <text x="445" y="276" font-size="7" font-weight="700" fill="#3A3A7A" letter-spacing=".8">OBSERVABILITY — GRAFANA · CLOUDWATCH · X-RAY</text>
+        <rect x="443" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#A0A0D0"/>
+        <text x="491" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">CloudWatch Logs</text>
+        <rect x="547" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#A0A0D0"/>
+        <text x="595" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">Grafana Dashboards</text>
+        <rect x="651" y="280" width="96" height="20" rx="3" fill="#fff" stroke="#A0A0D0"/>
+        <text x="699" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">AWS X-Ray Traces</text>
+        <rect x="755" y="280" width="120" height="20" rx="3" fill="#fff" stroke="#A0A0D0"/>
+        <text x="815" y="292.5" font-size="7" font-weight="600" fill="#232F3E" text-anchor="middle">PagerDuty · Alerting</text>
+        <!-- ZONE 5: Migration -->
+        <rect x="1" y="313" width="878" height="34" rx="5" fill="#F8F4FF" stroke="#C0A8E8"/>
+        <text x="7" y="324" font-size="7" font-weight="700" fill="#5A2A8A" letter-spacing=".8">DATA MIGRATION — ~1 TB HISTORICAL · AWS GLUE / DUCKDB BATCH · AIRFLOW ORCHESTRATION · IDEMPOTENT SHA-256</text>
+        <rect x="5" y="327" width="168" height="16" rx="3" fill="#fff" stroke="#C0A8E8"/>
+        <text x="89" y="337.5" font-size="7" font-weight="600" fill="#5A2A8A" text-anchor="middle">P1: Extract &amp; Inventory</text>
+        <rect x="181" y="327" width="168" height="16" rx="3" fill="#fff" stroke="#C0A8E8"/>
+        <text x="265" y="337.5" font-size="7" font-weight="600" fill="#5A2A8A" text-anchor="middle">P2: S3 Bronze (AWS Glue)</text>
+        <rect x="357" y="327" width="168" height="16" rx="3" fill="#fff" stroke="#C0A8E8"/>
+        <text x="441" y="337.5" font-size="7" font-weight="600" fill="#5A2A8A" text-anchor="middle">P3: Silver (DuckDB+Airflow)</text>
+        <rect x="533" y="327" width="168" height="16" rx="3" fill="#fff" stroke="#C0A8E8"/>
+        <text x="617" y="337.5" font-size="7" font-weight="600" fill="#5A2A8A" text-anchor="middle">P4: Gold Reconcile</text>
+        <rect x="709" y="327" width="168" height="16" rx="3" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="793" y="337.5" font-size="7" font-weight="600" fill="#7A4A00" text-anchor="middle">P5: OpenSearch Re-index</text>
+        <text x="440" y="380" font-size="7" fill="#8AA0C0" text-anchor="middle">All AWS services within VPC · TLS 1.3 · KMS encryption at rest · 99.9% SLO · RTO &lt;4h DR · Confidential — S&amp;P Global Internal</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SLIDE 2 -->
+  <div class="slide" id="s2">
+    <div class="s-header">
+      <div><div class="eyebrow">2 of 5 · AWS Stack</div><h2>Detailed Infrastructure Architecture</h2></div>
+      <div class="tag">AWS us-east-1 (Primary) · us-west-2 (DR) · Non-AWS SaaS</div>
+    </div>
+    <div class="s-body">
+      <svg viewBox="0 0 920 395" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+        <!-- Non-AWS strip -->
+        <rect x="1" y="1" width="918" height="40" rx="5" fill="#F5F5F5" stroke="#CACACA"/>
+        <text x="6" y="11" font-size="6.5" font-weight="700" fill="#666" letter-spacing=".8">NON-AWS SAAS &amp; S&amp;P INTERNAL PLATFORMS</text>
+        <rect x="4" y="14" width="72" height="22" rx="3" fill="#fff" stroke="#E05A00"/>
+        <text x="40" y="23" font-size="7" font-weight="700" fill="#E05A00" text-anchor="middle">Okta</text>
+        <text x="40" y="31" font-size="5.5" fill="#888" text-anchor="middle">SSO · OIDC · SAML</text>
+        <rect x="82" y="14" width="80" height="22" rx="3" fill="#fff" stroke="#E68A00"/>
+        <text x="122" y="23" font-size="7" font-weight="700" fill="#E68A00" text-anchor="middle">Grafana Cloud</text>
+        <text x="122" y="31" font-size="5.5" fill="#888" text-anchor="middle">Dashboards · Alerting</text>
+        <rect x="168" y="14" width="72" height="22" rx="3" fill="#fff" stroke="#E05A00"/>
+        <text x="204" y="23" font-size="7" font-weight="700" fill="#E05A00" text-anchor="middle">PagerDuty</text>
+        <text x="204" y="31" font-size="5.5" fill="#888" text-anchor="middle">On-call escalation</text>
+        <rect x="246" y="14" width="72" height="22" rx="3" fill="#fff" stroke="#1A82E2"/>
+        <text x="282" y="23" font-size="7" font-weight="700" fill="#1A82E2" text-anchor="middle">SendGrid</text>
+        <text x="282" y="31" font-size="5.5" fill="#888" text-anchor="middle">Email (or Amazon SES)</text>
+        <rect x="324" y="14" width="72" height="22" rx="3" fill="#fff" stroke="#4A154B"/>
+        <text x="360" y="23" font-size="7" font-weight="700" fill="#4A154B" text-anchor="middle">Slack</text>
+        <text x="360" y="31" font-size="5.5" fill="#888" text-anchor="middle">Ops notifications</text>
+        <rect x="402" y="14" width="72" height="22" rx="3" fill="#fff" stroke="#E8B000"/>
+        <text x="438" y="23" font-size="7" font-weight="700" fill="#9A7000" text-anchor="middle">Contentful</text>
+        <text x="438" y="31" font-size="5.5" fill="#888" text-anchor="middle">CMS · Media</text>
+        <rect x="480" y="14" width="78" height="22" rx="3" fill="#fff" stroke="#0070C0"/>
+        <text x="519" y="23" font-size="7" font-weight="700" fill="#0070C0" text-anchor="middle">Terahelix</text>
+        <text x="519" y="31" font-size="5.5" fill="#888" text-anchor="middle">Entity ID resolution</text>
+        <rect x="564" y="14" width="78" height="22" rx="3" fill="#fff" stroke="#0070C0"/>
+        <text x="603" y="23" font-size="7" font-weight="700" fill="#0070C0" text-anchor="middle">Gearbox</text>
+        <text x="603" y="31" font-size="5.5" fill="#888" text-anchor="middle">Relationship graph</text>
+        <rect x="648" y="14" width="90" height="22" rx="3" fill="#fff" stroke="#0070C0"/>
+        <text x="693" y="23" font-size="7" font-weight="700" fill="#0070C0" text-anchor="middle">D6 Platform</text>
+        <text x="693" y="31" font-size="5.5" fill="#888" text-anchor="middle">200+ feed adapters</text>
+        <rect x="744" y="14" width="90" height="22" rx="3" fill="#fff" stroke="#29B5E8"/>
+        <text x="789" y="23" font-size="7" font-weight="700" fill="#29B5E8" text-anchor="middle">Snowflake</text>
+        <text x="789" y="31" font-size="5.5" fill="#888" text-anchor="middle">Data share</text>
+        <rect x="840" y="14" width="76" height="22" rx="3" fill="#fff" stroke="#555"/>
+        <text x="878" y="23" font-size="7" font-weight="700" fill="#333" text-anchor="middle">Jira / Conf</text>
+        <text x="878" y="31" font-size="5.5" fill="#888" text-anchor="middle">Project mgmt</text>
+        <!-- AWS VPC -->
+        <rect x="1" y="47" width="918" height="312" rx="7" fill="#FAFCFF" stroke="#FF9900" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="6" y="59" font-size="7.5" font-weight="700" fill="#7A4A00" letter-spacing=".8">AWS VPC — us-east-1 (Primary) · us-west-2 (DR warm standby) · All subnets private · VPC Flow Logs enabled</text>
+        <!-- Network Perimeter -->
+        <rect x="4" y="63" width="912" height="28" rx="4" fill="#E8F0FC" stroke="#88B4E4"/>
+        <text x="8" y="72" font-size="6.5" font-weight="700" fill="#1A4A8A" letter-spacing=".5">NETWORK PERIMETER</text>
+        <rect x="8" y="74" width="120" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="68" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">AWS WAF + Shield Standard</text>
+        <rect x="134" y="74" width="120" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="194" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">Application Load Balancer</text>
+        <rect x="260" y="74" width="140" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="330" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">Amazon API Gateway (REST + WS)</text>
+        <rect x="406" y="74" width="120" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="466" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">AWS PrivateLink</text>
+        <rect x="532" y="74" width="120" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="592" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">Route 53 + ACM Certs</text>
+        <rect x="658" y="74" width="100" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="708" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">Okta JWT Verify</text>
+        <rect x="764" y="74" width="100" height="12" rx="2" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="814" y="82.5" font-size="6" font-weight="600" fill="#7A4A00" text-anchor="middle">VPC Flow Logs</text>
+        <rect x="870" y="74" width="44" height="12" rx="2" fill="#fff" stroke="#88B4E4"/>
+        <text x="892" y="82.5" font-size="6" font-weight="600" fill="#232F3E" text-anchor="middle">NACLs</text>
+        <!-- Compute -->
+        <rect x="4" y="97" width="220" height="82" rx="4" fill="#E8F5EE" stroke="#70BE90"/>
+        <text x="8" y="108" font-size="6.5" font-weight="700" fill="#1A6A40" letter-spacing=".5">COMPUTE — EKS &amp; FARGATE</text>
+        <rect x="8" y="111" width="102" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="59" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">EKS: Maritime UX App</text>
+        <rect x="116" y="111" width="104" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="168" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">EKS: API Services Layer</text>
+        <rect x="8" y="130" width="102" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="59" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Fargate: ETL Workers</text>
+        <rect x="116" y="130" width="104" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="168" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Fargate: Notif/Image</text>
+        <rect x="8" y="149" width="102" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="59" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">EKS: Admin Console</text>
+        <rect x="116" y="149" width="104" height="15" rx="2" fill="#fff" stroke="#70BE90"/>
+        <text x="168" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Fargate: DuckDB Tasks</text>
+        <rect x="8" y="168" width="212" height="9" rx="2" fill="#A0D8A0" opacity=".5"/>
+        <text x="114" y="174.5" font-size="5.5" fill="#1A6A40" text-anchor="middle">KEDA Autoscale · IRSA (Pod IAM Roles)</text>
+        <!-- Ingestion -->
+        <rect x="230" y="97" width="180" height="82" rx="4" fill="#E8F0FC" stroke="#90B4E4"/>
+        <text x="234" y="108" font-size="6.5" font-weight="700" fill="#1A4A8A" letter-spacing=".5">INGESTION</text>
+        <rect x="234" y="111" width="84" height="15" rx="2" fill="#fff" stroke="#90B4E4"/>
+        <text x="276" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">SQS Queues</text>
+        <rect x="324" y="111" width="82" height="15" rx="2" fill="#fff" stroke="#90B4E4"/>
+        <text x="365" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">SNS Topics</text>
+        <rect x="234" y="130" width="84" height="15" rx="2" fill="#fff" stroke="#90B4E4"/>
+        <text x="276" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">MWAA Airflow</text>
+        <rect x="324" y="130" width="82" height="15" rx="2" fill="#fff" stroke="#90B4E4"/>
+        <text x="365" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">EventBridge</text>
+        <rect x="234" y="149" width="84" height="15" rx="2" fill="#fff" stroke="#90B4E4"/>
+        <text x="276" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">DLQ Dead Letter</text>
+        <rect x="324" y="149" width="82" height="15" rx="2" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="365" y="159" font-size="6.5" font-weight="600" fill="#7A4A00" text-anchor="middle">S3 Raw Bucket</text>
+        <rect x="234" y="168" width="172" height="9" rx="2" fill="#90B4E4" opacity=".4"/>
+        <text x="320" y="174.5" font-size="5.5" fill="#1A4A8A" text-anchor="middle">Lambda adapters ×20 · SQS DLQ retry</text>
+        <!-- AI/ML -->
+        <rect x="416" y="97" width="190" height="82" rx="4" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="420" y="108" font-size="6.5" font-weight="700" fill="#9A5A10" letter-spacing=".5">AI / ML — SAGEMAKER</text>
+        <rect x="420" y="111" width="88" height="15" rx="2" fill="#fff" stroke="#FF9900"/>
+        <text x="464" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">SageMaker Training</text>
+        <rect x="514" y="111" width="88" height="15" rx="2" fill="#fff" stroke="#FF9900"/>
+        <text x="558" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">SageMaker Pipelines</text>
+        <rect x="420" y="130" width="88" height="15" rx="2" fill="#fff" stroke="#FF9900"/>
+        <text x="464" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Model Registry</text>
+        <rect x="514" y="130" width="88" height="15" rx="2" fill="#fff" stroke="#FF9900"/>
+        <text x="558" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">SM Endpoints</text>
+        <rect x="420" y="149" width="182" height="15" rx="2" fill="#fff" stroke="#FF9900"/>
+        <text x="511" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">DuckDB — Confidence Scoring (Fargate)</text>
+        <rect x="420" y="168" width="182" height="9" rx="2" fill="#FF9900" opacity=".2"/>
+        <text x="511" y="174.5" font-size="5.5" fill="#9A5A10" text-anchor="middle">Source hierarchy · Conflict detector · Auto-apply queue</text>
+        <!-- Security + CI/CD -->
+        <rect x="612" y="97" width="304" height="82" rx="4" fill="#FFF0F0" stroke="#E09090"/>
+        <text x="616" y="108" font-size="6.5" font-weight="700" fill="#8A1A1A" letter-spacing=".5">SECURITY, KMS &amp; CI/CD</text>
+        <rect x="616" y="111" width="88" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="660" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">AWS KMS (CMK)</text>
+        <rect x="710" y="111" width="88" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="754" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Secrets Manager</text>
+        <rect x="804" y="111" width="108" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="858" y="121" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Amazon Macie</text>
+        <rect x="616" y="130" width="88" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="660" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">GuardDuty</text>
+        <rect x="710" y="130" width="88" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="754" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">IAM + Org SCPs</text>
+        <rect x="804" y="130" width="108" height="15" rx="2" fill="#fff" stroke="#E09090"/>
+        <text x="858" y="140" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">Security Groups+NACLs</text>
+        <rect x="616" y="149" width="88" height="15" rx="2" fill="#EEF3FF" stroke="#9AB0E8"/>
+        <text x="660" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">CodeBuild CI/CD</text>
+        <rect x="710" y="149" width="88" height="15" rx="2" fill="#EEF3FF" stroke="#9AB0E8"/>
+        <text x="754" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">CodePipeline</text>
+        <rect x="804" y="149" width="108" height="15" rx="2" fill="#EEF3FF" stroke="#9AB0E8"/>
+        <text x="858" y="159" font-size="6.5" font-weight="600" fill="#232F3E" text-anchor="middle">ECR · Terraform IaC</text>
+        <rect x="616" y="168" width="296" height="9" rx="2" fill="#E09090" opacity=".3"/>
+        <text x="764" y="174.5" font-size="5.5" fill="#8A1A1A" text-anchor="middle">Binary Authorization · SOC 2 / ISO 27001 · SCPs deny-all egress</text>
+        <!-- S3 Data Lake -->
+        <rect x="4" y="185" width="460" height="90" rx="4" fill="#EDF2FF" stroke="#96AEE4" stroke-width="1.5"/>
+        <text x="8" y="196" font-size="6.5" font-weight="700" fill="#2A4A9A" letter-spacing=".5">S3 DATA LAKE  ·  AIRFLOW MWAA  ·  DUCKDB  ·  ATHENA  ·  GLUE CATALOG  ·  REDSHIFT SERVERLESS</text>
+        <rect x="8" y="199" width="80" height="34" rx="2" fill="#fff" stroke="#96AEE4"/>
+        <text x="48" y="211" font-size="7" font-weight="800" fill="#6A3800" text-anchor="middle">BRONZE</text>
+        <text x="48" y="221" font-size="6" fill="#888" text-anchor="middle">s3://raw/bronze/</text>
+        <text x="48" y="229" font-size="6" fill="#888" text-anchor="middle">Parquet · SHA-256</text>
+        <rect x="96" y="199" width="80" height="34" rx="2" fill="#fff" stroke="#96AEE4"/>
+        <text x="136" y="211" font-size="7" font-weight="800" fill="#1A4A8A" text-anchor="middle">SILVER</text>
+        <text x="136" y="221" font-size="6" fill="#888" text-anchor="middle">s3://staged/silver/</text>
+        <text x="136" y="229" font-size="6" fill="#888" text-anchor="middle">DuckDB transform</text>
+        <rect x="184" y="199" width="80" height="34" rx="2" fill="#fff" stroke="#96AEE4"/>
+        <text x="224" y="211" font-size="7" font-weight="800" fill="#1A5A28" text-anchor="middle">GOLD</text>
+        <text x="224" y="221" font-size="6" fill="#888" text-anchor="middle">s3://gold/master/</text>
+        <text x="224" y="229" font-size="6" fill="#888" text-anchor="middle">Bi-temporal</text>
+        <rect x="272" y="199" width="80" height="34" rx="2" fill="#fff" stroke="#96AEE4"/>
+        <text x="312" y="211" font-size="7" font-weight="800" fill="#6A1A00" text-anchor="middle">EDIT</text>
+        <text x="312" y="221" font-size="6" fill="#888" text-anchor="middle">s3://edit/draft/</text>
+        <text x="312" y="229" font-size="6" fill="#888" text-anchor="middle">4-state wf</text>
+        <rect x="360" y="199" width="96" height="34" rx="2" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="408" y="211" font-size="7" font-weight="800" fill="#7A4A00" text-anchor="middle">AUDIT (WORM)</text>
+        <text x="408" y="221" font-size="6" fill="#888" text-anchor="middle">S3 Object Lock</text>
+        <text x="408" y="229" font-size="6" fill="#888" text-anchor="middle">Immutable</text>
+        <rect x="8" y="237" width="126" height="12" rx="2" fill="#F0F4FF" stroke="#96AEE4"/>
+        <text x="71" y="245.5" font-size="6" font-weight="600" fill="#2A4A9A" text-anchor="middle">MWAA — Airflow DAGs</text>
+        <rect x="140" y="237" width="126" height="12" rx="2" fill="#F0F4FF" stroke="#96AEE4"/>
+        <text x="203" y="245.5" font-size="6" font-weight="600" fill="#2A4A9A" text-anchor="middle">DuckDB — Fargate ETL</text>
+        <rect x="272" y="237" width="126" height="12" rx="2" fill="#F0F4FF" stroke="#96AEE4"/>
+        <text x="335" y="245.5" font-size="6" font-weight="600" fill="#2A4A9A" text-anchor="middle">Athena — Serverless SQL</text>
+        <rect x="8" y="253" width="126" height="12" rx="2" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="71" y="261.5" font-size="6" font-weight="600" fill="#7A4A00" text-anchor="middle">Glue Data Catalog</text>
+        <rect x="140" y="253" width="126" height="12" rx="2" fill="#FFF3E0" stroke="#FF9900"/>
+        <text x="203" y="261.5" font-size="6" font-weight="600" fill="#7A4A00" text-anchor="middle">Redshift Serverless</text>
+        <rect x="272" y="253" width="182" height="12" rx="2" fill="#E8E4F4" stroke="#C0A8E8"/>
+        <text x="363" y="261.5" font-size="6" font-weight="600" fill="#5A2A8A" text-anchor="middle">QuickSight · S3 Intelligent-Tiering</text>
+        <!-- Search + DB + Observability -->
+        <rect x="470" y="185" width="446" height="90" rx="4" fill="#F0EEF8" stroke="#B0A0E0" stroke-width="1.5"/>
+        <text x="474" y="196" font-size="6.5" font-weight="700" fill="#5A2A8A" letter-spacing=".5">SEARCH · OPERATIONAL DB · STORAGE · OBSERVABILITY</text>
+        <rect x="474" y="199" width="130" height="34" rx="2" fill="#fff" stroke="#B0A0E0"/>
+        <text x="539" y="211" font-size="7" font-weight="800" fill="#005EB8" text-anchor="middle">Amazon OpenSearch</text>
+        <text x="539" y="221" font-size="6" fill="#888" text-anchor="middle">vessel/port/route/co idx</text>
+        <text x="539" y="229" font-size="6" fill="#888" text-anchor="middle">Maritime analyzers</text>
+        <rect x="612" y="199" width="130" height="34" rx="2" fill="#fff" stroke="#B0A0E0"/>
+        <text x="677" y="211" font-size="7" font-weight="800" fill="#004A5A" text-anchor="middle">Aurora PostgreSQL</text>
+        <text x="677" y="221" font-size="6" fill="#888" text-anchor="middle">PostGIS · Serverless v2</text>
+        <text x="677" y="229" font-size="6" fill="#888" text-anchor="middle">Voyage · position data</text>
+        <rect x="750" y="199" width="158" height="34" rx="2" fill="#fff" stroke="#B0A0E0"/>
+        <text x="829" y="211" font-size="7" font-weight="800" fill="#232F3E" text-anchor="middle">S3 + CloudFront</text>
+        <text x="829" y="221" font-size="6" fill="#888" text-anchor="middle">images / exports / raw</text>
+        <text x="829" y="229" font-size="6" fill="#888" text-anchor="middle">S3 Intelligent-Tiering</text>
+        <rect x="474" y="237" width="92" height="12" rx="2" fill="#E8E4F4" stroke="#B0A0E0"/>
+        <text x="520" y="245.5" font-size="6" font-weight="600" fill="#5A2A8A" text-anchor="middle">CloudWatch Logs</text>
+        <rect x="572" y="237" width="92" height="12" rx="2" fill="#E8E4F4" stroke="#B0A0E0"/>
+        <text x="618" y="245.5" font-size="6" font-weight="600" fill="#5A2A8A" text-anchor="middle">CloudWatch Metrics</text>
+        <rect x="670" y="237" width="92" height="12" rx="2" fill="#E8E4F4" stroke="#B0A0E0"/>
+        <text x="716" y="245.5" font-size="6" font-weight="600" fill="#5A2A8A" text-anchor="middle">AWS X-Ray Traces</text>
+        <rect x="768" y="237" width="140" height="12" rx="2" fill="#E8E4F4" stroke="#B0A0E0"/>
+        <text x="838" y="245.5" font-size="6" font-weight="600" fill="#5A2A8A" text-anchor="middle">Grafana · PagerDuty Alerts</text>
+        <rect x="474" y="253" width="434" height="20" rx="2" fill="#F8E8E8" stroke="#E09090"/>
+        <text x="691" y="261.5" font-size="6" font-weight="600" fill="#8A1A1A" text-anchor="middle">CloudWatch Alarms → SNS → PagerDuty on-call · Grafana pulls CW metrics via CloudWatch datasource · Tempo traces</text>
+        <text x="691" y="269.5" font-size="6" fill="#888" text-anchor="middle">CodeBuild · CodePipeline · ECR · Terraform · AWS Config · Security Hub</text>
+        <!-- Delivery strip -->
+        <rect x="4" y="281" width="912" height="74" rx="4" fill="#FFFBF0" stroke="#E0C060"/>
+        <text x="8" y="291" font-size="6.5" font-weight="700" fill="#806010" letter-spacing=".5">DELIVERY LAYER &amp; CONSUMERS</text>
+        <rect x="8" y="295" width="174" height="54" rx="3" fill="#fff" stroke="#E0C060"/>
+        <text x="95" y="309" font-size="7" font-weight="700" fill="#7A5000" text-anchor="middle">REST API (API Gateway)</text>
+        <text x="95" y="320" font-size="6" fill="#888" text-anchor="middle">External developers</text>
+        <text x="95" y="330" font-size="6" fill="#888" text-anchor="middle">Rate-limited · versioned</text>
+        <text x="95" y="340" font-size="6" fill="#888" text-anchor="middle">WAF protected</text>
+        <rect x="190" y="295" width="174" height="54" rx="3" fill="#fff" stroke="#E0C060"/>
+        <text x="277" y="309" font-size="7" font-weight="700" fill="#7A5000" text-anchor="middle">Snowflake Data Share</text>
+        <text x="277" y="320" font-size="6" fill="#888" text-anchor="middle">Financial analytics teams</text>
+        <text x="277" y="330" font-size="6" fill="#888" text-anchor="middle">Redshift Spectrum link</text>
+        <text x="277" y="340" font-size="6" fill="#888" text-anchor="middle">S3 direct share</text>
+        <rect x="372" y="295" width="174" height="54" rx="3" fill="#fff" stroke="#E0C060"/>
+        <text x="459" y="309" font-size="7" font-weight="700" fill="#7A5000" text-anchor="middle">Data Feeds (SFTP/S3)</text>
+        <text x="459" y="320" font-size="6" fill="#888" text-anchor="middle">Subscription delivery</text>
+        <text x="459" y="330" font-size="6" fill="#888" text-anchor="middle">EventBridge batches</text>
+        <text x="459" y="340" font-size="6" fill="#888" text-anchor="middle">S3 Transfer Acceleration</text>
+        <rect x="554" y="295" width="174" height="54" rx="3" fill="#fff" stroke="#E0C060"/>
+        <text x="641" y="309" font-size="7" font-weight="700" fill="#7A5000" text-anchor="middle">Amazon QuickSight</text>
+        <text x="641" y="320" font-size="6" fill="#888" text-anchor="middle">Executive dashboards</text>
+        <text x="641" y="330" font-size="6" fill="#888" text-anchor="middle">Self-serve analytics</text>
+        <text x="641" y="340" font-size="6" fill="#888" text-anchor="middle">Redshift · Athena source</text>
+        <rect x="736" y="295" width="178" height="54" rx="3" fill="#fff" stroke="#E0C060"/>
+        <text x="825" y="309" font-size="7" font-weight="700" fill="#7A5000" text-anchor="middle">Amazon SES / SendGrid</text>
+        <text x="825" y="320" font-size="6" fill="#888" text-anchor="middle">Email notifications</text>
+        <text x="825" y="330" font-size="6" fill="#888" text-anchor="middle">Slack webhook</text>
+        <text x="825" y="340" font-size="6" fill="#888" text-anchor="middle">SNS push</text>
+        <text x="460" y="390" font-size="6.5" fill="#8AA0C0" text-anchor="middle">TLS 1.3 · KMS CMK at rest · 99.9% SLO · RTO &lt;4h DR (us-west-2) · Confidential — S&amp;P Global Internal</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SLIDE 3 -->
+  <div class="slide" id="s3">
+    <div class="s-header">
+      <div><div class="eyebrow">3 of 5 · AWS Stack</div><h2>System Capabilities &amp; Features</h2></div>
+      <div class="tag">13 Modules · 8 Personas · 650+ Vessel Attributes</div>
+    </div>
+    <div class="s-body">
+      <div class="card" style="border-top:3px solid #232F3E">
+        <div class="card-title">Data Ingestion &amp; Pipelines <span class="aws-tag">SQS · MWAA · DuckDB · S3</span></div>
+        <ul>
+          <li>200+ feed adapters via D6 Platform → Lambda</li>
+          <li>SQS + SNS for event streaming; EventBridge scheduling</li>
+          <li>MWAA Apache Airflow for DAG orchestration</li>
+          <li>DuckDB in Fargate — fast in-process S3 Parquet transforms</li>
+          <li>SHA-256 dedup · schema validation · SQS DLQ retry</li>
+          <li>S3 Bronze → Silver → Gold Medallion lake</li>
+          <li>Bi-temporal model — valid time + system time</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #FF9900">
+        <div class="card-title">AI &amp; Intelligence Engine <span class="aws-tag">SageMaker · DuckDB</span></div>
+        <ul>
+          <li>Source hierarchy resolution (50+ source weights)</li>
+          <li>Conflict detection across concurrent feeds</li>
+          <li>SageMaker endpoint — confidence scoring 0.0–1.0</li>
+          <li>Auto-apply above threshold · Review Queue below</li>
+          <li>SageMaker Pipelines for MLOps / model retraining</li>
+          <li>Model Registry — versioned model artefacts on S3</li>
+          <li>DuckDB for fast in-process feature engineering</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #007A8A">
+        <div class="card-title">Search &amp; Discovery <span class="aws-tag">Amazon OpenSearch</span></div>
+        <ul>
+          <li>Amazon OpenSearch Service — sub-100ms vessel search</li>
+          <li>Maritime synonym analyzers (IMO, MMSI, name)</li>
+          <li>Faceted filters: type, flag, class, route, status</li>
+          <li>Geo-point queries — port radius, voyage track</li>
+          <li>CDC-fed from S3 Gold via Airflow DAG near-real-time</li>
+          <li>Auto-complete · fuzzy match · saved searches</li>
+          <li>Multi-AZ OpenSearch domain with dedicated master</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #1A7A4A">
+        <div class="card-title">Vessel &amp; Fleet Management <span class="aws-tag">EKS · Aurora · S3</span></div>
+        <ul>
+          <li>650+ vessel attributes across 13 attribute groups</li>
+          <li>Live AIS tracking · voyage history on Aurora PostGIS</li>
+          <li>DRAFT → IN_REVIEW → APPROVED edit workflow</li>
+          <li>Recursive AttrTreeSidebar + AttrContentPanel UX</li>
+          <li>Aurora PostgreSQL Serverless v2 for geo queries</li>
+          <li>Vessel images and docs via S3 + CloudFront CDN</li>
+          <li>Signed S3 URLs for per-document access control</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #5A2A8A">
+        <div class="card-title">Analytics &amp; Reporting <span class="aws-tag">Athena · Redshift · QuickSight</span></div>
+        <ul>
+          <li>Amazon QuickSight dashboards — fleet, route, port</li>
+          <li>Athena serverless SQL — $5/TB, no cluster to manage</li>
+          <li>Redshift Serverless for heavy analytics queries</li>
+          <li>DuckDB for ad-hoc BI processing in Fargate tasks</li>
+          <li>Glue Data Catalog — unified S3 schema registry</li>
+          <li>Snowflake data share for financial analytics teams</li>
+          <li>Export: CSV, Excel, PDF, API feed, S3 direct</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #E05A00">
+        <div class="card-title">Observability &amp; SRE <span class="aws-tag">Grafana · CloudWatch · X-Ray</span></div>
+        <ul>
+          <li>Grafana Cloud dashboards pulling CloudWatch metrics</li>
+          <li>CloudWatch Logs + Metrics + Alarms (30-day retention)</li>
+          <li>AWS X-Ray distributed tracing (OpenTelemetry)</li>
+          <li>Grafana Tempo for trace storage (cost-effective)</li>
+          <li>PagerDuty on-call via SNS → PagerDuty integration</li>
+          <li>SLO: API p99 &lt;500ms · search &lt;100ms · 99.9% uptime</li>
+          <li>KEDA autoscale EKS · Aurora auto-pause (dev/test)</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #C02030">
+        <div class="card-title">Security &amp; Compliance <span class="aws-tag">KMS · GuardDuty · Macie</span></div>
+        <ul>
+          <li>Okta SSO + MFA · OIDC/SAML · JWT 15-min tokens</li>
+          <li>8 RBAC roles mapped to 8 user personas via IAM</li>
+          <li>AWS KMS CMK · Secrets Manager · Amazon Macie DLP</li>
+          <li>GuardDuty threat detection · Security Hub CSPM</li>
+          <li>S3 Object Lock (WORM) for immutable audit log</li>
+          <li>SOC 2 Type II / ISO 27001 aligned controls</li>
+          <li>AWS Config rules · SCPs deny-all egress</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #1A4A8A">
+        <div class="card-title">Platform Infrastructure <span class="aws-tag">EKS · Fargate · Terraform</span></div>
+        <ul>
+          <li>EKS with managed node groups (IRSA pod IAM roles)</li>
+          <li>Fargate Spot for non-critical ETL workers (~70% savings)</li>
+          <li>Aurora Serverless v2 — auto-pause in dev/test</li>
+          <li>S3 Intelligent-Tiering — automatic cost optimisation</li>
+          <li>Multi-AZ primary (us-east-1) · DR warm (us-west-2)</li>
+          <li>CodeBuild + CodePipeline CI/CD · ECR image registry</li>
+          <li>Terraform IaC — reproducible environments</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #007A8A">
+        <div class="card-title">Content &amp; Media <span class="aws-tag">S3 · CloudFront · SES</span></div>
+        <ul>
+          <li>Contentful CMS for editorial and static content</li>
+          <li>S3 multi-tier (Standard / IA / Glacier Instant)</li>
+          <li>CloudFront CDN — global edge caching for images</li>
+          <li>Fargate image processing workers (resize, watermark)</li>
+          <li>Document upload: PDF, Excel, certificates to S3</li>
+          <li>Amazon SES for transactional email (or SendGrid)</li>
+          <li>SNS + Lambda for real-time webhook push</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SLIDE 4 -->
+  <div class="slide" id="s4">
+    <div class="s-header">
+      <div><div class="eyebrow">4 of 5 · AWS Stack</div><h2>Infrastructure Cost Estimate</h2></div>
+      <div class="tag">Dev · Test · Staging · Production · DR — delivery layer excluded · cost-optimised</div>
+    </div>
+    <div class="s-body">
+      <div class="cost-wrap">
+        <div class="savings-banner">
+          <strong>Cost Optimisation Strategy:</strong>
+          S3 Intelligent-Tiering &nbsp;·&nbsp; Fargate Spot workers (~70% off) &nbsp;·&nbsp; Aurora Serverless v2 auto-pause &nbsp;·&nbsp; Athena + DuckDB (no cluster) &nbsp;·&nbsp; Redshift Serverless on-demand &nbsp;·&nbsp; 1-yr Reserved EKS nodes in Prod &nbsp;·&nbsp;
+          <strong style="color:#E07000">~45% cheaper than equivalent GCP stack</strong>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:190px">Service / Component</th>
+              <th>Dev<br><span style="font-weight:400;font-size:8px">~$440/mo</span></th>
+              <th>Test<br><span style="font-weight:400;font-size:8px">~$780/mo</span></th>
+              <th>Staging<br><span style="font-weight:400;font-size:8px">~$2,500/mo</span></th>
+              <th>Production<br><span style="font-weight:400;font-size:8px">~$8,100/mo</span></th>
+              <th>DR (warm)<br><span style="font-weight:400;font-size:8px">~$2,000/mo</span></th>
+              <th>Cost Optimisation Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="tenv"><td colspan="7">AWS Compute</td></tr>
+            <tr><td>EKS (node groups)</td><td>1× t3.xlarge $116</td><td>2× t3.xlarge $232</td><td>3× m5.xlarge $432</td><td>6× m5.xlarge $605</td><td>3× m5.xlarge $432</td><td>Prod uses 1-yr reserved (40% off list). KEDA autoscale.</td></tr>
+            <tr><td>Fargate (workers)</td><td>$15</td><td>$30</td><td>$90</td><td>$280</td><td>$60</td><td>Spot Fargate for ETL/DuckDB workers (~70% off). Pay-per-task.</td></tr>
+            <tr><td>Lambda (feed adapters)</td><td>$5</td><td>$10</td><td>$30</td><td>$100</td><td>$20</td><td>1M free req/mo; event-driven. Near-zero in dev.</td></tr>
+            <tr class="tenv"><td colspan="7">AWS Data &amp; Pipeline</td></tr>
+            <tr><td>S3 (storage + requests)</td><td>$5</td><td>$12</td><td>$45</td><td>$220</td><td>$110</td><td>S3 Intelligent-Tiering auto-moves cold data to IA/Glacier.</td></tr>
+            <tr><td>MWAA Apache Airflow</td><td>$45</td><td>$45</td><td>$180</td><td>$360</td><td>—</td><td>mw1.small in Dev/Test. mw1.medium Staging. mw1.large Prod.</td></tr>
+            <tr><td>DuckDB (Fargate tasks)</td><td>incl. Fargate</td><td>incl. Fargate</td><td>incl. Fargate</td><td>incl. Fargate</td><td>incl. Fargate</td><td>No separate cost — runs as Fargate Spot ephemeral tasks.</td></tr>
+            <tr><td>Amazon Athena</td><td>$5</td><td>$12</td><td>$50</td><td>$200</td><td>—</td><td>$5/TB scanned. Parquet + partitioning cuts scan by ~80%.</td></tr>
+            <tr><td>Redshift Serverless</td><td>—</td><td>$30</td><td>$160</td><td>$650</td><td>$160</td><td>On-demand RPU. Pauses when idle. Only needed for heavy BI.</td></tr>
+            <tr><td>Glue Data Catalog</td><td>$1</td><td>$1</td><td>$5</td><td>$20</td><td>$5</td><td>$1/100K objects. Unified schema for Athena + Spark + DuckDB.</td></tr>
+            <tr><td>SQS + SNS</td><td>$3</td><td>$6</td><td>$25</td><td>$120</td><td>$40</td><td>1M SQS free/mo. SNS $0.50/1M publishes.</td></tr>
+            <tr><td>EventBridge</td><td>$1</td><td>$3</td><td>$10</td><td>$50</td><td>$10</td><td>$1/M events. Replaces Cloud Scheduler at fraction of cost.</td></tr>
+            <tr class="tenv"><td colspan="7">AWS Database, Search &amp; CDN</td></tr>
+            <tr><td>Aurora PostgreSQL Serverless v2</td><td>$30</td><td>$60</td><td>$180</td><td>$520</td><td>$260</td><td>Auto-pause in Dev/Test (near $0 when idle). 0.5 ACU min.</td></tr>
+            <tr><td>Amazon OpenSearch Service</td><td>$35</td><td>$70</td><td>$175</td><td>$540</td><td>$270</td><td>t3.medium.search dev. r6g.large.search prod (3-node Multi-AZ).</td></tr>
+            <tr><td>CloudFront + Data Transfer</td><td>$5</td><td>$10</td><td>$40</td><td>$320</td><td>—</td><td>~2TB/mo egress Prod. Origins free S3→CloudFront.</td></tr>
+            <tr class="tenv"><td colspan="7">AWS AI, Security &amp; Observability</td></tr>
+            <tr><td>SageMaker (train + serve)</td><td>$25</td><td>$50</td><td>$130</td><td>$650</td><td>—</td><td>ml.t3.medium endpoint dev. ml.m5.xlarge prod. Spot training.</td></tr>
+            <tr><td>API Gateway (REST)</td><td>—</td><td>$3</td><td>$40</td><td>$200</td><td>$80</td><td>$3.50/M API calls. ~5M calls/mo Prod. 1M free/mo.</td></tr>
+            <tr><td>AWS WAF + Shield Std</td><td>$6</td><td>$6</td><td>$25</td><td>$150</td><td>$75</td><td>Shield Standard free. WAF $5/WebACL + $1/M requests.</td></tr>
+            <tr><td>KMS + Secrets Manager</td><td>$3</td><td>$3</td><td>$12</td><td>$50</td><td>$25</td><td>$0.03/key/mo + $0.03/10K API calls. Secrets $0.40/secret/mo.</td></tr>
+            <tr><td>CloudWatch Logs + Metrics</td><td>$10</td><td>$18</td><td>$60</td><td>$240</td><td>$60</td><td>$0.50/GB ingested. Grafana replaces CW dashboards (cost saving).</td></tr>
+            <tr><td>GuardDuty + Macie</td><td>$8</td><td>$8</td><td>$25</td><td>$90</td><td>$45</td><td>GuardDuty $0.80/M events. 30-day free trial available.</td></tr>
+            <tr><td>CodeBuild + ECR</td><td>$8</td><td>$8</td><td>$15</td><td>$35</td><td>—</td><td>100 build mins free/mo. ECR $0.10/GB/mo.</td></tr>
+            <tr class="tenv"><td colspan="7">Non-AWS SaaS (no delivery layer)</td></tr>
+            <tr><td>Okta (SSO + MFA)</td><td>$50</td><td>$50</td><td>$150</td><td>$500</td><td>—</td><td>~500 users Prod. Per-user pricing.</td></tr>
+            <tr><td>Grafana Cloud</td><td>—</td><td>—</td><td>$50</td><td>$200</td><td>—</td><td>Free tier covers Dev/Test. Pro plan for Prod dashboards.</td></tr>
+            <tr><td>PagerDuty</td><td>—</td><td>—</td><td>—</td><td>$120</td><td>—</td><td>Business plan; 5 on-call users.</td></tr>
+            <tr><td>Contentful CMS</td><td>—</td><td>—</td><td>$300</td><td>$300</td><td>—</td><td>Team plan; shared Prod/Staging.</td></tr>
+            <tr class="ttotal">
+              <td>TOTAL / MONTH</td>
+              <td>~$375</td><td>~$677</td><td>~$2,279</td><td>~$7,020</td><td>~$1,652</td>
+              <td style="color:#1A7A4A;font-weight:700">Annual run-rate ~$104K (Prod+DR) — vs ~$263K GCP (~60% saving)</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">* AWS us-east-1 on-demand pricing, May 2026. 1-yr Reserved Instances applied to EKS nodes in Prod (shown as reserved price). Fargate Spot used for ETL workers. Savings Plans not applied — additional 10–20% savings possible. S3 Intelligent-Tiering breakeven at ~30 days. Delivery layer costs (Snowflake, API Gateway egress to consumers) excluded per scope.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SLIDE 5 -->
+  <div class="slide" id="s5">
+    <div class="s-header">
+      <div><div class="eyebrow">5 of 5 · AWS Stack</div><h2>Timeline &amp; Resource Cost</h2></div>
+      <div class="tag">12-Month · 4 Teams · 2 FTE + 2 Contractor · ~$2.42M Total</div>
+    </div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="sec-label" style="margin-bottom:5px">TEAM COMPOSITION &amp; ANNUAL COST</div>
+          <table>
+            <thead><tr><th>Team</th><th>Focus</th><th>Size</th><th>Annual Cost</th></tr></thead>
+            <tbody>
+              <tr><td>FTE Team 1</td><td>Core Platform (BE + Data + Pipelines)</td><td>4 FTE</td><td>$680K</td></tr>
+              <tr><td>FTE Team 2</td><td>UX / App (FE + Design)</td><td>3 FTE</td><td>$510K</td></tr>
+              <tr><td>Contractor 1</td><td>AWS Infra / Migration / DevOps</td><td>3 Contractors</td><td>$540K</td></tr>
+              <tr><td>Contractor 2</td><td>Security / OpenSearch / SageMaker</td><td>3 Contractors</td><td>$540K</td></tr>
+              <tr class="ttotal"><td colspan="2">Total People Cost</td><td>13 people</td><td>$2.27M</td></tr>
+              <tr class="ttotal"><td colspan="2">AWS Infra Prod + DR (12 mo)</td><td>—</td><td>$104K</td></tr>
+              <tr class="ttotal"><td colspan="2">AWS Infra Dev + Test + Staging</td><td>—</td><td>$43K</td></tr>
+              <tr class="thighlight"><td colspan="2">TOTAL PROJECT BUDGET</td><td>—</td><td style="color:#E07000;font-weight:700">~$2.42M</td></tr>
+              <tr style="background:#E8F5EE"><td colspan="4" style="font-size:8.5px;color:#1A5A28;font-weight:600">Saving vs GCP equivalent: ~$140K on infra alone (3-year ~$420K saving)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="sec-label" style="margin-bottom:5px">KEY MILESTONES &amp; GO/NO-GO GATES</div>
+          <table>
+            <thead><tr><th style="width:36px">Mo.</th><th>Milestone</th><th>Team</th></tr></thead>
+            <tbody>
+              <tr><td>M1</td><td>AWS Infra bootstrapped — EKS, VPC, S3, Terraform</td><td>C1</td></tr>
+              <tr><td>M2</td><td>D6 feeds live · Lambda adapters · SQS · S3 Bronze</td><td>FTE1</td></tr>
+              <tr><td>M3</td><td>MWAA Airflow DAGs · DuckDB Silver transforms · Terahelix</td><td>FTE1</td></tr>
+              <tr><td style="color:#FF9900;font-weight:700">M4 ✓</td><td>OpenSearch live · Vessel search MVP — <b>Go/No-Go</b></td><td>All</td></tr>
+              <tr><td>M5</td><td>Edit/Approve workflow · 8 Personas UX · Aurora PostGIS</td><td>FTE2</td></tr>
+              <tr><td style="color:#FF9900;font-weight:700">M6 ✓</td><td>SageMaker confidence engine · DuckDB scoring — <b>Go/No-Go</b></td><td>FTE1</td></tr>
+              <tr><td>M7</td><td>Snowflake data share · API Gateway live</td><td>C2</td></tr>
+              <tr><td style="color:#FF9900;font-weight:700">M8 ✓</td><td>Security audit · GuardDuty/Macie · Okta RBAC — <b>Go/No-Go</b></td><td>C2</td></tr>
+              <tr><td>M9</td><td>Data migration complete · 1TB Gold on S3 reconciled</td><td>C1</td></tr>
+              <tr><td>M10</td><td>Staging load test · p99 &lt;500ms · OpenSearch &lt;100ms</td><td>All</td></tr>
+              <tr><td style="color:#FF9900;font-weight:700">M11 ✓</td><td>DR failover verified (us-west-2) · RTO &lt;4h — <b>Go/No-Go</b></td><td>C1+C2</td></tr>
+              <tr><td style="color:#1A7A4A;font-weight:700">M12 🚀</td><td>Production launch · 30-day Hypercare</td><td>All</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style="flex-shrink:0">
+        <div class="sec-label" style="margin-bottom:4px">12-MONTH GANTT SUMMARY</div>
+        <svg viewBox="0 0 860 132" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+          <rect x="0" y="0" width="860" height="15" fill="#232F3E"/>
+          <text x="80" y="10.5" font-size="7.5" font-weight="600" fill="#FF9900" text-anchor="middle">Team</text>
+          <text x="188" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M1</text>
+          <text x="245" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M2</text>
+          <text x="302" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M3</text>
+          <text x="359" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M4</text>
+          <text x="416" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M5</text>
+          <text x="473" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M6</text>
+          <text x="530" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M7</text>
+          <text x="587" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M8</text>
+          <text x="644" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M9</text>
+          <text x="701" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M10</text>
+          <text x="758" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M11</text>
+          <text x="815" y="10.5" font-size="7" fill="#FFD080" text-anchor="middle">M12</text>
+          <line x1="160" y1="0" x2="160" y2="132" stroke="#C8D8EC" stroke-width=".5"/>
+          <line x1="217" y1="15" x2="217" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="274" y1="15" x2="274" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="331" y1="15" x2="331" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="388" y1="15" x2="388" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="445" y1="15" x2="445" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="502" y1="15" x2="502" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="559" y1="15" x2="559" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="616" y1="15" x2="616" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="673" y1="15" x2="673" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="730" y1="15" x2="730" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="787" y1="15" x2="787" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <line x1="844" y1="15" x2="844" y2="132" stroke="#E0E8F4" stroke-width=".5"/>
+          <rect x="0" y="15" width="860" height="26" fill="#F4F8FF"/>
+          <rect x="0" y="41" width="860" height="26" fill="#FAFCFF"/>
+          <rect x="0" y="67" width="860" height="26" fill="#F4F8FF"/>
+          <rect x="0" y="93" width="860" height="26" fill="#FAFCFF"/>
+          <rect x="0" y="119" width="860" height="13" fill="#F0F4FF"/>
+          <text x="4" y="30" font-size="7.5" font-weight="700" fill="#1A4A8A">FTE Team 1</text>
+          <text x="4" y="39" font-size="6" fill="#5A7AAA">Core Platform</text>
+          <text x="4" y="56" font-size="7.5" font-weight="700" fill="#1A6A40">FTE Team 2</text>
+          <text x="4" y="65" font-size="6" fill="#4A8A6A">UX / App</text>
+          <text x="4" y="82" font-size="7.5" font-weight="700" fill="#7A5000">Contractor 1</text>
+          <text x="4" y="91" font-size="6" fill="#9A7020">AWS Infra/Mig</text>
+          <text x="4" y="108" font-size="7.5" font-weight="700" fill="#7A2020">Contractor 2</text>
+          <text x="4" y="117" font-size="6" fill="#9A4040">Security/Search</text>
+          <rect x="161" y="19" width="170" height="9" rx="2" fill="#2060CC"/>
+          <text x="246" y="26" font-size="6" fill="#fff" text-anchor="middle">D6 Lambda · SQS · S3 Bronze · MWAA setup</text>
+          <rect x="331" y="19" width="228" height="9" rx="2" fill="#1A4A9A"/>
+          <text x="445" y="26" font-size="6" fill="#fff" text-anchor="middle">SageMaker AI · DuckDB Gold · Terahelix · Silver DAGs</text>
+          <rect x="559" y="19" width="285" height="9" rx="2" fill="#0D2B5E"/>
+          <text x="700" y="26" font-size="6" fill="#fff" text-anchor="middle">OpenSearch CDC · Athena · Data Migration · Launch</text>
+          <rect x="161" y="30" width="683" height="7" rx="2" fill="#90B0E8" opacity=".35"/>
+          <text x="502" y="35" font-size="5.5" fill="#0D2B5E" text-anchor="middle">Bi-temporal S3 · Edit/Approve · Notifications (SNS) · Audit (S3 WORM)</text>
+          <rect x="218" y="45" width="170" height="9" rx="2" fill="#1A8A50"/>
+          <text x="303" y="52" font-size="6" fill="#fff" text-anchor="middle">UX Foundation · 8 Personas</text>
+          <rect x="388" y="45" width="228" height="9" rx="2" fill="#1A6A40"/>
+          <text x="502" y="52" font-size="6" fill="#fff" text-anchor="middle">Vessel Detail · OpenSearch UI · Analytics</text>
+          <rect x="616" y="45" width="228" height="9" rx="2" fill="#0D4A2A"/>
+          <text x="730" y="52" font-size="6" fill="#fff" text-anchor="middle">Admin Console · Contentful · Release</text>
+          <rect x="218" y="56" width="626" height="7" rx="2" fill="#90D8B0" opacity=".35"/>
+          <text x="531" y="61" font-size="5.5" fill="#1A4A2A" text-anchor="middle">CloudFront CDN · S3 file mgmt · SES/Slack notifs · QuickSight dashboards</text>
+          <rect x="161" y="71" width="114" height="9" rx="2" fill="#C87000"/>
+          <text x="218" y="78" font-size="6" fill="#fff" text-anchor="middle">AWS Bootstrap</text>
+          <rect x="275" y="71" width="284" height="9" rx="2" fill="#A05800"/>
+          <text x="417" y="78" font-size="6" fill="#fff" text-anchor="middle">EKS · Aurora · MWAA · S3 · CloudFront · Terraform IaC</text>
+          <rect x="559" y="71" width="285" height="9" rx="2" fill="#7A4000"/>
+          <text x="700" y="78" font-size="6" fill="#fff" text-anchor="middle">Data Migration (AWS Glue/DuckDB) · DR setup · Load test</text>
+          <rect x="161" y="82" width="683" height="7" rx="2" fill="#F8D090" opacity=".45"/>
+          <text x="502" y="87" font-size="5.5" fill="#7A4000" text-anchor="middle">Snowflake · API Gateway · CodeBuild + CodePipeline + ECR · Terraform modules</text>
+          <rect x="161" y="97" width="170" height="9" rx="2" fill="#AA2020"/>
+          <text x="246" y="104" font-size="6" fill="#fff" text-anchor="middle">Security Architecture</text>
+          <rect x="331" y="97" width="171" height="9" rx="2" fill="#882020"/>
+          <text x="416" y="104" font-size="6" fill="#fff" text-anchor="middle">Okta RBAC · KMS · Macie · GuardDuty</text>
+          <rect x="502" y="97" width="342" height="9" rx="2" fill="#661010"/>
+          <text x="672" y="104" font-size="6" fill="#fff" text-anchor="middle">API GW · Pen Test · SOC 2 · SCPs · OpenSearch tuning · Launch</text>
+          <rect x="161" y="108" width="683" height="7" rx="2" fill="#F0A0A0" opacity=".4"/>
+          <text x="502" y="113" font-size="5.5" fill="#661010" text-anchor="middle">AWS Config · Security Hub · WAF rules · Secrets Manager · PagerDuty integration</text>
+          <polygon points="388,119 392,130 384,130" fill="#FF9900"/>
+          <text x="388" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M4✓</text>
+          <polygon points="502,119 506,130 498,130" fill="#FF9900"/>
+          <text x="502" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M6✓</text>
+          <polygon points="616,119 620,130 612,130" fill="#FF9900"/>
+          <text x="616" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M8✓</text>
+          <polygon points="787,119 791,130 783,130" fill="#FF9900"/>
+          <text x="787" y="132" font-size="5.5" fill="#FF9900" text-anchor="middle">M11✓</text>
+          <polygon points="844,119 848,130 840,130" fill="#1A6A40"/>
+          <text x="844" y="132" font-size="5.5" fill="#1A6A40" text-anchor="middle">LAUNCH</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PERSISTENT NAV -->
+<div class="pnav">
+  <button class="nbtn" onclick="move(-1)">← Prev</button>
+  <div class="dots">
+    <div class="dot on" onclick="go(1)" title="System Architecture"></div>
+    <div class="dot" onclick="go(2)" title="Detailed Infrastructure"></div>
+    <div class="dot" onclick="go(3)" title="Capabilities &amp; Features"></div>
+    <div class="dot" onclick="go(4)" title="Infrastructure Cost"></div>
+    <div class="dot" onclick="go(5)" title="Timeline &amp; Resource Cost"></div>
+  </div>
+  <span class="nlabel" id="lbl">Slide 1 of 5 — System Architecture</span>
+  <button class="nbtn" onclick="move(1)">Next →</button>
+  <button class="nbtn fs" onclick="toggleFS()" id="fsBtn">⛶ Fullscreen</button>
+  <a class="nbtn" href="aws_index.html">⌂ Hub</a>
+</div>
+
+<script>
+var cur=1,total=5;
+var labels=['System Architecture','Detailed Infrastructure','Capabilities & Features','Infrastructure Cost','Timeline & Resource Cost'];
+function go(n){
+  document.getElementById('s'+cur).classList.remove('active');
+  document.querySelectorAll('.dot')[cur-1].classList.remove('on');
+  cur=Math.max(1,Math.min(total,n));
+  document.getElementById('s'+cur).classList.add('active');
+  document.querySelectorAll('.dot')[cur-1].classList.add('on');
+  document.getElementById('lbl').textContent='Slide '+cur+' of '+total+' — '+labels[cur-1];
+}
+function move(d){go(cur+d);}
+function toggleFS(){
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}
+  else{document.exitFullscreen&&document.exitFullscreen();}
+}
+document.addEventListener('fullscreenchange',function(){
+  document.getElementById('fsBtn').textContent=document.fullscreenElement?'✕ Exit Full':'⛶ Fullscreen';
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')move(1);
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp')move(-1);
+  else if(e.key==='f'||e.key==='F')toggleFS();
+});
+</script>
+</body>
+</html>

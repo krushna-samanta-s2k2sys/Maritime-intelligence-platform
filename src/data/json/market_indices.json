@@ -1,0 +1,44 @@
+[
+  {
+    "id":"IDX-BDI",  "code":"BDI",  "name":"Baltic Dry Index",
+    "value":1284, "prev":1237, "w52_low":892,  "w52_high":1893,
+    "delta":47,   "direction":"up",   "as_of_date":"2024-01-30",
+    "color":"var(--blue)",   "description":"Overall dry bulk freight index",
+    "sparkline":[45,52,38,61,55,48,67,58,71,63,68,72,75,70,68]
+  },
+  {
+    "id":"IDX-BCI",  "code":"BCI",  "name":"Baltic Capesize Index",
+    "value":1842, "prev":1756, "w52_low":580,  "w52_high":3120,
+    "delta":86,   "direction":"up",   "as_of_date":"2024-01-30",
+    "color":"var(--purple)", "description":"Capesize vessel freight rates",
+    "sparkline":[55,48,62,70,58,65,72,68,80,74,78,82,85,79,77]
+  },
+  {
+    "id":"IDX-BPI",  "code":"BPI",  "name":"Baltic Panamax Index",
+    "value":1156, "prev":1142, "w52_low":780,  "w52_high":1650,
+    "delta":14,   "direction":"up",   "as_of_date":"2024-01-30",
+    "color":"var(--teal)",   "description":"Panamax vessel freight rates",
+    "sparkline":[50,55,48,60,52,58,65,62,70,66,68,72,74,70,68]
+  },
+  {
+    "id":"IDX-BDTI", "code":"BDTI", "name":"Baltic Dirty Tanker Index",
+    "value":781,  "prev":798,  "w52_low":542,  "w52_high":1124,
+    "delta":-17,  "direction":"down", "as_of_date":"2024-01-30",
+    "color":"var(--orange)", "description":"Dirty petroleum products tankers",
+    "sparkline":[60,58,65,70,55,62,68,60,72,65,70,68,65,63,60]
+  },
+  {
+    "id":"IDX-BCTI", "code":"BCTI", "name":"Baltic Clean Tanker Index",
+    "value":643,  "prev":631,  "w52_low":410,  "w52_high":980,
+    "delta":12,   "direction":"up",   "as_of_date":"2024-01-30",
+    "color":"var(--green)",  "description":"Clean petroleum products tankers",
+    "sparkline":[45,50,55,60,52,58,65,62,68,64,66,70,72,68,66]
+  },
+  {
+    "id":"IDX-BLNG", "code":"BLNG", "name":"Baltic LNG Index",
+    "value":54200,"prev":52100,"w52_low":38000,"w52_high":78000,
+    "delta":2100, "direction":"up",   "as_of_date":"2024-01-30",
+    "color":"var(--teal)",   "description":"LNG carrier freight rates ($/day)",
+    "sparkline":[40,45,55,60,52,48,58,65,70,62,68,72,75,70,68]
+  }
+]

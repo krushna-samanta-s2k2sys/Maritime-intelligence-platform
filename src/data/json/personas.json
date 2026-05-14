@@ -1,0 +1,150 @@
+{
+  "default_persona_id": "full-access",
+  "personas": [
+    {
+      "id": "full-access",
+      "name": "Full Access",
+      "icon": "🔐",
+      "color": "#1558d6",
+      "description": "Complete access to all maritime data and features",
+      "attr_sections": ["general","construction","machinery","ownership","classification","safety","cargo","compliance"],
+      "dashboard_cards": [
+        { "card_id": "kpi-row",        "width": 12 },
+        { "card_id": "live-map",       "width": 8  },
+        { "card_id": "live-activity",  "width": 4  },
+        { "card_id": "fleet-types",    "width": 4  },
+        { "card_id": "flag-states",    "width": 4  },
+        { "card_id": "certs-expiring", "width": 4  },
+        { "card_id": "psc-detentions", "width": 6  },
+        { "card_id": "market-snapshot","width": 6  }
+      ],
+      "vessel_columns": ["name","imo","flag","type","dwt","gt","built","loa","owner","manager","class","status","updated"]
+    },
+    {
+      "id": "vessel-analyst",
+      "name": "Vessel Analyst",
+      "icon": "🚢",
+      "color": "#0094b3",
+      "description": "Vessel registry, technical data and certification analyst",
+      "attr_sections": ["general","construction","machinery","classification","safety","ownership","cargo","compliance"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 3 },
+        { "card_id": "kpi-active",     "width": 3 },
+        { "card_id": "kpi-psc",        "width": 3 },
+        { "card_id": "kpi-certs",      "width": 3 },
+        { "card_id": "live-map",       "width": 8 },
+        { "card_id": "live-activity",  "width": 4 },
+        { "card_id": "fleet-types",    "width": 6 },
+        { "card_id": "certs-expiring", "width": 6 }
+      ],
+      "vessel_columns": ["name","imo","flag","type","dwt","gt","built","loa","beam","depth","class","class-notation","status"]
+    },
+    {
+      "id": "port-analyst",
+      "name": "Port Analyst",
+      "icon": "⚓",
+      "color": "#137333",
+      "description": "Port operations and vessel arrival/departure analyst",
+      "attr_sections": ["general","cargo","construction","safety","machinery","classification","ownership","compliance"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 4 },
+        { "card_id": "kpi-ports",      "width": 4 },
+        { "card_id": "kpi-psc",        "width": 4 },
+        { "card_id": "live-map",       "width": 8 },
+        { "card_id": "live-activity",  "width": 4 },
+        { "card_id": "psc-detentions", "width": 12 }
+      ],
+      "vessel_columns": ["name","imo","flag","type","dwt","loa","max-draft","sum-draft","status","updated"]
+    },
+    {
+      "id": "companies-analyst",
+      "name": "Companies Analyst",
+      "icon": "🏢",
+      "color": "#ea580c",
+      "description": "Company registry, ownership structures and corporate hierarchy",
+      "attr_sections": ["ownership","general","compliance","classification","safety","construction","machinery","cargo"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 3 },
+        { "card_id": "kpi-companies",  "width": 3 },
+        { "card_id": "kpi-sanctions",  "width": 3 },
+        { "card_id": "kpi-active",     "width": 3 },
+        { "card_id": "live-activity",  "width": 4 },
+        { "card_id": "fleet-types",    "width": 4 },
+        { "card_id": "flag-states",    "width": 4 },
+        { "card_id": "market-snapshot","width": 12 }
+      ],
+      "vessel_columns": ["name","imo","flag","type","owner","beneficial-owner","operator","manager","pi","status"]
+    },
+    {
+      "id": "registry-analyst",
+      "name": "Vessel Registry",
+      "icon": "📋",
+      "color": "#6200ea",
+      "description": "Vessel registration, flag state data and IMO identity",
+      "attr_sections": ["general","classification","safety","ownership","construction","machinery","cargo","compliance"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 4 },
+        { "card_id": "kpi-active",     "width": 4 },
+        { "card_id": "kpi-companies",  "width": 4 },
+        { "card_id": "flag-states",    "width": 6 },
+        { "card_id": "fleet-types",    "width": 6 },
+        { "card_id": "live-map",       "width": 12 }
+      ],
+      "vessel_columns": ["name","imo","flag","type","built","loa","class","status","updated"]
+    },
+    {
+      "id": "ownership-management",
+      "name": "Ownership Mgmt",
+      "icon": "🤝",
+      "color": "#c8102e",
+      "description": "Beneficial ownership, management and P&I club tracking",
+      "attr_sections": ["ownership","compliance","general","classification","safety","construction","machinery","cargo"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 3 },
+        { "card_id": "kpi-companies",  "width": 3 },
+        { "card_id": "kpi-sanctions",  "width": 3 },
+        { "card_id": "kpi-active",     "width": 3 },
+        { "card_id": "live-activity",  "width": 6 },
+        { "card_id": "flag-states",    "width": 6 },
+        { "card_id": "market-snapshot","width": 12 }
+      ],
+      "vessel_columns": ["name","imo","flag","owner","beneficial-owner","operator","manager","pi","type","dwt","status"]
+    },
+    {
+      "id": "dimensions-analyst",
+      "name": "Dimensions Analyst",
+      "icon": "📐",
+      "color": "#b45309",
+      "description": "Physical dimensions, technical specifications and machinery",
+      "attr_sections": ["construction","machinery","general","classification","safety","ownership","cargo","compliance"],
+      "dashboard_cards": [
+        { "card_id": "kpi-fleet",      "width": 4 },
+        { "card_id": "kpi-active",     "width": 4 },
+        { "card_id": "kpi-certs",      "width": 4 },
+        { "card_id": "fleet-types",    "width": 6 },
+        { "card_id": "live-map",       "width": 6 },
+        { "card_id": "certs-expiring", "width": 12 }
+      ],
+      "vessel_columns": ["name","imo","type","dwt","gt","nt","loa","lbp","beam","depth","max-draft","sum-draft","built","class"]
+    },
+    {
+      "id": "compliance-officer",
+      "name": "Compliance Officer",
+      "icon": "🚨",
+      "color": "#c8102e",
+      "description": "Sanctions screening, PSC compliance and risk monitoring",
+      "attr_sections": ["compliance","safety","classification","ownership","general","construction","machinery","cargo"],
+      "dashboard_cards": [
+        { "card_id": "kpi-sanctions",  "width": 3 },
+        { "card_id": "kpi-psc",        "width": 3 },
+        { "card_id": "kpi-certs",      "width": 3 },
+        { "card_id": "kpi-active",     "width": 3 },
+        { "card_id": "psc-detentions", "width": 8 },
+        { "card_id": "live-activity",  "width": 4 },
+        { "card_id": "certs-expiring", "width": 6 },
+        { "card_id": "live-map",       "width": 6 }
+      ],
+      "vessel_columns": ["name","imo","flag","type","owner","manager","class","status","updated"]
+    }
+  ]
+}

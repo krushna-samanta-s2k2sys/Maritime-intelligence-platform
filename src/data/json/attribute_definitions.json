@@ -1,0 +1,2623 @@
+{
+  "version": "1.0",
+  "entities": {
+    "vessel": {
+      "sections": [
+        {
+          "id": "general",
+          "label": "General",
+          "icon": "⚓",
+          "order": 1,
+          "groups": [
+            {
+              "id": "identity",
+              "label": "Identity",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "vessel_name",
+                  "id": "af-name",
+                  "label": "Vessel Name",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "nm",
+                  "filter_field": "nm",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": true,
+                  "column_width": 160,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "imo_number",
+                  "id": "af-imo",
+                  "label": "IMO Number",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "vessel_field": "imo",
+                  "filter_field": "imo",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "mmsi_number",
+                  "id": "af-mmsi",
+                  "label": "MMSI",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "vessel_field": "mmsi",
+                  "filter_field": "mmsi",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 95,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "call_sign",
+                  "id": "af-callsign",
+                  "label": "Call Sign",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "vessel_field": "cs",
+                  "filter_field": "cs",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "flag_name",
+                  "id": "af-flag",
+                  "label": "Flag State",
+                  "data_type": "text",
+                  "display_order": 5,
+                  "vessel_field": "fn",
+                  "filter_field": "fn",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 120,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "flag_code",
+                  "id": "af-flagcode",
+                  "label": "Flag Code",
+                  "data_type": "text",
+                  "display_order": 6,
+                  "vessel_field": "fl",
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "flag_emoji",
+                  "id": "af-flagemoji",
+                  "label": "Flag Emoji",
+                  "data_type": "text",
+                  "display_order": 7,
+                  "vessel_field": "flag",
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "vessel_type",
+                  "id": "af-type",
+                  "label": "Ship Type",
+                  "data_type": "text",
+                  "display_order": 8,
+                  "vessel_field": "ty",
+                  "filter_field": "ty",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "type",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 130,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "status",
+                  "id": "af-status",
+                  "label": "Vessel Status",
+                  "data_type": "text",
+                  "display_order": 9,
+                  "vessel_field": "st",
+                  "filter_field": "st",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "status",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 110,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "lr_number",
+                  "id": "af-lrno",
+                  "label": "LR Number (LRNO)",
+                  "data_type": "text",
+                  "display_order": 10,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "eni_number",
+                  "id": "af-eni",
+                  "label": "ENI Number",
+                  "data_type": "text",
+                  "display_order": 11,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "official_number",
+                  "id": "af-offno",
+                  "label": "Official Number",
+                  "data_type": "text",
+                  "display_order": 12,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "port_of_registry",
+                  "id": "af-por",
+                  "label": "Port of Registry",
+                  "data_type": "text",
+                  "display_order": 13,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "nationality",
+                  "id": "af-nationality",
+                  "label": "Nationality",
+                  "data_type": "text",
+                  "display_order": 14,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "status_group",
+              "label": "Status",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "status_code",
+                  "id": "af-ssc",
+                  "label": "Ship Status Code",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "status_effective_date",
+                  "id": "af-ss-effdate",
+                  "label": "Status Effective Date",
+                  "data_type": "date",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "ship_type",
+              "label": "Ship Type",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "type_l2",
+                  "id": "af-stl2",
+                  "label": "Shiptype Level 2",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "type_l3",
+                  "id": "af-stl3",
+                  "label": "Shiptype Level 3",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "type_l4",
+                  "id": "af-stl4",
+                  "label": "Shiptype Level 4",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "type_l5",
+                  "id": "af-stl5",
+                  "label": "Shiptype Level 5",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "crew",
+              "label": "Crew",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "total_crew",
+                  "id": "af-crew-total",
+                  "label": "Total Crew",
+                  "data_type": "integer",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "officers",
+                  "id": "af-crew-officers",
+                  "label": "Officers",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "ratings",
+                  "id": "af-crew-ratings",
+                  "label": "Ratings",
+                  "data_type": "integer",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "cadets",
+                  "id": "af-crew-cadets",
+                  "label": "Cadets",
+                  "data_type": "integer",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "trainees",
+                  "id": "af-crew-trainees",
+                  "label": "Trainees",
+                  "data_type": "integer",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "construction",
+          "label": "Construction",
+          "icon": "🔧",
+          "order": 2,
+          "groups": [
+            {
+              "id": "dimensions",
+              "label": "Dimensions",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "length_overall_m",
+                  "id": "af-loa",
+                  "label": "Length Overall (LOA)",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 1,
+                  "vessel_field": "loa",
+                  "filter_field": "loa",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "dimensions",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "dimensions",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 500 }
+                },
+                {
+                  "key": "length_bp_m",
+                  "id": "af-lbp",
+                  "label": "Length Between Perpendiculars (LBP)",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 2,
+                  "vessel_field": "lbp",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "dimensions",
+                  "is_searchable": false
+                },
+                {
+                  "key": "beam_m",
+                  "id": "af-beam",
+                  "label": "Beam",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 3,
+                  "vessel_field": "beam",
+                  "filter_field": "beam",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "dimensions",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "dimensions",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 100 }
+                },
+                {
+                  "key": "depth_m",
+                  "id": "af-depth",
+                  "label": "Depth",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 4,
+                  "vessel_field": "depth",
+                  "filter_field": "depth",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "dimensions",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "dimensions",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 80 }
+                },
+                {
+                  "key": "max_draft_m",
+                  "id": "af-maxdraft",
+                  "label": "Max Draft",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 5,
+                  "vessel_field": "maxDraft",
+                  "filter_field": "maxDraft",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "dimensions",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "dimensions",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 30 }
+                },
+                {
+                  "key": "summer_draft_m",
+                  "id": "af-sumdraft",
+                  "label": "Summer Draft",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 6,
+                  "vessel_field": "sumDraft",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "dimensions",
+                  "is_searchable": false
+                },
+                {
+                  "key": "displacement_t",
+                  "id": "af-displ",
+                  "label": "Displacement",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "freeboard_m",
+                  "id": "af-freeboard",
+                  "label": "Freeboard",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 8,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "tpci",
+                  "id": "af-tpci",
+                  "label": "TPCI",
+                  "data_type": "numeric",
+                  "display_order": 9,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "parallel_body_length_ballast_m",
+                  "id": "af-pbl-ballast",
+                  "label": "Parallel Body Length (Ballast)",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 10,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "parallel_body_length_laden_m",
+                  "id": "af-pbl-laden",
+                  "label": "Parallel Body Length (Laden)",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 11,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "tonnage",
+              "label": "Tonnage",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "deadweight_t",
+                  "id": "af-dwt",
+                  "label": "Deadweight (DWT)",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 1,
+                  "vessel_field": "dwt",
+                  "filter_field": "dwtNum",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "tonnage",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "tonnage",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 750000 }
+                },
+                {
+                  "key": "gross_t",
+                  "id": "af-gt",
+                  "label": "Gross Tonnage (GT)",
+                  "data_type": "numeric",
+                  "unit": "GT",
+                  "display_order": 2,
+                  "vessel_field": "gt",
+                  "filter_field": "gtNum",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "tonnage",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "tonnage",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 500000 }
+                },
+                {
+                  "key": "net_t",
+                  "id": "af-nt",
+                  "label": "Net Tonnage (NT)",
+                  "data_type": "numeric",
+                  "unit": "NT",
+                  "display_order": 3,
+                  "vessel_field": "nt",
+                  "filter_field": "ntNum",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "tonnage",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "tonnage",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 300000 }
+                },
+                {
+                  "key": "panama_canal_nt",
+                  "id": "af-pcnt",
+                  "label": "Panama Canal NT",
+                  "data_type": "numeric",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "suez_canal_nt",
+                  "id": "af-scnt",
+                  "label": "Suez Canal NT",
+                  "data_type": "numeric",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "cgt",
+                  "id": "af-cgt",
+                  "label": "Compensated Gross Tonnage (CGT)",
+                  "data_type": "numeric",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "ldt",
+                  "id": "af-ldt",
+                  "label": "Lightweight Tonnage (LDT)",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "formula_dwt",
+                  "id": "af-fdwt",
+                  "label": "Formula DWT",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 8,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "key_dates",
+              "label": "Key Dates",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "year_built",
+                  "id": "af-yr",
+                  "label": "Year Built",
+                  "data_type": "integer",
+                  "display_order": 1,
+                  "vessel_field": "yr",
+                  "filter_field": "yr",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "tonnage",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 70,
+                  "column_group": "dimensions",
+                  "is_searchable": false,
+                  "validation": { "min": 1900, "max": 2030 }
+                },
+                {
+                  "key": "delivery_date",
+                  "id": "af-deldate",
+                  "label": "Delivery Date",
+                  "data_type": "date",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "keel_laid_date",
+                  "id": "af-keel",
+                  "label": "Keel Laid Date",
+                  "data_type": "date",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "launch_date",
+                  "id": "af-launch",
+                  "label": "Launch Date",
+                  "data_type": "date",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "contract_date",
+                  "id": "af-contract",
+                  "label": "Contract Date",
+                  "data_type": "date",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "conversion_date",
+                  "id": "af-convdate",
+                  "label": "Conversion Date",
+                  "data_type": "date",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "demolition_date",
+                  "id": "af-demoldate",
+                  "label": "Demolition Date",
+                  "data_type": "date",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "newbuild_price_usd",
+                  "id": "af-nbprice",
+                  "label": "Newbuild Price",
+                  "data_type": "numeric",
+                  "unit": "USD",
+                  "display_order": 8,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "builder",
+              "label": "Builder",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "build_country_code",
+                  "id": "af-builtcountry",
+                  "label": "Country Built",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "builtYard",
+                  "filter_field": "builtYard",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "technical",
+                  "is_column": false,
+                  "column_group": "construction",
+                  "is_searchable": false
+                },
+                {
+                  "key": "build_country_name",
+                  "id": "af-builtcountryname",
+                  "label": "Country Built (Name)",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "shipyard",
+                  "id": "af-yard",
+                  "label": "Shipyard",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "vessel_field": "yard",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 180,
+                  "column_group": "construction",
+                  "is_searchable": false
+                },
+                {
+                  "key": "hull_number",
+                  "id": "af-hn",
+                  "label": "Hull Number",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "vessel_field": "hn",
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "yard_number",
+                  "id": "af-yardno",
+                  "label": "Yard Number",
+                  "data_type": "text",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "sister_ship_imo",
+                  "id": "af-sister",
+                  "label": "Sister Ship IMO",
+                  "data_type": "text",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "ice_class",
+              "label": "Ice Class",
+              "order": 5,
+              "attributes": [
+                {
+                  "key": "ice_class",
+                  "id": "af-ice",
+                  "label": "Ice Class",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "ice",
+                  "filter_field": "ice",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "class",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "class",
+                  "is_searchable": false
+                },
+                {
+                  "key": "ice_breaking",
+                  "id": "af-icebreak",
+                  "label": "Ice Breaking",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "ice_strengthened",
+                  "id": "af-icestr",
+                  "label": "Ice Strengthened",
+                  "data_type": "boolean",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "polar_class",
+                  "id": "af-polar",
+                  "label": "Polar Class",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "hull",
+              "label": "Hull",
+              "order": 6,
+              "attributes": [
+                {
+                  "key": "hull_material",
+                  "id": "af-hullmat",
+                  "label": "Hull Material",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "hull_type",
+                  "id": "af-hulltype",
+                  "label": "Hull Type",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "bulbous_bow",
+                  "id": "af-bulbousbow",
+                  "label": "Bulbous Bow",
+                  "data_type": "boolean",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "num_decks",
+                  "id": "af-decks",
+                  "label": "Number of Decks",
+                  "data_type": "integer",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "bow_visor",
+                  "id": "af-bowvisor",
+                  "label": "Bow Visor",
+                  "data_type": "boolean",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "machinery",
+          "label": "Machinery",
+          "icon": "⚙️",
+          "order": 3,
+          "groups": [
+            {
+              "id": "main_engine",
+              "label": "Main Engine",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "main_engine",
+                  "id": "af-eng",
+                  "label": "Main Engine",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "eng",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 180,
+                  "column_group": "machinery",
+                  "is_searchable": false
+                },
+                {
+                  "key": "engine_type",
+                  "id": "af-engtype",
+                  "label": "Engine Type",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "engine_builder",
+                  "id": "af-engbuilder",
+                  "label": "Engine Builder",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "mcr_kw",
+                  "id": "af-mcr",
+                  "label": "Power (MCR kW)",
+                  "data_type": "numeric",
+                  "unit": "kW",
+                  "display_order": 4,
+                  "vessel_field": "mcr",
+                  "filter_field": "mcrNum",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "machinery",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 120000 }
+                },
+                {
+                  "key": "num_engines",
+                  "id": "af-numeng",
+                  "label": "Number of Engines",
+                  "data_type": "integer",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "service_speed_kn",
+                  "id": "af-spd",
+                  "label": "Speed (kn)",
+                  "data_type": "numeric",
+                  "unit": "kn",
+                  "display_order": 6,
+                  "vessel_field": "spd",
+                  "filter_field": "spdNum",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "machinery",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 50 }
+                },
+                {
+                  "key": "max_speed_kn",
+                  "id": "af-maxspd",
+                  "label": "Max Speed",
+                  "data_type": "numeric",
+                  "unit": "kn",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "propulsion_type",
+                  "id": "af-prp",
+                  "label": "Propulsion Type",
+                  "data_type": "text",
+                  "display_order": 8,
+                  "vessel_field": "prp",
+                  "filter_field": "prp",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 110,
+                  "column_group": "machinery",
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "fuel",
+              "label": "Fuel",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "fuel_type",
+                  "id": "af-fuel",
+                  "label": "Fuel Type",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "fuel",
+                  "filter_field": "fuel",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 110,
+                  "column_group": "machinery",
+                  "is_searchable": false
+                },
+                {
+                  "key": "fuel_capacity_mt",
+                  "id": "af-fuelcap",
+                  "label": "Fuel Capacity",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "total_bunker_capacity_mt",
+                  "id": "af-bunkercap",
+                  "label": "Total Bunker Capacity",
+                  "data_type": "numeric",
+                  "unit": "MT",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "lng_fuelled",
+                  "id": "af-lngfuel",
+                  "label": "LNG Fuelled",
+                  "data_type": "boolean",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "lpg_fuelled",
+                  "id": "af-lpgfuel",
+                  "label": "LPG Fuelled",
+                  "data_type": "boolean",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "methanol_fuelled",
+                  "id": "af-methanolfuel",
+                  "label": "Methanol Fuelled",
+                  "data_type": "boolean",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "ammonia_fuelled",
+                  "id": "af-ammoniafuel",
+                  "label": "Ammonia Fuelled",
+                  "data_type": "boolean",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "hydrogen_fuelled",
+                  "id": "af-hydrogenfuel",
+                  "label": "Hydrogen Fuelled",
+                  "data_type": "boolean",
+                  "display_order": 8,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "thrusters",
+              "label": "Thrusters & DP",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "dp_class",
+                  "id": "af-dp",
+                  "label": "DP Notation",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "dp",
+                  "filter_field": "dp",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 70,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "num_thrusters",
+                  "id": "af-thrusters",
+                  "label": "Number of Thrusters",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "thruster_type",
+                  "id": "af-thrustertype",
+                  "label": "Thruster Type",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "thruster_kw",
+                  "id": "af-thrusterkw",
+                  "label": "Thruster Power",
+                  "data_type": "numeric",
+                  "unit": "kW",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "green_tech",
+              "label": "Green Tech",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "scrubber_type",
+                  "id": "af-scrubber",
+                  "label": "Scrubber Fitted",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "scrubberFitted",
+                  "filter_field": "scrubberFitted",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "technical",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 110,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "scrubber_fitted",
+                  "id": "af-scrubberflag",
+                  "label": "Scrubber Fitted (Flag)",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "eedi",
+                  "id": "af-eedi",
+                  "label": "EEDI",
+                  "data_type": "numeric",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "wind_assisted",
+                  "id": "af-windassist",
+                  "label": "Wind Assisted Propulsion",
+                  "data_type": "boolean",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "solar_power",
+                  "id": "af-solar",
+                  "label": "Solar Power",
+                  "data_type": "boolean",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "battery_power",
+                  "id": "af-battery",
+                  "label": "Battery / Hybrid Power",
+                  "data_type": "boolean",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "shore_power",
+                  "id": "af-shorepower",
+                  "label": "Shore Power (Cold Ironing)",
+                  "data_type": "boolean",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ownership",
+          "label": "Ownership",
+          "icon": "🏢",
+          "order": 4,
+          "groups": [
+            {
+              "id": "registered_owner",
+              "label": "Registered Owner",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "registered_owner",
+                  "id": "af-owner",
+                  "label": "Registered Owner",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "ow",
+                  "filter_field": "ow",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "ownership",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 160,
+                  "column_group": "ownership",
+                  "is_searchable": false
+                },
+                {
+                  "key": "registered_owner_code",
+                  "id": "af-ownercode",
+                  "label": "Registered Owner Code",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "beneficial_owner",
+                  "id": "af-bo",
+                  "label": "Beneficial Owner",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "vessel_field": "bo",
+                  "filter_field": "bo",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "ownership",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 160,
+                  "column_group": "ownership",
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "manager",
+              "label": "Manager & Operator",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "technical_manager",
+                  "id": "af-mg",
+                  "label": "Technical Manager",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "mg",
+                  "filter_field": "mg",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "ownership",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 150,
+                  "column_group": "ownership",
+                  "is_searchable": false
+                },
+                {
+                  "key": "commercial_operator",
+                  "id": "af-op",
+                  "label": "Commercial Operator",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "vessel_field": "op",
+                  "filter_field": "op",
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "ownership",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 150,
+                  "column_group": "ownership",
+                  "is_searchable": false
+                },
+                {
+                  "key": "doc_company",
+                  "id": "af-doc",
+                  "label": "DOC Company",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "pi_club",
+                  "id": "af-pi",
+                  "label": "P&I Club",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "vessel_field": "pi",
+                  "filter_field": "pi",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "ownership",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 140,
+                  "column_group": "ownership",
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "charter",
+              "label": "Charter",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "bareboat_charterer",
+                  "id": "af-bbcharterer",
+                  "label": "Bareboat Charterer",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "charterer",
+                  "id": "af-charterer",
+                  "label": "Charterer",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "sale",
+              "label": "Sale",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "sale_date",
+                  "id": "af-saledate",
+                  "label": "Sale Date",
+                  "data_type": "date",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "sale_price_usd",
+                  "id": "af-saleprice",
+                  "label": "Sale Price",
+                  "data_type": "numeric",
+                  "unit": "USD",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "classification",
+          "label": "Classification",
+          "icon": "📋",
+          "order": 5,
+          "groups": [
+            {
+              "id": "society",
+              "label": "Classification Society",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "class_society",
+                  "id": "af-cls",
+                  "label": "Classification Society",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "vessel_field": "cls",
+                  "filter_field": "cls",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "class",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 130,
+                  "column_group": "class",
+                  "is_searchable": false
+                },
+                {
+                  "key": "class_notation",
+                  "id": "af-clsnot",
+                  "label": "Class Notation",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "vessel_field": "clsNot",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 200,
+                  "column_group": "class",
+                  "is_searchable": false
+                },
+                {
+                  "key": "class_indicator",
+                  "id": "af-clsind",
+                  "label": "Class Indicator",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "surveys",
+              "label": "Surveys",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "last_annual_survey",
+                  "id": "af-lastannual",
+                  "label": "Last Annual Survey",
+                  "data_type": "date",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "next_annual_survey",
+                  "id": "af-nextannual",
+                  "label": "Next Annual Survey",
+                  "data_type": "date",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "last_special_survey",
+                  "id": "af-lastspecial",
+                  "label": "Last Special Survey",
+                  "data_type": "date",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "next_special_survey",
+                  "id": "af-nextspecial",
+                  "label": "Next Special Survey",
+                  "data_type": "date",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "last_drydock",
+                  "id": "af-lastdd",
+                  "label": "Last Drydock",
+                  "data_type": "date",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "next_drydock",
+                  "id": "af-nextdd",
+                  "label": "Next Drydock",
+                  "data_type": "date",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "safety",
+          "label": "Safety",
+          "icon": "🛡️",
+          "order": 6,
+          "groups": [
+            {
+              "id": "certificates",
+              "label": "Certificates",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "doc_issue_date",
+                  "id": "af-dociss",
+                  "label": "DOC Issue Date",
+                  "data_type": "date",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "doc_expiry_date",
+                  "id": "af-docexp",
+                  "label": "DOC Expiry Date",
+                  "data_type": "date",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "smc_issue_date",
+                  "id": "af-smciss",
+                  "label": "SMC Issue Date",
+                  "data_type": "date",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "smc_expiry_date",
+                  "id": "af-smcexp",
+                  "label": "SMC Expiry Date",
+                  "data_type": "date",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "iopp_issue_date",
+                  "id": "af-ioppiss",
+                  "label": "IOPP Issue Date",
+                  "data_type": "date",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "iopp_expiry_date",
+                  "id": "af-ioppexp",
+                  "label": "IOPP Expiry Date",
+                  "data_type": "date",
+                  "display_order": 6,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "equipment",
+              "label": "Equipment & Facilities",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "firefighting_capacity",
+                  "id": "af-ffcap",
+                  "label": "Fire-fighting Capable",
+                  "data_type": "boolean",
+                  "display_order": 1,
+                  "vessel_field": "ffCap",
+                  "filter_field": "ffCap",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "helideck",
+                  "id": "af-heli",
+                  "label": "Helicopter Facility",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "vessel_field": "heli",
+                  "filter_field": "heli",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "bow_discharge",
+                  "id": "af-bowdisch",
+                  "label": "Bow Discharge Facility",
+                  "data_type": "boolean",
+                  "display_order": 3,
+                  "vessel_field": "bowDisch",
+                  "filter_field": "bowDisch",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 95,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "stern_discharge",
+                  "id": "af-sterndisch",
+                  "label": "Stern Discharge Facility",
+                  "data_type": "boolean",
+                  "display_order": 4,
+                  "vessel_field": "sternDisch",
+                  "filter_field": "sternDisch",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 105,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "crude_oil_washing",
+                  "id": "af-cow",
+                  "label": "Crude Oil Washing (COW)",
+                  "data_type": "boolean",
+                  "display_order": 5,
+                  "vessel_field": "cow",
+                  "filter_field": "cow",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 55,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "inert_gas_system",
+                  "id": "af-igs",
+                  "label": "Inert Gas System (IGS)",
+                  "data_type": "boolean",
+                  "display_order": 6,
+                  "vessel_field": "igs",
+                  "filter_field": "igs",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 55,
+                  "column_group": "safety",
+                  "is_searchable": false
+                },
+                {
+                  "key": "ballast_water_mgmt_plan",
+                  "id": "af-bwmp",
+                  "label": "Ballast Water Mgmt Plan",
+                  "data_type": "boolean",
+                  "display_order": 7,
+                  "vessel_field": "bwmp",
+                  "filter_field": "bwmp",
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "safety",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 60,
+                  "column_group": "safety",
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cargo",
+          "label": "Cargo",
+          "icon": "📦",
+          "order": 7,
+          "groups": [
+            {
+              "id": "containers",
+              "label": "Containers",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "teu_nominal",
+                  "id": "af-teu",
+                  "label": "TEU Capacity",
+                  "data_type": "integer",
+                  "unit": "TEU",
+                  "display_order": 1,
+                  "vessel_field": "teu",
+                  "filter_field": "teu",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 25000 }
+                },
+                {
+                  "key": "teu_reefer",
+                  "id": "af-teur",
+                  "label": "Reefer TEU",
+                  "data_type": "integer",
+                  "unit": "TEU",
+                  "display_order": 2,
+                  "vessel_field": "teu_r",
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "cargo",
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "bulk",
+              "label": "Bulk",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "cargo_holds",
+                  "id": "af-holds",
+                  "label": "Cargo Holds",
+                  "data_type": "integer",
+                  "display_order": 1,
+                  "vessel_field": "holds",
+                  "filter_field": "holds",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 60,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 20 }
+                },
+                {
+                  "key": "cargo_hatches",
+                  "id": "af-hatches",
+                  "label": "Cargo Hatches",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "vessel_field": "hatches",
+                  "filter_field": "hatches",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 65,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 20 }
+                },
+                {
+                  "key": "grain_capacity_cbm",
+                  "id": "af-grain",
+                  "label": "Grain Capacity",
+                  "data_type": "numeric",
+                  "unit": "CBM",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "bale_capacity_cbm",
+                  "id": "af-bale",
+                  "label": "Bale Capacity",
+                  "data_type": "numeric",
+                  "unit": "CBM",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "liquid",
+              "label": "Liquid Cargo",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "liquid_capacity_cbm",
+                  "id": "af-liqcap",
+                  "label": "Liquid Capacity",
+                  "data_type": "numeric",
+                  "unit": "CBM",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "num_cargo_pumps",
+                  "id": "af-pumps",
+                  "label": "Cargo Pumps",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "num_cargo_tanks",
+                  "id": "af-tanks",
+                  "label": "Cargo Tanks",
+                  "data_type": "integer",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "heating_coils",
+                  "id": "af-heating",
+                  "label": "Heating Coils",
+                  "data_type": "boolean",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "gas",
+              "label": "Gas Cargo",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "gas_capacity_cbm",
+                  "id": "af-gascap",
+                  "label": "Gas Capacity",
+                  "data_type": "numeric",
+                  "unit": "CBM",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "reliquefaction",
+                  "id": "af-reliq",
+                  "label": "Reliquefaction",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "regasification",
+                  "id": "af-regas",
+                  "label": "Regasification",
+                  "data_type": "boolean",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "passengers",
+              "label": "Passengers",
+              "order": 5,
+              "attributes": [
+                {
+                  "key": "passengers",
+                  "id": "af-pax",
+                  "label": "Passenger Capacity",
+                  "data_type": "integer",
+                  "display_order": 1,
+                  "vessel_field": "pax",
+                  "filter_field": "pax",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 10000 }
+                },
+                {
+                  "key": "passenger_berths",
+                  "id": "af-paxberths",
+                  "label": "Passenger Berths",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "num_cabins",
+                  "id": "af-cabins",
+                  "label": "Number of Cabins",
+                  "data_type": "integer",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "roro",
+              "label": "RoRo",
+              "order": 6,
+              "attributes": [
+                {
+                  "key": "car_equivalent_units",
+                  "id": "af-ceu",
+                  "label": "CEU (Cars)",
+                  "data_type": "integer",
+                  "unit": "CEU",
+                  "display_order": 1,
+                  "vessel_field": "ceu",
+                  "filter_field": "ceu",
+                  "filter_field_transform": "numOf",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 80,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 10000 }
+                },
+                {
+                  "key": "lane_metres",
+                  "id": "af-lanm",
+                  "label": "Lane Metres (LM)",
+                  "data_type": "numeric",
+                  "unit": "lm",
+                  "display_order": 2,
+                  "vessel_field": "lanm",
+                  "filter_field": "lanm",
+                  "filter_field_transform": "parseFloat",
+                  "is_filterable": true,
+                  "filter_type": "range",
+                  "filter_group": "cargo",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "cargo",
+                  "is_searchable": false,
+                  "validation": { "min": 0, "max": 10000 }
+                },
+                {
+                  "key": "num_roro_ramps",
+                  "id": "af-roramps",
+                  "label": "RoRo Ramps",
+                  "data_type": "integer",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "offshore",
+              "label": "Offshore",
+              "order": 7,
+              "attributes": [
+                {
+                  "key": "bollard_pull_t",
+                  "id": "af-bp",
+                  "label": "Bollard Pull",
+                  "data_type": "numeric",
+                  "unit": "t",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "compliance",
+          "label": "Compliance",
+          "icon": "⚠️",
+          "order": 8,
+          "groups": [
+            {
+              "id": "sanctions",
+              "label": "Sanctions",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "on_ofac_list",
+                  "id": "af-ofac",
+                  "label": "OFAC Sanctioned",
+                  "data_type": "boolean",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "on_eu_list",
+                  "id": "af-eusanc",
+                  "label": "EU Sanctioned",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "on_un_list",
+                  "id": "af-unsanc",
+                  "label": "UN Sanctioned",
+                  "data_type": "boolean",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "on_uk_list",
+                  "id": "af-uksanc",
+                  "label": "UK OFSI Sanctioned",
+                  "data_type": "boolean",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "behavioral",
+              "label": "Behavioral Risk",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "dark_vessel_indicator",
+                  "id": "af-dark",
+                  "label": "Dark Vessel Indicator",
+                  "data_type": "boolean",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "sts_transfer_indicator",
+                  "id": "af-sts",
+                  "label": "STS Transfer Indicator",
+                  "data_type": "boolean",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "port": {
+      "sections": [
+        {
+          "id": "identity",
+          "label": "Identity",
+          "order": 1,
+          "groups": [
+            {
+              "id": "basic",
+              "label": "Basic Identity",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "unlocode",
+                  "id": "po-unlocode",
+                  "label": "UN/LOCODE",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": true,
+                  "column_width": 90,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "wpi_number",
+                  "id": "po-wpi",
+                  "label": "WPI Number",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "port_name",
+                  "id": "po-name",
+                  "label": "Port Name",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 160,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "country_code",
+                  "id": "po-country",
+                  "label": "Country",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 100,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "region",
+                  "id": "po-region",
+                  "label": "Region / Province",
+                  "data_type": "text",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "port_type",
+                  "id": "po-type",
+                  "label": "Port Type",
+                  "data_type": "text",
+                  "display_order": 6,
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 100,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "status",
+                  "id": "po-status",
+                  "label": "Port Status",
+                  "data_type": "text",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "location",
+              "label": "Location",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "latitude",
+                  "id": "po-lat",
+                  "label": "Latitude",
+                  "data_type": "numeric",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "longitude",
+                  "id": "po-lon",
+                  "label": "Longitude",
+                  "data_type": "numeric",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "timezone",
+                  "id": "po-timezone",
+                  "label": "Time Zone",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "physical",
+              "label": "Physical",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "max_vessel_loa_m",
+                  "id": "po-maxloa",
+                  "label": "Max Vessel LOA",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "max_draft_m",
+                  "id": "po-maxdraft",
+                  "label": "Max Draft",
+                  "data_type": "numeric",
+                  "unit": "m",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "anchorage_area_sqkm",
+                  "id": "po-anchorage",
+                  "label": "Anchorage Area",
+                  "data_type": "numeric",
+                  "unit": "km2",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "berth_count",
+                  "id": "po-berths",
+                  "label": "Berth Count",
+                  "data_type": "integer",
+                  "display_order": 4,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "operations",
+              "label": "Operations",
+              "order": 4,
+              "attributes": [
+                {
+                  "key": "throughput_teu_annual",
+                  "id": "po-throughput",
+                  "label": "Annual TEU Throughput",
+                  "data_type": "integer",
+                  "unit": "TEU",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "global_rank",
+                  "id": "po-rank",
+                  "label": "Global Rank",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "vhf_channel",
+                  "id": "po-vhf",
+                  "label": "VHF Channel",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "company": {
+      "sections": [
+        {
+          "id": "identity",
+          "label": "Identity",
+          "order": 1,
+          "groups": [
+            {
+              "id": "basic",
+              "label": "Basic Identity",
+              "order": 1,
+              "attributes": [
+                {
+                  "key": "lr_number",
+                  "id": "co-lrno",
+                  "label": "LR Number (LRNO)",
+                  "data_type": "text",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": true
+                },
+                {
+                  "key": "lei",
+                  "id": "co-lei",
+                  "label": "LEI",
+                  "data_type": "text",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": true
+                },
+                {
+                  "key": "company_name",
+                  "id": "co-name",
+                  "label": "Company Name",
+                  "data_type": "text",
+                  "display_order": 3,
+                  "is_filterable": true,
+                  "filter_type": "typeahead",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": true,
+                  "column_width": 200,
+                  "column_group": "identity",
+                  "is_searchable": true
+                },
+                {
+                  "key": "country_code",
+                  "id": "co-country",
+                  "label": "Country",
+                  "data_type": "text",
+                  "display_order": 4,
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 100,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "city",
+                  "id": "co-city",
+                  "label": "City",
+                  "data_type": "text",
+                  "display_order": 5,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "company_type",
+                  "id": "co-type",
+                  "label": "Company Type",
+                  "data_type": "text",
+                  "display_order": 6,
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 130,
+                  "column_group": "identity",
+                  "is_searchable": false
+                },
+                {
+                  "key": "legal_form",
+                  "id": "co-legalform",
+                  "label": "Legal Form",
+                  "data_type": "text",
+                  "display_order": 7,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                },
+                {
+                  "key": "status",
+                  "id": "co-status",
+                  "label": "Status",
+                  "data_type": "text",
+                  "display_order": 8,
+                  "is_filterable": false,
+                  "is_column": false,
+                  "is_searchable": false
+                }
+              ]
+            },
+            {
+              "id": "roles",
+              "label": "Roles",
+              "order": 2,
+              "attributes": [
+                {
+                  "key": "roles",
+                  "id": "co-roles",
+                  "label": "Company Roles",
+                  "data_type": "multiselect",
+                  "display_order": 1,
+                  "is_filterable": true,
+                  "filter_type": "multiselect",
+                  "filter_group": "identity",
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 180,
+                  "column_group": "identity",
+                  "is_searchable": false,
+                  "validation": {
+                    "enum": ["registered_owner","beneficial_owner","technical_manager","commercial_operator","bareboat_charterer","ship_manager","doc_company"]
+                  }
+                }
+              ]
+            },
+            {
+              "id": "operations",
+              "label": "Operations",
+              "order": 3,
+              "attributes": [
+                {
+                  "key": "vessels_managed",
+                  "id": "co-vmanaged",
+                  "label": "Vessels Managed",
+                  "data_type": "integer",
+                  "display_order": 1,
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "operations",
+                  "is_searchable": false
+                },
+                {
+                  "key": "vessels_owned",
+                  "id": "co-vowned",
+                  "label": "Vessels Owned",
+                  "data_type": "integer",
+                  "display_order": 2,
+                  "is_filterable": false,
+                  "is_column": true,
+                  "column_always": false,
+                  "column_width": 90,
+                  "column_group": "operations",
+                  "is_searchable": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "filter_groups": [
+    { "id": "identity",   "label": "Identity" },
+    { "id": "type",       "label": "Vessel Type" },
+    { "id": "status",     "label": "Status & Compliance" },
+    { "id": "tonnage",    "label": "Tonnage & Size" },
+    { "id": "dimensions", "label": "Dimensions" },
+    { "id": "ownership",  "label": "Ownership & Management" },
+    { "id": "class",      "label": "Classification" },
+    { "id": "technical",  "label": "Technical" },
+    { "id": "cargo",      "label": "Cargo & Capacity" },
+    { "id": "safety",     "label": "Safety & Green Tech" }
+  ],
+  "column_groups": [
+    { "key": "identity",      "label": "Identity & Status" },
+    { "key": "tonnage",       "label": "Tonnage" },
+    { "key": "dimensions",    "label": "Dimensions" },
+    { "key": "ownership",     "label": "Ownership & Mgmt" },
+    { "key": "class",         "label": "Classification" },
+    { "key": "machinery",     "label": "Machinery" },
+    { "key": "cargo",         "label": "Cargo Capacity" },
+    { "key": "construction",  "label": "Construction" },
+    { "key": "safety",        "label": "Safety & Green Tech" },
+    { "key": "operations",    "label": "Operations" }
+  ]
+}

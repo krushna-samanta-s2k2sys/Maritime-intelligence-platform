@@ -1,0 +1,9 @@
+[
+  {"id":"CP01","name":"Strait of Malacca","latitude":2.5, "longitude":101.5,"daily_vessels":250,"region":"Southeast Asia","volume_label":"900 vessels/day","risk_level":"Medium"},
+  {"id":"CP02","name":"Suez Canal",       "latitude":30.7,"longitude":32.3, "daily_vessels":51, "region":"Middle East",    "volume_label":"12% global trade","risk_level":"Critical"},
+  {"id":"CP03","name":"Strait of Hormuz", "latitude":26.6,"longitude":56.4, "daily_vessels":21, "region":"Middle East",    "volume_label":"17M BPD",          "risk_level":"High"},
+  {"id":"CP04","name":"Bab-el-Mandeb",    "latitude":12.6,"longitude":43.4, "daily_vessels":48, "region":"Middle East",    "volume_label":"6M BPD",           "risk_level":"Critical"},
+  {"id":"CP05","name":"Panama Canal",     "latitude":9.1, "longitude":-79.6,"daily_vessels":38, "region":"Central America","volume_label":"5% global trade",  "risk_level":"Low"},
+  {"id":"CP06","name":"Dover Strait",     "latitude":51.1,"longitude":1.4,  "daily_vessels":500,"region":"Europe",         "volume_label":"500+ vessels/day", "risk_level":"Low"},
+  {"id":"CP07","name":"Turkish Straits",  "latitude":41.1,"longitude":29.0, "daily_vessels":43, "region":"Europe",         "volume_label":"3M BPD",           "risk_level":"Medium"}
+]

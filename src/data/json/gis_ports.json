@@ -1,0 +1,14 @@
+[
+  {"id":"p01","name":"Singapore",       "latitude":1.26,  "longitude":103.8, "country":"Singapore", "locode":"SGSIN","size_tier":"mega",  "throughput_label":"37M TEU",  "annual_calls":82442,"max_draft_m":20.5,"mou_region":"Tokyo MOU"},
+  {"id":"p02","name":"Rotterdam",       "latitude":51.9,  "longitude":4.5,   "country":"Netherlands","locode":"NLRTM","size_tier":"large", "throughput_label":"14.5M TEU","annual_calls":30000,"max_draft_m":23.0,"mou_region":"Paris MOU"},
+  {"id":"p03","name":"Shanghai",        "latitude":31.2,  "longitude":121.5, "country":"China",     "locode":"CNSHA","size_tier":"mega",  "throughput_label":"47M TEU",  "annual_calls":45000,"max_draft_m":17.0,"mou_region":"Tokyo MOU"},
+  {"id":"p04","name":"Dubai (Jebel Ali)","latitude":25.0, "longitude":55.1,  "country":"UAE",       "locode":"AEJEA","size_tier":"large", "throughput_label":"14M TEU",  "annual_calls":20000,"max_draft_m":17.0,"mou_region":"Indian Ocean MOU"},
+  {"id":"p05","name":"Houston",         "latitude":29.7,  "longitude":-95.0, "country":"USA",       "locode":"USHOU","size_tier":"large", "throughput_label":"2.8M TEU", "annual_calls":8000, "max_draft_m":13.7,"mou_region":"USCG"},
+  {"id":"p06","name":"Antwerp",         "latitude":51.3,  "longitude":4.3,   "country":"Belgium",   "locode":"BEANR","size_tier":"large", "throughput_label":"12M TEU",  "annual_calls":15000,"max_draft_m":16.0,"mou_region":"Paris MOU"},
+  {"id":"p07","name":"Fujairah",        "latitude":25.1,  "longitude":56.3,  "country":"UAE",       "locode":"AEFJR","size_tier":"medium","throughput_label":"1M TEU",   "annual_calls":9000, "max_draft_m":18.0,"mou_region":"Indian Ocean MOU"},
+  {"id":"p08","name":"Busan",           "latitude":35.1,  "longitude":129.0, "country":"South Korea","locode":"KRPUS","size_tier":"large","throughput_label":"21M TEU",  "annual_calls":35000,"max_draft_m":18.0,"mou_region":"Tokyo MOU"},
+  {"id":"p09","name":"Hamburg",         "latitude":53.5,  "longitude":10.0,  "country":"Germany",   "locode":"DEHAM","size_tier":"large", "throughput_label":"8.9M TEU", "annual_calls":12000,"max_draft_m":15.1,"mou_region":"Paris MOU"},
+  {"id":"p10","name":"Long Beach",      "latitude":33.75, "longitude":-118.2,"country":"USA",       "locode":"USLGB","size_tier":"large", "throughput_label":"8.1M TEU", "annual_calls":11000,"max_draft_m":15.8,"mou_region":"USCG"},
+  {"id":"p11","name":"Ras Laffan",      "latitude":25.9,  "longitude":51.6,  "country":"Qatar",     "locode":"QARAS","size_tier":"medium","throughput_label":"0",        "annual_calls":3000, "max_draft_m":14.5,"mou_region":"Indian Ocean MOU"},
+  {"id":"p12","name":"Mumbai",          "latitude":18.9,  "longitude":72.8,  "country":"India",     "locode":"INBOM","size_tier":"large", "throughput_label":"5.5M TEU", "annual_calls":14000,"max_draft_m":14.0,"mou_region":"Indian Ocean MOU"}
+]

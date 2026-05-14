@@ -1,0 +1,12 @@
+[
+  { "id": "ACT-001", "timestamp": "2024-01-30T14:22:00Z", "event_type": "departure",   "color": "#137333", "imo_number": "9412345", "vessel_name": "PACIFIC STAR",    "description": "PACIFIC STAR departed Rotterdam → Singapore (ballast)" },
+  { "id": "ACT-002", "timestamp": "2024-01-30T13:45:00Z", "event_type": "transit",     "color": "#1558d6", "imo_number": "9778532", "vessel_name": "MAERSK COLON",    "description": "MAERSK COLON arrived Suez Canal northbound" },
+  { "id": "ACT-003", "timestamp": "2024-01-30T12:30:00Z", "event_type": "detention",   "color": "#c8102e", "imo_number": "9341122", "vessel_name": "OCEAN PRIDE",     "description": "OCEAN PRIDE detained by Paris MOU — 8 deficiencies" },
+  { "id": "ACT-004", "timestamp": "2024-01-30T11:15:00Z", "event_type": "survey",      "color": "#b45309", "imo_number": "9534892", "vessel_name": "STELLAR WIND",    "description": "STELLAR WIND completed annual survey — ClassNK" },
+  { "id": "ACT-005", "timestamp": "2024-01-30T10:00:00Z", "event_type": "data_update",  "color": "#6200ea", "imo_number": "9871234", "vessel_name": "COSCO UNIVERSE",  "description": "COSCO UNIVERSE ownership updated by IHS Fairplay feed" },
+  { "id": "ACT-006", "timestamp": "2024-01-30T09:30:00Z", "event_type": "anchored",    "color": "#137333", "imo_number": "9287631", "vessel_name": "EASTERN PIONEER", "description": "EASTERN PIONEER anchored off Singapore OPL" },
+  { "id": "ACT-007", "timestamp": "2024-01-30T08:45:00Z", "event_type": "drydock",     "color": "#0094b3", "imo_number": "9501238", "vessel_name": "ATLANTIC BULKER", "description": "ATLANTIC BULKER entered drydock — Bureau Veritas survey" },
+  { "id": "ACT-008", "timestamp": "2024-01-30T07:20:00Z", "event_type": "detention",   "color": "#c8102e", "imo_number": "9499283", "vessel_name": "PIONEER TRADER",  "description": "PIONEER TRADER detained by Tokyo MOU — 6 deficiencies" },
+  { "id": "ACT-009", "timestamp": "2024-01-30T06:00:00Z", "event_type": "departure",   "color": "#137333", "imo_number": "9241061", "vessel_name": "QUEEN MARY 2",    "description": "QUEEN MARY 2 departed Southampton on transatlantic voyage" },
+  { "id": "ACT-010", "timestamp": "2024-01-30T05:15:00Z", "event_type": "certificate", "color": "#b45309", "imo_number": "9234567", "vessel_name": "LNG JAMAL",       "description": "LNG JAMAL certificate SMC renewed — flag Korea" }
+]

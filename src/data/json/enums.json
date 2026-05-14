@@ -1,0 +1,152 @@
+{
+  "countries": [
+    "Panama","Liberia","Marshall Islands","Bahamas","Hong Kong","Singapore","Malta","Cyprus",
+    "Greece","China","Norway","United Kingdom","Japan","Italy","United States","Germany",
+    "Denmark","Turkey","India","South Korea","Brazil","Indonesia","Malaysia","Philippines",
+    "Cayman Islands","Isle of Man","Bermuda","Barbados","Antigua and Barbuda","St Kitts & Nevis",
+    "Belize","Tuvalu","Cambodia","Comoros","Cook Islands","Palau","Vanuatu","Sierra Leone",
+    "Mongolia","Portugal","Spain","France","Netherlands","Belgium","Sweden","Finland",
+    "Russia","Ukraine","Croatia","Tanzania","Mozambique","Djibouti","Iran","Iraq"
+  ],
+  "vessel_types": [
+    { "code": "CONT", "name": "Container Ship",    "category": "Cargo",      "imo_category": "Cargo" },
+    { "code": "TANK", "name": "Oil Tanker",         "category": "Tanker",     "imo_category": "Tanker" },
+    { "code": "BULK", "name": "Bulk Carrier",       "category": "Cargo",      "imo_category": "Cargo" },
+    { "code": "CHEM", "name": "Chemical Tanker",    "category": "Tanker",     "imo_category": "Tanker" },
+    { "code": "LNGC", "name": "LNG Carrier",        "category": "Gas Tanker", "imo_category": "Tanker" },
+    { "code": "LPGC", "name": "LPG Carrier",        "category": "Gas Tanker", "imo_category": "Tanker" },
+    { "code": "GENC", "name": "General Cargo",      "category": "Cargo",      "imo_category": "Cargo" },
+    { "code": "RORO", "name": "RoRo",               "category": "Cargo",      "imo_category": "Cargo" },
+    { "code": "CARC", "name": "Car Carrier",        "category": "Cargo",      "imo_category": "Cargo" },
+    { "code": "PASS", "name": "Passenger/Cruise",   "category": "Passenger",  "imo_category": "Passenger" },
+    { "code": "OFSH", "name": "Offshore Supply",    "category": "Offshore",   "imo_category": "Other" },
+    { "code": "WIND", "name": "Offshore Wind",      "category": "Offshore",   "imo_category": "Other" },
+    { "code": "RESV", "name": "Research Vessel",    "category": "Special",    "imo_category": "Other" },
+    { "code": "DRED", "name": "Dredger",            "category": "Special",    "imo_category": "Other" },
+    { "code": "TUGH", "name": "Tug",                "category": "Service",    "imo_category": "Other" }
+  ],
+  "vessel_statuses": [
+    { "code": "INSR", "name": "In Service",  "css_class": "stA", "color": "#137333" },
+    { "code": "DETT", "name": "Detained",    "css_class": "stR", "color": "#c8102e" },
+    { "code": "DRYD", "name": "In Drydock",  "css_class": "stD", "color": "#b45309" },
+    { "code": "LAID", "name": "Laid Up",     "css_class": "stI", "color": "#717a85" },
+    { "code": "LOST", "name": "Total Loss",  "css_class": "stR", "color": "#c8102e" },
+    { "code": "SCRD", "name": "Scrapped",    "css_class": "stI", "color": "#717a85" }
+  ],
+  "flag_states": [
+    { "code": "PA", "name": "Panama",           "iso3": "PAN", "open_registry": true,  "emoji": "🇵🇦", "mou_region": "Panama" },
+    { "code": "LR", "name": "Liberia",          "iso3": "LBR", "open_registry": true,  "emoji": "🇱🇷", "mou_region": "Paris" },
+    { "code": "MH", "name": "Marshall Islands", "iso3": "MHL", "open_registry": true,  "emoji": "🇲🇭", "mou_region": "Tokyo" },
+    { "code": "BS", "name": "Bahamas",          "iso3": "BHS", "open_registry": true,  "emoji": "🇧🇸", "mou_region": "Paris" },
+    { "code": "SG", "name": "Singapore",        "iso3": "SGP", "open_registry": false, "emoji": "🇸🇬", "mou_region": "Tokyo" },
+    { "code": "MT", "name": "Malta",            "iso3": "MLT", "open_registry": true,  "emoji": "🇲🇹", "mou_region": "Paris" },
+    { "code": "CN", "name": "China",            "iso3": "CHN", "open_registry": false, "emoji": "🇨🇳", "mou_region": "Tokyo" },
+    { "code": "CY", "name": "Cyprus",           "iso3": "CYP", "open_registry": true,  "emoji": "🇨🇾", "mou_region": "Paris" },
+    { "code": "GB", "name": "United Kingdom",   "iso3": "GBR", "open_registry": false, "emoji": "🇬🇧", "mou_region": "Paris" },
+    { "code": "GR", "name": "Greece",           "iso3": "GRC", "open_registry": false, "emoji": "🇬🇷", "mou_region": "Paris" },
+    { "code": "NO", "name": "Norway",           "iso3": "NOR", "open_registry": false, "emoji": "🇳🇴", "mou_region": "Paris" },
+    { "code": "DK", "name": "Denmark",          "iso3": "DNK", "open_registry": false, "emoji": "🇩🇰", "mou_region": "Paris" },
+    { "code": "JP", "name": "Japan",            "iso3": "JPN", "open_registry": false, "emoji": "🇯🇵", "mou_region": "Tokyo" },
+    { "code": "KR", "name": "South Korea",      "iso3": "KOR", "open_registry": false, "emoji": "🇰🇷", "mou_region": "Tokyo" },
+    { "code": "HK", "name": "Hong Kong",        "iso3": "HKG", "open_registry": false, "emoji": "🇭🇰", "mou_region": "Tokyo" },
+    { "code": "SA", "name": "Saudi Arabia",     "iso3": "SAU", "open_registry": false, "emoji": "🇸🇦", "mou_region": "Riyadh" },
+    { "code": "AE", "name": "UAE",              "iso3": "ARE", "open_registry": false, "emoji": "🇦🇪", "mou_region": "Riyadh" },
+    { "code": "DE", "name": "Germany",          "iso3": "DEU", "open_registry": false, "emoji": "🇩🇪", "mou_region": "Paris" },
+    { "code": "FR", "name": "France",           "iso3": "FRA", "open_registry": false, "emoji": "🇫🇷", "mou_region": "Paris" },
+    { "code": "BE", "name": "Belgium",          "iso3": "BEL", "open_registry": false, "emoji": "🇧🇪", "mou_region": "Paris" },
+    { "code": "PT", "name": "Portugal",         "iso3": "PRT", "open_registry": false, "emoji": "🇵🇹", "mou_region": "Paris" }
+  ],
+  "classification_societies": [
+    { "code": "DNV",  "name": "DNV GL",                      "country": "NO", "iacs_member": true,  "src_badge": "sDNV" },
+    { "code": "LR",   "name": "Lloyd's Register",            "country": "GB", "iacs_member": true,  "src_badge": "sLR"  },
+    { "code": "BV",   "name": "Bureau Veritas",              "country": "FR", "iacs_member": true,  "src_badge": "sBV"  },
+    { "code": "NK",   "name": "ClassNK",                     "country": "JP", "iacs_member": true,  "src_badge": "sNK"  },
+    { "code": "KR",   "name": "Korean Register",             "country": "KR", "iacs_member": true,  "src_badge": "sKR"  },
+    { "code": "CCS",  "name": "China Classification Society","country": "CN", "iacs_member": true,  "src_badge": "sNK"  },
+    { "code": "ABS",  "name": "American Bureau of Shipping", "country": "US", "iacs_member": true,  "src_badge": "sIHS" },
+    { "code": "RINA", "name": "RINA",                        "country": "IT", "iacs_member": true,  "src_badge": "sIHS" }
+  ],
+  "pi_clubs": [
+    { "name": "Gard P&I",             "country": "NO", "ig_member": true  },
+    { "name": "UK P&I Club",          "country": "GB", "ig_member": true  },
+    { "name": "Steamship Mutual",      "country": "GB", "ig_member": true  },
+    { "name": "North of England P&I", "country": "GB", "ig_member": true  },
+    { "name": "Swedish Club",         "country": "SE", "ig_member": true  },
+    { "name": "Japan P&I Club",       "country": "JP", "ig_member": true  },
+    { "name": "Korea P&I Club",       "country": "KR", "ig_member": false },
+    { "name": "China P&I Club",       "country": "CN", "ig_member": false }
+  ],
+  "ice_classes": [
+    { "code": "1A*", "name": "Ice Class 1A Super", "authority": "Finnish-Swedish" },
+    { "code": "1A",  "name": "Ice Class 1A",       "authority": "Finnish-Swedish" },
+    { "code": "1B",  "name": "Ice Class 1B",       "authority": "Finnish-Swedish" },
+    { "code": "1C",  "name": "Ice Class 1C",       "authority": "Finnish-Swedish" },
+    { "code": "E4",  "name": "Polar Class 4",      "authority": "IACS Polar Code" },
+    { "code": "E5",  "name": "Polar Class 5",      "authority": "IACS Polar Code" }
+  ],
+  "dp_classes": [
+    { "code": "DP1", "name": "DP Class 1", "redundancy": "None" },
+    { "code": "DP2", "name": "DP Class 2", "redundancy": "Redundant" },
+    { "code": "DP3", "name": "DP Class 3", "redundancy": "Redundant + Separated" }
+  ],
+  "scrubber_types": [
+    { "code": "OL",  "name": "Open Loop",  "description": "Discharges wash water to sea" },
+    { "code": "CL",  "name": "Closed Loop","description": "Retains wash water onboard" },
+    { "code": "HYB", "name": "Hybrid",     "description": "Switchable between open and closed" }
+  ],
+  "fuel_types": [
+    { "code": "HFO",   "name": "Heavy Fuel Oil",                 "max_sulphur_pct": 3.5 },
+    { "code": "VLSFO", "name": "Very Low Sulphur Fuel Oil",      "max_sulphur_pct": 0.5 },
+    { "code": "MDO",   "name": "Marine Diesel Oil",              "max_sulphur_pct": 0.1 },
+    { "code": "MGO",   "name": "Marine Gas Oil",                 "max_sulphur_pct": 0.1 },
+    { "code": "LNG",   "name": "Liquefied Natural Gas",          "max_sulphur_pct": 0.0 },
+    { "code": "MET",   "name": "Methanol",                       "max_sulphur_pct": 0.0 },
+    { "code": "AMM",   "name": "Ammonia",                        "max_sulphur_pct": 0.0 }
+  ],
+  "propulsion_types": [
+    { "code": "FP",  "name": "Fixed Pitch Propeller" },
+    { "code": "CP",  "name": "Controllable Pitch Propeller" },
+    { "code": "POD", "name": "Podded Propulsion" },
+    { "code": "AZI", "name": "Azimuth Thruster" },
+    { "code": "CRP", "name": "Contra-Rotating Propellers" }
+  ],
+  "certificate_types": [
+    { "code": "SOLAS",   "name": "SOLAS Safety Construction Certificate",    "mandatory": true,  "issuer": "Flag State" },
+    { "code": "IOPP",    "name": "International Oil Pollution Prevention",   "mandatory": true,  "issuer": "Flag State" },
+    { "code": "ISSC",    "name": "International Ship Security Certificate",  "mandatory": true,  "issuer": "Flag State" },
+    { "code": "SMC",     "name": "Safety Management Certificate (ISM)",      "mandatory": true,  "issuer": "Flag State" },
+    { "code": "DOC",     "name": "Document of Compliance (ISM)",             "mandatory": true,  "issuer": "Flag State" },
+    { "code": "LLC",     "name": "International Load Line Certificate",       "mandatory": true,  "issuer": "Flag State" },
+    { "code": "RADIO",   "name": "Safety Radio Certificate",                 "mandatory": true,  "issuer": "Flag State" },
+    { "code": "CLC",     "name": "Civil Liability Certificate (Bunkers/Oil)","mandatory": true,  "issuer": "P&I Club" },
+    { "code": "MARPOL",  "name": "MARPOL Annex VI Certificate (IAPP)",       "mandatory": true,  "issuer": "Class Society" },
+    { "code": "BWM",     "name": "International Ballast Water Management",   "mandatory": true,  "issuer": "Class Society" },
+    { "code": "CLASS",   "name": "Class Certificate",                        "mandatory": false, "issuer": "Class Society" },
+    { "code": "ANN",     "name": "Class Annual Survey",                      "mandatory": false, "issuer": "Class Society" }
+  ],
+  "mou_regions": [
+    { "code": "PARIS",    "name": "Paris MOU",         "region": "Europe & North Atlantic" },
+    { "code": "TOKYO",    "name": "Tokyo MOU",         "region": "Asia Pacific" },
+    { "code": "USCG",     "name": "US Coast Guard",    "region": "United States" },
+    { "code": "AMEM",     "name": "Acuerdo de Viña del Mar", "region": "South America" },
+    { "code": "CARIB",    "name": "Caribbean MOU",     "region": "Caribbean" },
+    { "code": "ABUJA",    "name": "Abuja MOU",         "region": "West & Central Africa" },
+    { "code": "RIYADH",   "name": "Riyadh MOU",        "region": "Gulf Region" },
+    { "code": "BSEA",     "name": "Black Sea MOU",     "region": "Black Sea" },
+    { "code": "MEDM",     "name": "Mediterranean MOU", "region": "Mediterranean" },
+    { "code": "INMER",    "name": "Indian Ocean MOU",  "region": "Indian Ocean" }
+  ],
+  "data_sources": [
+    { "code": "IHS",   "name": "IHS Fairplay",          "category": "Registry",    "src_badge": "IHS",  "weight": 85 },
+    { "code": "AIS",   "name": "AIS",                   "category": "Position",    "src_badge": "AIS",  "weight": 70 },
+    { "code": "DNV",   "name": "DNV GL",                "category": "Class",       "src_badge": "DNV",  "weight": 90 },
+    { "code": "LR",    "name": "Lloyd's Register",      "category": "Class",       "src_badge": "LR",   "weight": 90 },
+    { "code": "BV",    "name": "Bureau Veritas",        "category": "Class",       "src_badge": "BV",   "weight": 90 },
+    { "code": "NK",    "name": "ClassNK",               "category": "Class",       "src_badge": "NK",   "weight": 90 },
+    { "code": "KR",    "name": "Korean Register",       "category": "Class",       "src_badge": "KR",   "weight": 90 },
+    { "code": "CCS",   "name": "China Classification",  "category": "Class",       "src_badge": "CC",   "weight": 85 },
+    { "code": "FLAG",  "name": "Flag Registry",         "category": "Registry",    "src_badge": "FLAG", "weight": 95 },
+    { "code": "OFAC",  "name": "OFAC",                  "category": "Sanctions",   "src_badge": "OFAC", "weight": 100 },
+    { "code": "EQUA",  "name": "Equasis",               "category": "Compliance",  "src_badge": "EQU",  "weight": 80 }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "as_of_date": "2024-01-30",
+  "kpis": [
+    { "id": "total-vessels",   "label": "Total Vessels",      "value": 847392, "value_formatted": "847,392", "delta": 1204,  "delta_formatted": "+1,204", "direction": "up",   "color": "#1558d6", "unit": "vessels" },
+    { "id": "active-today",    "label": "Active Today",        "value": 23841,  "value_formatted": "23,841",  "delta": 127,   "delta_formatted": "+127",   "direction": "up",   "color": "#137333", "unit": "vessels" },
+    { "id": "port-arrivals",   "label": "Port Arrivals",       "value": 1847,   "value_formatted": "1,847",   "delta": 83,    "delta_formatted": "+83",    "direction": "up",   "color": "#0094b3", "unit": "today" },
+    { "id": "departures",      "label": "Departures",          "value": 1203,   "value_formatted": "1,203",   "delta": 61,    "delta_formatted": "+61",    "direction": "up",   "color": "#6200ea", "unit": "today" },
+    { "id": "psc-detentions",  "label": "PSC Detentions YTD",  "value": 283,    "value_formatted": "283",     "delta": 12,    "delta_formatted": "+12",    "direction": "down", "color": "#c8102e", "unit": "YTD" },
+    { "id": "certs-expiring",  "label": "Certs Expiring 30d",  "value": 1047,   "value_formatted": "1,047",   "delta": -124,  "delta_formatted": "-124",   "direction": "up",   "color": "#b45309", "unit": "certs" },
+    { "id": "data-quality",    "label": "Data Quality",        "value": 94.2,   "value_formatted": "94.2%",   "delta": 0.3,   "delta_formatted": "+0.3%",  "direction": "up",   "color": "#137333", "unit": "percent" },
+    { "id": "active-feeds",    "label": "Active Feeds",        "value": 114,    "value_formatted": "114",     "delta": 0,     "delta_formatted": "0",      "direction": null,   "color": "#717a85", "unit": "feeds" }
+  ],
+  "fleet_by_type": [
+    { "vessel_type": "Bulk Carrier",      "count": 231842, "color": "#1558d6" },
+    { "vessel_type": "Oil Tanker",         "count": 61843,  "color": "#c8102e" },
+    { "vessel_type": "Container Ship",     "count": 56234,  "color": "#137333" },
+    { "vessel_type": "General Cargo",      "count": 89234,  "color": "#b45309" },
+    { "vessel_type": "Chemical Tanker",    "count": 42891,  "color": "#6200ea" },
+    { "vessel_type": "LNG/LPG Carrier",    "count": 8234,   "color": "#0094b3" },
+    { "vessel_type": "Passenger/Cruise",   "count": 7291,   "color": "#ea580c" },
+    { "vessel_type": "Other",              "count": 349823, "color": "#717a85" }
+  ],
+  "top_flag_states": [
+    { "flag_emoji": "🇵🇦", "flag_name": "Panama",          "flag_code": "PA", "vessel_count": 234891 },
+    { "flag_emoji": "🇱🇷", "flag_name": "Liberia",         "flag_code": "LR", "vessel_count": 183421 },
+    { "flag_emoji": "🇲🇭", "flag_name": "Marshall Islands", "flag_code": "MH", "vessel_count": 162834 },
+    { "flag_emoji": "🇧🇸", "flag_name": "Bahamas",          "flag_code": "BS", "vessel_count": 74291  },
+    { "flag_emoji": "🇸🇬", "flag_name": "Singapore",        "flag_code": "SG", "vessel_count": 68234  },
+    { "flag_emoji": "🇲🇹", "flag_name": "Malta",            "flag_code": "MT", "vessel_count": 67123  },
+    { "flag_emoji": "🇨🇳", "flag_name": "China",            "flag_code": "CN", "vessel_count": 61829  },
+    { "flag_emoji": "🇨🇾", "flag_name": "Cyprus",           "flag_code": "CY", "vessel_count": 48291  },
+    { "flag_emoji": "🇬🇧", "flag_name": "United Kingdom",   "flag_code": "GB", "vessel_count": 31284  },
+    { "flag_emoji": "🇬🇷", "flag_name": "Greece",           "flag_code": "GR", "vessel_count": 28143  }
+  ],
+  "cert_compliance_summary": [
+    { "icon": "📄", "name": "SMC (ISM)",       "description": "Safety Management Certificate",              "expiring_count": 312, "css_class": "tR" },
+    { "icon": "🛡", "name": "ISPS / ISSC",    "description": "International Ship Security Certificate",     "expiring_count": 218, "css_class": "tR" },
+    { "icon": "⚓", "name": "Load Line",      "description": "International Load Line Certificate",         "expiring_count": 197, "css_class": "tA" },
+    { "icon": "🛢", "name": "IOPP (MARPOL)", "description": "Oil Pollution Prevention Certificate",        "expiring_count": 156, "css_class": "tA" },
+    { "icon": "🌊", "name": "BWM",            "description": "Ballast Water Management Certificate",        "expiring_count": 89,  "css_class": "tA" },
+    { "icon": "📊", "name": "CII / EEXI",    "description": "Energy Efficiency Existing Ship Index",       "expiring_count": 75,  "css_class": "tN" }
+  ]
+}

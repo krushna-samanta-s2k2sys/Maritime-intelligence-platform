@@ -1,12 +1,7 @@
-export const COUNTRIES = [
-  'Panama','Liberia','Marshall Islands','Bahamas','Hong Kong','Singapore','Malta','Cyprus',
-  'Greece','China','Norway','United Kingdom','Japan','Italy','United States','Germany',
-  'Denmark','Turkey','India','South Korea','Brazil','Indonesia','Malaysia','Philippines',
-  'Cayman Islands','Isle of Man','Bermuda','Barbados','Antigua and Barbuda','St Kitts & Nevis',
-  'Belize','Tuvalu','Cambodia','Comoros','Cook Islands','Palau','Vanuatu','Sierra Leone',
-  'Mongolia','Portugal','Spain','France','Netherlands','Belgium','Sweden','Finland',
-  'Russia','Ukraine','Croatia','Tanzania','Mozambique','Djibouti','Iran','Iraq',
-]
+import enums from './json/enums.json'
+export const COUNTRIES      = enums.countries
+export const VESSEL_TYPES   = enums.vessel_types
+export const VESSEL_STATUSES = enums.vessel_statuses
 
 const T = (type, extra = {}) => ({ type, ...extra })
 const num      = (unit)    => T('number',     { unit })

@@ -1,47 +1,5 @@
 import { useState, useMemo } from 'react';
-
-const INSPECTIONS = [
-  {id:1,v:'OCEAN PRIDE',imo:'9341122',flag:'🇵🇦 Panama',port:'Rotterdam',mou:'Paris MOU',date:'2024-01-30',defs:14,res:'DETENTION',codes:['01111','01113','07106','02111','04101','07114'],descs:['ISM — ship-specific SMS not implemented','ISM — non-conformities not corrected','Fire damper defective','Stability information not available','Bilge system defective','Emergency lighting — not operational'],cats:['ISM','ISM','Fire safety','Stability','Machinery','Life-saving appliances']},
-  {id:2,v:'SUNRISE CARRIER',imo:'9412888',flag:'🇵🇦 Panama',port:'Qingdao',mou:'Tokyo MOU',date:'2024-01-29',defs:8,res:'DETENTION',codes:['07101','04108','06104'],descs:['Fire main pressure insufficient','Bilge pump inoperative','Hygiene — accommodation'],cats:['Fire safety','Bilge','MARPOL']},
-  {id:3,v:'PIONEER TRADER',imo:'9499283',flag:'🇱🇷 Liberia',port:'Singapore',mou:'Tokyo MOU',date:'2024-01-28',defs:3,res:'No detention',codes:['01101','04201','07201'],descs:['ISPS — drill records incomplete','Garbage management plan — minor','Fire door — damaged'],cats:['ISPS','MARPOL','Fire safety']},
-  {id:4,v:'GULF VOYAGER',imo:'9412340',flag:'🇸🇦 Saudi Arabia',port:'Houston',mou:'USCG',date:'2024-01-27',defs:6,res:'No detention',codes:['02114','07108','04101'],descs:['Crew rest hours — violation','Portable extinguisher — not recharged','Bilge system — minor defect'],cats:['MLC','Fire safety','Machinery']},
-  {id:5,v:'NORDIC GRACE',imo:'9388021',flag:'🇲🇭 Marshall Islands',port:'Durban',mou:'Indian Ocean MOU',date:'2024-01-25',defs:9,res:'DETENTION',codes:['01111','04109','07116','02101'],descs:['ISM — safety management deficiencies','Lifeboat — release mechanism stiff','Fire detection — sensor faulty','Manning — officer watch certificate'],cats:['ISM','Life-saving','Fire safety','Manning']},
-  {id:6,v:'BOREALIS',imo:'9484948',flag:'🇩🇪 Germany',port:'Piraeus',mou:'Paris MOU',date:'2024-01-24',defs:0,res:'No detention',codes:[],descs:[],cats:[]},
-  {id:7,v:'NORTHERN STAR',imo:'9188741',flag:'🇳🇴 Norway',port:'Marseille',mou:'Mediterranean MOU',date:'2024-01-22',defs:2,res:'No detention',codes:['04201','07201'],descs:['SOPEP plan minor amendment required','Foam applicator — nozzle condition'],cats:['MARPOL','Fire safety']},
-  {id:8,v:'EURONAV NINA',imo:'9320116',flag:'🇧🇪 Belgium',port:'Singapore',mou:'Tokyo MOU',date:'2024-01-20',defs:1,res:'No detention',codes:['01101'],descs:['ISPS — drill log minor discrepancy'],cats:['ISPS']},
-  {id:9,v:'GLOVIS CAPTAIN',imo:'9680042',flag:'🇰🇷 South Korea',port:'Jebel Ali',mou:'Riyadh MOU',date:'2024-01-18',defs:4,res:'No detention',codes:['07101','04202','01112','02201'],descs:['Fire hose — coupling damaged','Waste management log — missing entry','SMS non-conformity record','Work/rest hours — recording'],cats:['Fire safety','MARPOL','ISM','MLC']},
-  {id:10,v:'PIONEER MAX',imo:'9612988',flag:'🇲🇭 Marshall Islands',port:'Rotterdam',mou:'Paris MOU',date:'2024-01-15',defs:0,res:'No detention',codes:[],descs:[],cats:[]},
-];
-
-const KPIS = [
-  {v:'283',l:'Detentions YTD',d:'↑ +12 vs 2023',dn:true,c:'#c8102e'},
-  {v:'8,841',l:'Inspections YTD',d:'',dn:false,c:'#1558d6'},
-  {v:'3.2%',l:'Detention Rate',d:'Paris MOU avg',dn:false,c:'#b45309'},
-  {v:'2.4',l:'Avg Deficiencies',d:'per inspection',dn:false,c:'#6200ea'},
-  {v:'68',l:'Active Detentions',d:'currently held',dn:true,c:'#c8102e'},
-  {v:'124',l:'0-Deficiency Insp.',d:'↑ improving',dn:false,c:'#137333'},
-  {v:'97.8%',l:'MLC Compliance',d:'of inspected vessels',dn:false,c:'#137333'},
-];
-
-const MOU_STATS = [
-  {n:'Paris MOU',insp:3241,det:98,rate:3.0,c:'#1558d6'},
-  {n:'Tokyo MOU',insp:2882,det:87,rate:3.0,c:'#137333'},
-  {n:'USCG',insp:1441,det:42,rate:2.9,c:'#c8102e'},
-  {n:'Indian Ocean MOU',insp:682,det:28,rate:4.1,c:'#0094b3'},
-  {n:'Mediterranean MOU',insp:441,det:18,rate:4.1,c:'#6200ea'},
-  {n:'Riyadh MOU',insp:282,det:10,rate:3.5,c:'#b45309'},
-];
-
-const DEF_CATS = [
-  {n:'Fire safety',cnt:1884,c:'#c8102e'},
-  {n:'Life-saving appliances',cnt:1441,c:'#ea580c'},
-  {n:'ISM / Safety management',cnt:1282,c:'#b45309'},
-  {n:'MARPOL / Pollution prev.',cnt:981,c:'#137333'},
-  {n:'Crew / MLC compliance',cnt:841,c:'#1558d6'},
-  {n:'Navigation equipment',cnt:622,c:'#6200ea'},
-  {n:'ISPS security',cnt:441,c:'#0094b3'},
-  {n:'Certificates',cnt:382,c:'#717a85'},
-];
+import { INSPECTIONS, PSC_KPIS, MOU_STATS, DEF_CATS } from '../data/pscData';
 
 const MOU_TABS = [
   {id:'all',label:'All MOU Regions'},
@@ -117,7 +75,7 @@ export default function Psc() {
       <div style={{flex:1,overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
         {/* KPI Row */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:10}}>
-          {KPIS.map((k,i) => (
+          {PSC_KPIS.map((k,i) => (
             <div key={i} className="kpi" style={{'--kc':k.c}}>
               <div className="kpiV">{k.v}</div>
               <div className="kpiL">{k.l}</div>

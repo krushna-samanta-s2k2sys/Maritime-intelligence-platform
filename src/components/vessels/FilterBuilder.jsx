@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { FILTER_MAP } from '../../data/filterConfig'
-import { ATTRIBUTE_TREE, flattenFilterable, hasAnyFilterable } from '../../data/attributeTree'
+import { FILTER_MAP, ATTRIBUTE_TREE, flattenFilterable, hasAnyFilterable } from '../../data/attributeRegistry'
 
 // ── Filter value editor popover ──────────────────────────────────────────────
 function FilterEditor({ cfg, filter, vessels, onUpdate, onRemove, onClose, anchor }) {

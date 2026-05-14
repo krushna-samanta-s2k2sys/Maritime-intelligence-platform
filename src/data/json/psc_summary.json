@@ -1,0 +1,29 @@
+{
+  "kpis": [
+    {"id":"psc-det-ytd",  "v":"283",    "l":"Detentions YTD",      "d":"↑ +12 vs 2023",         "dn":true,  "c":"#c8102e"},
+    {"id":"psc-insp-ytd", "v":"8,841",  "l":"Inspections YTD",     "d":"",                       "dn":false, "c":"#1558d6"},
+    {"id":"psc-det-rate", "v":"3.2%",   "l":"Detention Rate",      "d":"Paris MOU avg",          "dn":false, "c":"#b45309"},
+    {"id":"psc-avg-def",  "v":"2.4",    "l":"Avg Deficiencies",    "d":"per inspection",         "dn":false, "c":"#6200ea"},
+    {"id":"psc-active",   "v":"68",     "l":"Active Detentions",   "d":"currently held",         "dn":true,  "c":"#c8102e"},
+    {"id":"psc-zero-def", "v":"124",    "l":"0-Deficiency Insp.",  "d":"↑ improving",            "dn":false, "c":"#137333"},
+    {"id":"psc-mlc",      "v":"97.8%",  "l":"MLC Compliance",      "d":"of inspected vessels",  "dn":false, "c":"#137333"}
+  ],
+  "mou_stats": [
+    {"n":"Paris MOU",         "insp":3241,"det":98, "rate":3.0,"c":"#1558d6"},
+    {"n":"Tokyo MOU",         "insp":2882,"det":87, "rate":3.0,"c":"#137333"},
+    {"n":"USCG",              "insp":1441,"det":42, "rate":2.9,"c":"#c8102e"},
+    {"n":"Indian Ocean MOU",  "insp":682, "det":28, "rate":4.1,"c":"#0094b3"},
+    {"n":"Mediterranean MOU", "insp":441, "det":18, "rate":4.1,"c":"#6200ea"},
+    {"n":"Riyadh MOU",        "insp":282, "det":10, "rate":3.5,"c":"#b45309"}
+  ],
+  "deficiency_categories": [
+    {"n":"Fire safety",              "cnt":1884,"c":"#c8102e"},
+    {"n":"Life-saving appliances",   "cnt":1441,"c":"#ea580c"},
+    {"n":"ISM / Safety management",  "cnt":1282,"c":"#b45309"},
+    {"n":"MARPOL / Pollution prev.", "cnt":981, "c":"#137333"},
+    {"n":"Crew / MLC compliance",    "cnt":841, "c":"#1558d6"},
+    {"n":"Navigation equipment",     "cnt":622, "c":"#6200ea"},
+    {"n":"ISPS security",            "cnt":441, "c":"#0094b3"},
+    {"n":"Certificates",             "cnt":382, "c":"#717a85"}
+  ]
+}

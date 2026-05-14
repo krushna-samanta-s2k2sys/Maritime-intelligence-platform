@@ -1,0 +1,12 @@
+[
+  {"route":"TD3C — AG/China (VLCC)",      "ws":82,  "tce":19200,"prev_tce":17400,"lo":60,  "hi":120, "segment":"VLCC"},
+  {"route":"TD20 — AG/Japan (VLCC)",      "ws":78,  "tce":17400,"prev_tce":17900,"lo":58,  "hi":115, "segment":"VLCC"},
+  {"route":"TD6 — BLS/Med (Suezmax)",     "ws":110, "tce":14800,"prev_tce":14500,"lo":75,  "hi":145, "segment":"Suezmax"},
+  {"route":"TD7 — NS/Cont (Aframax)",     "ws":103, "tce":18900,"prev_tce":18000,"lo":70,  "hi":140, "segment":"Aframax"},
+  {"route":"TD17 — BALT/UKC (Aframax)",  "ws":125, "tce":22100,"prev_tce":21000,"lo":80,  "hi":160, "segment":"Aframax"},
+  {"route":"TC1 — AG/Japan (LR2)",        "ws":88,  "tce":11200,"prev_tce":11800,"lo":60,  "hi":130, "segment":"Product"},
+  {"route":"TC2 — Cont/USAC (MR)",        "ws":145, "tce":14500,"prev_tce":13900,"lo":90,  "hi":200, "segment":"Product"},
+  {"route":"5TC — Capesize Avg",          "ws":null,"tce":31500,"prev_tce":32300,"lo":8000,"hi":55000,"segment":"Capesize"},
+  {"route":"4TC — Panamax Avg",           "ws":null,"tce":12500,"prev_tce":12200,"lo":7000,"hi":22000,"segment":"Panamax"},
+  {"route":"10TC — Supramax Avg",         "ws":null,"tce":8400, "prev_tce":8450, "lo":5500,"hi":17000,"segment":"Supramax"}
+]

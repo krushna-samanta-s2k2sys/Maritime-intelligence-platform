@@ -1,0 +1,88 @@
+[
+  {
+    "id":"v01","name":"MT NORDIC STAR","imo":"9234567","type":"Crude Oil Tanker","flag":"Marshall Islands",
+    "status":"Underway","speed_kn":13.2,"heading_deg":285,"latitude":25.5,"longitude":58.2,
+    "destination":"SINGAPORE","eta":"2025-05-10","last_port":"KHARG ISLAND","atd":"2025-04-28",
+    "cargo":"2,000,000 BBL Crude","dwt":298000,
+    "route":[
+      {"port":"Kharg Island","locode":"IR KHK","lat":29.2,"lon":50.3,"atd":"2025-04-28","type":"done"},
+      {"port":"Fujairah","locode":"AE FUJ","lat":25.1,"lon":56.3,"ata":"2025-04-30","atd":"2025-05-01","type":"done"},
+      {"port":"Singapore","locode":"SG SIN","lat":1.26,"lon":103.8,"eta":"2025-05-10","type":"future"}
+    ]
+  },
+  {
+    "id":"v02","name":"MV OCEAN PIONEER","imo":"9345678","type":"Bulk Carrier","flag":"Liberia",
+    "status":"In Port","speed_kn":0,"heading_deg":0,"latitude":22.5,"longitude":114.1,
+    "destination":"PORT HEDLAND","eta":"2025-05-15","last_port":"HONG KONG","ata":"2025-05-03",
+    "cargo":"Iron Ore","dwt":180000,
+    "route":[
+      {"port":"Port Hedland","locode":"AU PHE","lat":-20.3,"lon":118.6,"atd":"2025-04-20","type":"done"},
+      {"port":"Hong Kong","locode":"HK HKG","lat":22.3,"lon":114.2,"ata":"2025-05-03","type":"current"},
+      {"port":"Port Hedland","locode":"AU PHE","lat":-20.3,"lon":118.6,"eta":"2025-05-15","type":"future"}
+    ]
+  },
+  {
+    "id":"v03","name":"MT AEGEAN GLORY","imo":"9456789","type":"Product Tanker","flag":"Greece",
+    "status":"Underway","speed_kn":14.8,"heading_deg":330,"latitude":36.5,"longitude":24.2,
+    "destination":"ROTTERDAM","eta":"2025-05-08","last_port":"PORTSAID","atd":"2025-05-04",
+    "cargo":"Naphtha 45,000 MT","dwt":52000,
+    "route":[
+      {"port":"Yanbu","locode":"SA YNB","lat":24.1,"lon":38.1,"atd":"2025-04-30","type":"done"},
+      {"port":"Port Said","locode":"EG PSD","lat":31.3,"lon":32.3,"ata":"2025-05-04","atd":"2025-05-04","type":"done"},
+      {"port":"Rotterdam","locode":"NL RTM","lat":51.9,"lon":4.5,"eta":"2025-05-08","type":"future"}
+    ]
+  },
+  {
+    "id":"v04","name":"MV PACIFIC BRIDGE","imo":"9567890","type":"Container","flag":"Panama",
+    "status":"Underway","speed_kn":18.4,"heading_deg":270,"latitude":28.3,"longitude":155.2,
+    "destination":"LONG BEACH","eta":"2025-05-09","last_port":"YOKOHAMA","atd":"2025-05-03",
+    "cargo":"4,200 TEU","dwt":65000,
+    "route":[
+      {"port":"Shanghai","locode":"CN SHA","lat":31.2,"lon":121.5,"atd":"2025-04-29","type":"done"},
+      {"port":"Yokohama","locode":"JP YOK","lat":35.4,"lon":139.7,"ata":"2025-05-01","atd":"2025-05-03","type":"done"},
+      {"port":"Long Beach","locode":"US LGB","lat":33.75,"lon":-118.2,"eta":"2025-05-09","type":"future"}
+    ]
+  },
+  {
+    "id":"v05","name":"LNG ARCTIC SPIRIT","imo":"9678901","type":"LNG Carrier","flag":"Bermuda",
+    "status":"At Anchor","speed_kn":0,"heading_deg":180,"latitude":22.3,"longitude":113.6,
+    "destination":"TOKYO","eta":"2025-05-12","last_port":"QATAR RAS LAFFAN","atd":"2025-04-25",
+    "cargo":"135,000 CBM LNG","dwt":95000,
+    "route":[
+      {"port":"Ras Laffan","locode":"QA RAS","lat":25.9,"lon":51.6,"atd":"2025-04-25","type":"done"},
+      {"port":"Guangzhou Anchorage","locode":"CN CAN","lat":22.3,"lon":113.6,"ata":"2025-05-04","type":"current"},
+      {"port":"Tokyo LNG Terminal","locode":"JP TKO","lat":35.6,"lon":139.8,"eta":"2025-05-12","type":"future"}
+    ]
+  },
+  {
+    "id":"v06","name":"MV CASPIAN STAR","imo":"9789012","type":"Bulk Carrier","flag":"Cyprus",
+    "status":"Underway","speed_kn":11.5,"heading_deg":200,"latitude":12.2,"longitude":44.5,
+    "destination":"DJIBOUTI","eta":"2025-05-06","last_port":"SUEZ","atd":"2025-05-04",
+    "cargo":"Grain 60,000 MT","dwt":76000,
+    "route":[
+      {"port":"Nikolaev","locode":"UA NLK","lat":46.9,"lon":32.0,"atd":"2025-04-26","type":"done"},
+      {"port":"Suez","locode":"EG SUE","lat":29.9,"lon":32.5,"ata":"2025-05-04","atd":"2025-05-04","type":"done"},
+      {"port":"Djibouti","locode":"DJ JIB","lat":11.6,"lon":43.1,"eta":"2025-05-06","type":"future"}
+    ]
+  },
+  {
+    "id":"v07","name":"MT PERSEVERANCE","imo":"9890123","type":"Crude Oil Tanker","flag":"Greece",
+    "status":"In Port","speed_kn":0,"heading_deg":0,"latitude":51.95,"longitude":4.13,
+    "destination":"NOVOROSSIYSK","eta":"2025-05-20","last_port":"ROTTERDAM","ata":"2025-05-02",
+    "cargo":"Ballast","dwt":105000,
+    "route":[
+      {"port":"Rotterdam","locode":"NL RTM","lat":51.9,"lon":4.5,"ata":"2025-05-02","type":"current"},
+      {"port":"Novorossiysk","locode":"RU NOV","lat":44.7,"lon":37.8,"eta":"2025-05-20","type":"future"}
+    ]
+  },
+  {
+    "id":"v08","name":"MV GLOBAL HARMONY","imo":"9901234","type":"Container","flag":"Singapore",
+    "status":"Drifting","speed_kn":0.3,"heading_deg":45,"latitude":1.5,"longitude":105.0,
+    "destination":"SINGAPORE","eta":"2025-05-06","last_port":"MANILA","atd":"2025-05-03",
+    "cargo":"2,800 TEU","dwt":38000,
+    "route":[
+      {"port":"Manila","locode":"PH MNL","lat":14.6,"lon":120.9,"atd":"2025-05-03","type":"done"},
+      {"port":"Singapore","locode":"SG SIN","lat":1.26,"lon":103.8,"eta":"2025-05-06","type":"future"}
+    ]
+  }
+]

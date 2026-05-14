@@ -1,22 +1,5 @@
-export const ENTITIES = [
-  { key:'imo',         label:'IMO Core Identity',        icon:'🆔', color:'#1558d6', cnt:8  },
-  { key:'dimensions',  label:'Physical Dimensions',      icon:'📐', color:'#0094b3', cnt:14 },
-  { key:'construction',label:'Construction Details',     icon:'🏗',  color:'#137333', cnt:8  },
-  { key:'flag',        label:'Flag & Registry',          icon:'🏴', color:'#6200ea', cnt:8  },
-  { key:'ownership',   label:'Ownership & Management',   icon:'🤝', color:'#c8102e', cnt:10 },
-  { key:'class',       label:'Classification & Surveys', icon:'📋', color:'#b45309', cnt:10 },
-  { key:'propulsion',  label:'Propulsion & Machinery',   icon:'⚙️', color:'#ea580c', cnt:13 },
-  { key:'cargo',       label:'Cargo & Capacity',         icon:'📦', color:'#0891b2', cnt:9  },
-  { key:'safety',      label:'Safety Equipment',         icon:'🛡️', color:'#137333', cnt:10 },
-  { key:'certs',       label:'Safety Certificates',      icon:'📄', color:'#0094b3', cnt:12 },
-  { key:'ais',         label:'AIS & Position',           icon:'📡', color:'#1558d6', cnt:8  },
-  { key:'portcalls',   label:'Port Calls & Voyages',     icon:'⚓', color:'#0094b3', cnt:6  },
-  { key:'inspections', label:'Inspections & PSC',        icon:'🔍', color:'#c8102e', cnt:8  },
-  { key:'incidents',   label:'Incidents & Casualties',   icon:'⚠️', color:'#d93025', cnt:5  },
-  { key:'sanctions',   label:'Sanctions & Screening',    icon:'🚨', color:'#c8102e', cnt:6  },
-  { key:'finance',     label:'Finance & Valuation',      icon:'💰', color:'#b45309', cnt:7  },
-  { key:'crew',        label:'Crew & Manning',           icon:'👤', color:'#6200ea', cnt:7  }
-]
+import entityTypesData from './json/entity_types.json'
+export const ENTITIES = entityTypesData
 
 function buildCargoFields(v) {
   const ty = v.ty

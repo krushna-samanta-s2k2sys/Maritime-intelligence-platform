@@ -1,51 +1,12 @@
 // Smart vessel search parser — converts free-text to structured filters
 
-const TYPE_MAP = {
-  'container ship':'Container Ship','container':'Container Ship','feeder':'Container Ship',
-  'oil tanker':'Oil Tanker','crude':'Oil Tanker','vlcc':'Oil Tanker','ulcc':'Oil Tanker',
-  'suezmax':'Oil Tanker','aframax':'Oil Tanker','tanker':'Oil Tanker',
-  'chemical tanker':'Chemical Tanker','chemical':'Chemical Tanker','product tanker':'Chemical Tanker',
-  'lng carrier':'LNG Carrier','lng':'LNG Carrier',
-  'lpg carrier':'LPG Carrier','lpg':'LPG Carrier',
-  'bulk carrier':'Bulk Carrier','bulker':'Bulk Carrier','capesize':'Bulk Carrier',
-  'panamax':'Bulk Carrier','supramax':'Bulk Carrier','handymax':'Bulk Carrier','handysize':'Bulk Carrier',
-  'general cargo':'General Cargo','general':'General Cargo',
-  'car carrier':'Car Carrier','pctc':'Car Carrier','roro':'RoRo','ro-ro':'RoRo','ro ro':'RoRo',
-  'offshore supply':'Offshore Supply','psv':'Offshore Supply','ahts':'Offshore Supply',
-  'offshore wind':'Offshore Wind','wiv':'Offshore Wind',
-  'passenger':'Passenger/Cruise','cruise':'Passenger/Cruise',
-  'research vessel':'Research Vessel','research':'Research Vessel',
-}
+import searchConfig from '../data/json/search_config.json'
 
-const DWT_RANGES = {
-  'vlcc':[200000,350000],'ulcc':[320000,550000],'suezmax':[120000,200000],
-  'aframax':[80000,120000],'panamax':[65000,80000],'supramax':[45000,65000],
-  'handymax':[35000,50000],'handysize':[15000,35000],'capesize':[100000,400000],
-}
-
-const STATUS_MAP = {
-  'detained':'Detained','detention':'Detained',
-  'drydock':'In Drydock','dry dock':'In Drydock','in drydock':'In Drydock',
-  'laid up':'Laid Up','laidup':'Laid Up',
-  'in service':'In Service','active':'In Service',
-  'total loss':'Total Loss','scrapped':'Total Loss',
-}
-
-const FLAG_MAP = {
-  'panama':'Panama','liberia':'Liberia','marshall islands':'Marshall Islands','marshall':'Marshall Islands',
-  'hong kong':'Hong Kong','singapore':'Singapore','bahamas':'Bahamas','malta':'Malta',
-  'cyprus':'Cyprus','greece':'Greece','china':'China','denmark':'Denmark','norway':'Norway',
-  'japan':'Japan','south korea':'South Korea','korea':'South Korea','germany':'Germany',
-  'uk':'United Kingdom','united kingdom':'United Kingdom','france':'France','belgium':'Belgium',
-  'saudi arabia':'Saudi Arabia','saudi':'Saudi Arabia','portugal':'Portugal',
-}
-
-const CLASS_MAP = {
-  "lloyd's register":"Lloyd's Register",'lloyds':"Lloyd's Register",'lr':"Lloyd's Register",
-  'dnv gl':'DNV GL','dnv':'DNV GL','bureau veritas':'Bureau Veritas','bv':'Bureau Veritas',
-  'classnk':'ClassNK','nk':'ClassNK','korean register':'Korean Register','kr':'Korean Register',
-  'china classification':'China Classification','ccs':'China Classification',
-}
+const TYPE_MAP   = searchConfig.type_map
+const DWT_RANGES = searchConfig.dwt_ranges
+const STATUS_MAP = searchConfig.status_map
+const FLAG_MAP   = searchConfig.flag_map
+const CLASS_MAP  = searchConfig.class_map
 
 // Parse token key:value pairs and range expressions, returns { textQuery, filters }
 export function parseSearch(raw) {

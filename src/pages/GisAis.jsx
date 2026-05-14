@@ -3,106 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import FilterBuilder from '../components/vessels/FilterBuilder';
-import { applyFilters } from '../data/filterConfig';
-
-// ── Static data ───────────────────────────────────────────────────────────────
-const VESSELS = [
-  {id:'v01',name:'MT NORDIC STAR',imo:'9234567',mmsi:'319000001',type:'Crude Oil Tanker',flagN:'Marshall Islands',fl:'🇲🇭',spd:13.2,hdg:285,lat:25.5,lon:58.2,dest:'SINGAPORE',eta:'2025-05-10',status:'Underway',dwt:298000,owner:'Nordic Tankers AS',cargo:'Crude Oil'},
-  {id:'v02',name:'MV OCEAN PIONEER',imo:'9345678',mmsi:'636000002',type:'Bulk Carrier',flagN:'Liberia',fl:'🇱🇷',spd:0,hdg:0,lat:22.5,lon:114.1,dest:'PORT HEDLAND',eta:'2025-05-15',status:'In Port',dwt:180000,owner:'Pacific Carriers',cargo:'Iron Ore'},
-  {id:'v03',name:'MT AEGEAN GLORY',imo:'9456789',mmsi:'241000003',type:'Product Tanker',flagN:'Greece',fl:'🇬🇷',spd:14.8,hdg:330,lat:36.5,lon:24.2,dest:'ROTTERDAM',eta:'2025-05-08',status:'Underway',dwt:52000,owner:'Aegean Marine SA',cargo:'Naphtha'},
-  {id:'v04',name:'MV PACIFIC BRIDGE',imo:'9567890',mmsi:'370000004',type:'Container',flagN:'Panama',fl:'🇵🇦',spd:18.4,hdg:270,lat:28.3,lon:155.2,dest:'LONG BEACH',eta:'2025-05-09',status:'Underway',dwt:65000,owner:'Pacific International',cargo:'4,200 TEU'},
-  {id:'v05',name:'LNG ARCTIC SPIRIT',imo:'9678901',mmsi:'310000005',type:'LNG Carrier',flagN:'Bermuda',fl:'🇧🇲',spd:0,hdg:180,lat:22.3,lon:113.6,dest:'TOKYO',eta:'2025-05-12',status:'At Anchor',dwt:95000,owner:'TotalEnergies',cargo:'135,000 CBM LNG'},
-  {id:'v06',name:'MV CASPIAN STAR',imo:'9789012',mmsi:'209000006',type:'Bulk Carrier',flagN:'Cyprus',fl:'🇨🇾',spd:11.5,hdg:200,lat:12.2,lon:44.5,dest:'DJIBOUTI',eta:'2025-05-06',status:'Underway',dwt:76000,owner:'Ultramar SA',cargo:'Grain'},
-  {id:'v07',name:'MT PERSEVERANCE',imo:'9890123',mmsi:'241000007',type:'Crude Oil Tanker',flagN:'Greece',fl:'🇬🇷',spd:0,hdg:0,lat:51.95,lon:4.13,dest:'NOVOROSSIYSK',eta:'2025-05-20',status:'In Port',dwt:105000,owner:'Dynagas',cargo:'Ballast'},
-  {id:'v08',name:'MV GLOBAL HARMONY',imo:'9901234',mmsi:'566000008',type:'Container',flagN:'Singapore',fl:'🇸🇬',spd:0.3,hdg:45,lat:1.5,lon:105.0,dest:'SINGAPORE',eta:'2025-05-06',status:'Underway',dwt:38000,owner:'Pacific Line',cargo:'2,800 TEU'},
-  {id:'v09',name:'MT CASPIAN QUEEN',imo:'9012345',mmsi:'205000009',type:'Aframax',flagN:'Belgium',fl:'🇧🇪',spd:12.1,hdg:290,lat:42.5,lon:-18.2,dest:'HOUSTON',eta:'2025-05-14',status:'Underway',dwt:115000,owner:'Euronav',cargo:'Naphtha'},
-  {id:'v10',name:'MV SOUTHERN CROSS',imo:'9123456',mmsi:'503000010',type:'Bulk Carrier',flagN:'Australia',fl:'🇦🇺',spd:13.8,hdg:340,lat:-23.5,lon:-42.8,dest:'TIANJIN',eta:'2025-05-24',status:'Underway',dwt:82000,owner:'Borealis Maritime',cargo:'Soybeans'},
-  {id:'v11',name:'MT VOLGA PRIDE',imo:'9332211',mmsi:'273000011',type:'Crude Oil Tanker',flagN:'Russia',fl:'🇷🇺',spd:10.2,hdg:260,lat:48.5,lon:14.3,dest:'ROTTERDAM',eta:'2025-05-09',status:'Underway',dwt:115000,owner:'Tsakos Group',cargo:'Urals Crude'},
-  {id:'v12',name:'MV ATLAS PEAK',imo:'9221100',mmsi:'636000012',type:'Capesize',flagN:'Liberia',fl:'🇱🇷',spd:14.1,hdg:70,lat:-33.2,lon:27.8,dest:'PORT HEDLAND',eta:'2025-05-18',status:'Underway',dwt:176000,owner:'Star Bulk',cargo:'Ballast'},
-  {id:'v13',name:'MT SUEZ GLORY',imo:'9445566',mmsi:'229000013',type:'VLCC',flagN:'Malta',fl:'🇲🇹',spd:15.2,hdg:130,lat:27.5,lon:33.2,dest:'FUJAIRAH',eta:'2025-05-07',status:'Underway',dwt:298000,owner:'Maran Tankers',cargo:'Crude Oil'},
-  {id:'v14',name:'MV ARCTIC TRADER',imo:'9334455',mmsi:'257000014',type:'General Cargo',flagN:'Norway',fl:'🇳🇴',spd:0,hdg:90,lat:69.2,lon:18.5,dest:'TROMSØ',eta:'—',status:'At Anchor',dwt:8500,owner:'Nor Lines',cargo:'General Cargo'},
-  {id:'v15',name:'MT POSEIDON QUEEN',imo:'9667788',mmsi:'224000015',type:'Product Tanker',flagN:'Cameroon',fl:'🇨🇲',spd:0,hdg:0,lat:14.5,lon:42.8,dest:'UNKNOWN',eta:'UNKNOWN',status:'AIS Dark',dwt:45000,owner:'Unknown',cargo:'Unknown'},
-  {id:'v16',name:'MV PIONEER SPIRIT',imo:'9556677',mmsi:'255000016',type:'Heavy Lift',flagN:'Portugal',fl:'🇵🇹',spd:7.8,hdg:170,lat:44.5,lon:-14.3,dest:'LAS PALMAS',eta:'2025-05-08',status:'Underway',dwt:24000,owner:'Heerema Marine',cargo:'Subsea Equipment'},
-  {id:'v17',name:'MT HORIZON',imo:'9778844',mmsi:'311000017',type:'Chemical Tanker',flagN:'Bahamas',fl:'🇧🇸',spd:13.5,hdg:220,lat:19.5,lon:65.8,dest:'MUMBAI',eta:'2025-05-06',status:'Underway',dwt:39000,owner:'Stolt-Nielsen',cargo:'Chemicals'},
-  {id:'v18',name:'MV PACIFIC GLORY',imo:'9889900',mmsi:'311000018',type:'Container',flagN:'Bahamas',fl:'🇧🇸',spd:20.1,hdg:95,lat:7.8,lon:155.2,dest:'SYDNEY',eta:'2025-05-10',status:'Underway',dwt:82000,owner:'Hapag-Lloyd',cargo:'8,500 TEU'},
-  {id:'v19',name:'MT GULF STAR',imo:'9334466',mmsi:'447000019',type:'Product Tanker',flagN:'Kuwait',fl:'🇰🇼',spd:0,hdg:0,lat:29.2,lon:48.5,dest:'LOADING',eta:'2025-05-07',status:'At Anchor',dwt:50000,owner:'KOTC',cargo:'Awaiting'},
-  {id:'v20',name:'LNG MERIDIAN',imo:'9445577',mmsi:'419000020',type:'LNG Carrier',flagN:'India',fl:'🇮🇳',spd:17.2,hdg:280,lat:19.8,lon:78.5,dest:'KOCHI',eta:'2025-05-05',status:'Underway',dwt:92000,owner:'Petronet LNG',cargo:'LNG'},
-  {id:'v21',name:'MV CAPE ENTERPRISE',imo:'9556688',mmsi:'503000021',type:'Capesize',flagN:'Australia',fl:'🇦🇺',spd:13.3,hdg:50,lat:-12.5,lon:128.8,dest:'DAMPIER',eta:'2025-05-06',status:'Underway',dwt:179000,owner:'BHP',cargo:'Iron Ore'},
-  {id:'v22',name:'MT STELLAR',imo:'9667799',mmsi:'477000022',type:'VLCC',flagN:'Hong Kong',fl:'🇭🇰',spd:14.5,hdg:205,lat:8.5,lon:76.5,dest:'SINGAPORE',eta:'2025-05-09',status:'Underway',dwt:310000,owner:'CNOOC',cargo:'Crude Oil'},
-  {id:'v23',name:'MV WESTBOUND',imo:'9778810',mmsi:'636000023',type:'Container',flagN:'Liberia',fl:'🇱🇷',spd:16.8,hdg:270,lat:34.5,lon:-55.2,dest:'ROTTERDAM',eta:'2025-05-09',status:'Underway',dwt:75000,owner:'MSC',cargo:'6,200 TEU'},
-  {id:'v24',name:'MT NORTHERN GHOST',imo:'9778899',mmsi:'351000024',type:'Crude Oil Tanker',flagN:'St Kitts & Nevis',fl:'🏴',spd:0,hdg:0,lat:55.5,lon:20.8,dest:'UNKNOWN',eta:'AIS DARK 23d',status:'AIS Dark',dwt:115000,owner:'Northsea Trading Ltd',cargo:'Unknown'},
-  {id:'v25',name:'MV STAR PRINCESS',imo:'9889911',mmsi:'215000025',type:'RoRo',flagN:'Malta',fl:'🇲🇹',spd:18.5,hdg:305,lat:37.5,lon:10.8,dest:'MARSEILLE',eta:'2025-05-06',status:'Underway',dwt:28000,owner:'DFDS',cargo:'RoRo Cargo'},
-];
-
-const GIS_PORTS = [
-  {id:'p01',n:'Singapore',lat:1.26,lon:103.8,country:'Singapore',locode:'SGSIN',size:'mega',teu:'37M TEU',calls:82442,draft:'20.5m',mou:'Tokyo MOU'},
-  {id:'p02',n:'Rotterdam',lat:51.9,lon:4.5,country:'Netherlands',locode:'NLRTM',size:'mega',teu:'14.5M TEU',calls:30000,draft:'23.0m',mou:'Paris MOU'},
-  {id:'p03',n:'Shanghai',lat:31.2,lon:121.5,country:'China',locode:'CNSHA',size:'mega',teu:'47M TEU',calls:45000,draft:'17.0m',mou:'Tokyo MOU'},
-  {id:'p04',n:'Dubai (Jebel Ali)',lat:25.0,lon:55.1,country:'UAE',locode:'AEJEA',size:'large',teu:'14M TEU',calls:20000,draft:'17.0m',mou:'Indian Ocean MOU'},
-  {id:'p05',n:'Houston',lat:29.7,lon:-95.0,country:'USA',locode:'USHOU',size:'large',teu:'2.8M TEU',calls:8000,draft:'13.7m',mou:'USCG'},
-  {id:'p06',n:'Antwerp',lat:51.3,lon:4.3,country:'Belgium',locode:'BEANR',size:'large',teu:'12M TEU',calls:15000,draft:'16.0m',mou:'Paris MOU'},
-  {id:'p07',n:'Fujairah',lat:25.1,lon:56.3,country:'UAE',locode:'AEFJR',size:'medium',teu:'1M TEU',calls:9000,draft:'18.0m',mou:'Indian Ocean MOU'},
-  {id:'p08',n:'Busan',lat:35.1,lon:129.0,country:'South Korea',locode:'KRPUS',size:'large',teu:'21M TEU',calls:35000,draft:'18.0m',mou:'Tokyo MOU'},
-  {id:'p09',n:'Hamburg',lat:53.5,lon:10.0,country:'Germany',locode:'DEHAM',size:'large',teu:'8.9M TEU',calls:12000,draft:'15.1m',mou:'Paris MOU'},
-  {id:'p10',n:'Long Beach',lat:33.75,lon:-118.2,country:'USA',locode:'USLGB',size:'large',teu:'8.1M TEU',calls:11000,draft:'15.8m',mou:'USCG'},
-  {id:'p11',n:'Ras Laffan',lat:25.9,lon:51.6,country:'Qatar',locode:'QARAS',size:'medium',teu:'0',calls:3000,draft:'14.5m',mou:'Indian Ocean MOU'},
-  {id:'p12',n:'Mumbai',lat:18.9,lon:72.8,country:'India',locode:'INBOM',size:'large',teu:'5.5M TEU',calls:14000,draft:'14.0m',mou:'Indian Ocean MOU'},
-];
-
-const GIS_COMPANIES = [
-  {id:'c01',name:'A.P. Moller-Maersk',type:'Shipping Line',country:'Denmark',lat:55.68,lon:12.57,vessels:700,dwt:'43M DWT',fleet:'Container'},
-  {id:'c02',name:'MSC Mediterranean',type:'Shipping Line',country:'Switzerland',lat:46.20,lon:6.15,vessels:620,dwt:'40M DWT',fleet:'Container'},
-  {id:'c03',name:'COSCO Shipping',type:'Shipping Line',country:'China',lat:31.23,lon:121.47,vessels:450,dwt:'48M DWT',fleet:'Mixed'},
-  {id:'c04',name:'CMA CGM',type:'Shipping Line',country:'France',lat:43.30,lon:5.37,vessels:580,dwt:'32M DWT',fleet:'Container'},
-  {id:'c05',name:'Euronav NV',type:'Tanker Owner',country:'Belgium',lat:51.22,lon:4.40,vessels:74,dwt:'22M DWT',fleet:'VLCC Crude'},
-  {id:'c06',name:'Star Bulk Carriers',type:'Dry Bulk',country:'Greece',lat:37.98,lon:23.73,vessels:128,dwt:'14M DWT',fleet:'Dry Bulk'},
-  {id:'c07',name:'Hapag-Lloyd',type:'Shipping Line',country:'Germany',lat:53.55,lon:9.99,vessels:260,dwt:'18M DWT',fleet:'Container'},
-  {id:'c08',name:'Stolt-Nielsen',type:'Chemical Tanker',country:'Norway',lat:59.91,lon:10.75,vessels:150,dwt:'4M DWT',fleet:'Chemical'},
-  {id:'c09',name:'Maran Tankers',type:'Tanker Owner',country:'Greece',lat:37.98,lon:23.73,vessels:60,dwt:'19M DWT',fleet:'VLCC/Suezmax'},
-  {id:'c10',name:'TotalEnergies',type:'Oil Major',country:'France',lat:48.89,lon:2.24,vessels:30,dwt:'6M DWT',fleet:'LNG/Tanker'},
-  {id:'c11',name:'BHP',type:'Commodity Major',country:'Australia',lat:-33.86,lon:151.21,vessels:0,dwt:'0',fleet:'Charterer'},
-  {id:'c12',name:'CNOOC',type:'Oil Major',country:'China',lat:22.28,lon:114.16,vessels:45,dwt:'8M DWT',fleet:'Tanker/LNG'},
-];
-
-const ROUTES = [
-  [[25.5,58.2],[10.5,64.5],[1.26,103.8]],
-  [[28.3,155.2],[22.0,160.0],[36.5,180],[33.75,-118.2]],
-  [[36.5,24.2],[36.5,15.0],[38.5,9.0],[43.5,-5.0],[51.9,4.5]],
-  [[12.2,44.5],[11.6,43.1]],
-  [[42.5,-18.2],[33.5,-18.5],[36.8,-8.5],[36.5,-6.3],[29.5,-13.2],[28.0,-14.5]],
-  [[-23.5,-42.8],[-33.5,-28.5],[-35.5,-20.5],[-34.5,-5.5],[-26.5,5.5],[-12.5,30.5],[8.5,76.5],[19.8,78.5]],
-];
-
-const CHOKE = [
-  {n:'Strait of Hormuz',lat:26.6,lon:56.2,vol:'17M BPD',risk:'High'},
-  {n:'Strait of Malacca',lat:2.3,lon:103.5,vol:'900 vessels/day',risk:'Medium'},
-  {n:'Suez Canal',lat:30.2,lon:32.5,vol:'12% global trade',risk:'Critical'},
-  {n:'Bab-el-Mandeb',lat:12.6,lon:43.3,vol:'6M BPD',risk:'Critical'},
-  {n:'Turkish Straits',lat:41.1,lon:29.0,vol:'3M BPD',risk:'Medium'},
-  {n:'Dover Strait',lat:51.1,lon:1.5,vol:'500+ vessels/day',risk:'Low'},
-  {n:'Panama Canal',lat:9.1,lon:-79.7,vol:'5% global trade',risk:'Low'},
-];
-
-const MOU_ZONES = [
-  {name:'Paris MOU',color:'#3b82f6',coords:[[72,32],[72,-15],[36,-15],[36,32]]},
-  {name:'Tokyo MOU',color:'#a855f7',coords:[[60,108],[60,180],[0,180],[0,108]]},
-  {name:'Indian Ocean MOU',color:'#ec4899',coords:[[30,60],[30,115],[0,115],[0,60],[10,44]]},
-  {name:'USCG',color:'#f59e0b',coords:[[75,-50],[75,-168],[15,-168],[15,-50]]},
-  {name:'Mediterranean MOU',color:'#10b981',coords:[[48,8],[48,42],[30,42],[30,8]]},
-];
-
+import { applyFilters } from '../data/attributeRegistry';
+import {
+  AIS_VESSELS, GIS_PORTS, GIS_COMPANIES,
+  AIS_ROUTES, AIS_CHOKE, MOU_ZONES, AIS_STATUS_COLORS,
+} from '../data/mapData';
 // ── Constants ─────────────────────────────────────────────────────────────────
 const TILE_URLS = {
   dark:      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
   light:     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-};
-
-const STATUS_COLOR = {
-  Underway:   '#4ade80',
-  'In Port':  '#60a5fa',
-  'At Anchor':'#fbbf24',
-  'AIS Dark': '#f87171',
 };
 
 const ENTITY_TABS = [
@@ -111,9 +21,9 @@ const ENTITY_TABS = [
   { key:'companies', label:'Companies', ic:'🏢' },
 ];
 
-const VESSEL_TYPES = ['All Types','Crude Oil Tanker','VLCC','Aframax','Product Tanker','Chemical Tanker','Bulk Carrier','Capesize','Container','LNG Carrier','General Cargo','Heavy Lift','RoRo'];
-const PORT_SIZES   = ['All Sizes','mega','large','medium'];
-const CO_TYPES     = ['All Types','Shipping Line','Tanker Owner','Dry Bulk','Chemical Tanker','Oil Major','Commodity Major'];
+const VESSEL_TYPES = ['All Types', ...new Set(AIS_VESSELS.map(v => v.type))];
+const PORT_SIZES   = ['All Sizes',  ...new Set(GIS_PORTS.map(p => p.size))];
+const CO_TYPES     = ['All Types',  ...new Set(GIS_COMPANIES.map(c => c.type))];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function hdgToCompass(h) {
@@ -124,7 +34,7 @@ function fmtLat(v) { return `${Math.abs(v).toFixed(4)}° ${v >= 0 ? 'N' : 'S'}`;
 function fmtLon(v) { return `${Math.abs(v).toFixed(4)}° ${v >= 0 ? 'E' : 'W'}`; }
 
 function buildVesselIcon(v, selected = false) {
-  const col = STATUS_COLOR[v.status] || '#aaa';
+  const col = AIS_STATUS_COLORS[v.status] || '#aaa';
   const sz  = selected ? 26 : 18;
   const hdg = v.hdg || 0;
   let shape;
@@ -331,7 +241,7 @@ export default function GisAis() {
   const pathLayerRef     = useRef(null);
   const forecastLayerRef = useRef(null);
   const drawLayerRef     = useRef(null); // preview/draw layer
-  const vessels      = useRef(VESSELS.map(v => ({ ...v })));
+  const vessels      = useRef(AIS_VESSELS.map(v => ({ ...v })));
   const simInterval  = useRef(null);
   const toastTimer   = useRef(null);
   // Draw refs (avoid re-render on each click)
@@ -428,7 +338,7 @@ export default function GisAis() {
     layerRefs.current = { vessels: lv, routes: lr, ports: lp, choke: lc, mou: lm };
 
     // Routes
-    ROUTES.forEach(r =>
+    AIS_ROUTES.forEach(r =>
       L.polyline(r, { color: '#4d7ef7', weight: 1.5, opacity: 0.28, dashArray: '7 11' }).addTo(lr)
     );
 
@@ -443,7 +353,7 @@ export default function GisAis() {
     });
 
     // Chokepoints
-    CHOKE.forEach(c => {
+    AIS_CHOKE.forEach(c => {
       const rc = c.risk === 'Critical' ? '#ef4444' : c.risk === 'High' ? '#f97316' : '#f59e0b';
       L.circleMarker([c.lat, c.lon], { radius: 16, color: rc, fillColor: 'transparent', weight: 1.5, opacity: 0.35 }).addTo(lc);
       L.circleMarker([c.lat, c.lon], { radius: 5, color: rc, fillColor: rc, fillOpacity: 0.9, weight: 1 })
@@ -648,7 +558,7 @@ export default function GisAis() {
     const v = selEntity;
     const pts = generatePath(v, pathFrom, pathTo);
     if (pts.length < 2) { showToast('No path data for this date range'); return; }
-    const col = STATUS_COLOR[v.status] || '#60a5fa';
+    const col = AIS_STATUS_COLORS[v.status] || '#60a5fa';
     renderPath(pathLayerRef.current, pts, col);
     let totalNm = 0;
     for (let i = 1; i < pts.length; i++) {
@@ -903,7 +813,7 @@ export default function GisAis() {
   }
 
   // ── Filtered lists ────────────────────────────────────────────────────────
-  const adaptedVessels = useMemo(() => VESSELS.map(v => ({
+  const adaptedVessels = useMemo(() => AIS_VESSELS.map(v => ({
     id: v.id, nm: v.name, imo: v.imo, mmsi: v.mmsi,
     ty: v.type, fn: v.flagN, flag: v.fl, st: v.status,
     dwt: v.dwt, ow: v.owner, spd: v.spd,
@@ -936,15 +846,15 @@ export default function GisAis() {
   );
 
   const counts = useMemo(() => ({
-    underway: VESSELS.filter(v => v.status === 'Underway').length,
-    anchor:   VESSELS.filter(v => v.status === 'At Anchor').length,
-    port:     VESSELS.filter(v => v.status === 'In Port').length,
-    dark:     VESSELS.filter(v => v.status === 'AIS Dark').length,
+    underway: AIS_VESSELS.filter(v => v.status === 'Underway').length,
+    anchor:   AIS_VESSELS.filter(v => v.status === 'At Anchor').length,
+    port:     AIS_VESSELS.filter(v => v.status === 'In Port').length,
+    dark:     AIS_VESSELS.filter(v => v.status === 'AIS Dark').length,
   }), []);
 
   const typeOpts = entityTab === 'vessels' ? VESSEL_TYPES : entityTab === 'ports' ? PORT_SIZES : CO_TYPES;
   const showCount = entityTab === 'vessels' ? filteredVessels.length : entityTab === 'ports' ? filteredPorts.length : filteredCompanies.length;
-  const totalCount = entityTab === 'vessels' ? VESSELS.length : entityTab === 'ports' ? GIS_PORTS.length : GIS_COMPANIES.length;
+  const totalCount = entityTab === 'vessels' ? AIS_VESSELS.length : entityTab === 'ports' ? GIS_PORTS.length : GIS_COMPANIES.length;
   const entityLabel = entityTab === 'vessels' ? 'vessels' : entityTab === 'ports' ? 'ports' : 'companies';
 
   // Show the sidebar list only when a filter has been actively applied
@@ -1097,9 +1007,9 @@ export default function GisAis() {
               </div>
             ) : (
               <>
-                {/* VESSELS */}
+                {/* AIS_VESSELS */}
                 {entityTab === 'vessels' && filteredVessels.map(v => {
-                  const col = STATUS_COLOR[v.status] || '#888';
+                  const col = AIS_STATUS_COLORS[v.status] || '#888';
                   return (
                     <div key={v.id} className={`gisVesRow${selId === v.id ? ' sel' : ''}`} onClick={() => handleSelectVessel(v.id)}>
                       <div className="gisVesRowDot" style={{ background: col }} />
@@ -1229,7 +1139,7 @@ export default function GisAis() {
                 <div className="gisAnalysisVesList">
                   {drawnShape.vesselsInside.map(v => (
                     <div key={v.id} className="gisAnalysisVesRow" onClick={() => handleSelectVessel(v.id)}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: STATUS_COLOR[v.status] || '#888', display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: AIS_STATUS_COLORS[v.status] || '#888', display: 'inline-block', flexShrink: 0 }} />
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10 }}>{v.name}</span>
                       <span style={{ fontSize: 9, color: 'var(--txt3)', fontFamily: 'monospace', flexShrink: 0 }}>{v.imo}</span>
                     </div>
@@ -1281,7 +1191,7 @@ export default function GisAis() {
 
           {selEntity && selEntity._type === 'vessel' && (() => {
             const v   = selEntity;
-            const col = STATUS_COLOR[v.status] || '#888';
+            const col = AIS_STATUS_COLORS[v.status] || '#888';
             const aisOk = v.status !== 'AIS Dark';
             return (
               <>
@@ -1614,7 +1524,7 @@ export default function GisAis() {
             { v: counts.anchor,    l:'At Anchor',    c:'#fbbf24' },
             { v: counts.port,      l:'In Port',      c:'#60a5fa' },
             { v: counts.dark,      l:'AIS Dark',     c:'#f87171' },
-            { v: VESSELS.length,   l:'Total Tracked' },
+            { v: AIS_VESSELS.length,   l:'Total Tracked' },
             { v: clock,            l:'UTC',          c:'#60a5fa', mono:true },
             { v: '1,284',          l:'BDI' },
             { v: '84 WS',          l:'AG/East',      c:'#fbbf24' },

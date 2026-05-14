@@ -1,47 +1,5 @@
 import { useState } from 'react';
-
-const FIXTURES = [
-  {id:'F001',vessel:'MT NORDIC STAR',imo:'9234567',type:'VLCC',dwt:298000,charterer:'Vitol SA',owner:'Nordic Tankers AS',cargo:'Arabian Heavy Crude',qty:'2,000,000 BBL',load:'Kharg Island',disch:'Mailiao',laycan:'05-08 May 2025',rate:'WS 82',tce:19200,status:'Fixed',broker:'Barry Rogliano Salles',date:'2025-05-03'},
-  {id:'F002',vessel:'MT AEGEAN GLORY',imo:'9456789',type:'Suezmax',dwt:158000,charterer:'Shell Trading',owner:'Aegean Marine SA',cargo:'Urals Crude',qty:'135,000 MT',load:'Novorossiysk',disch:'Augusta',laycan:'07-09 May 2025',rate:'WS 110',tce:14800,status:'Fixed',broker:'Poten & Partners',date:'2025-05-04'},
-  {id:'F003',vessel:'MV OCEAN PIONEER',imo:'9345678',type:'Capesize',dwt:180000,charterer:'Rio Tinto',owner:'Pacific Carriers',cargo:'Iron Ore',qty:'175,000 MT',load:'Port Hedland',disch:'Qingdao',laycan:'12-15 May 2025',rate:'$14.50/MT',tce:31500,status:'Fixed',broker:'Clarksons',date:'2025-05-04'},
-  {id:'F004',vessel:'MV ATLANTIC HAWK',imo:'9223366',type:'Panamax',dwt:76000,charterer:'Bunge',owner:'Scorpio Bulkers',cargo:'Wheat',qty:'70,000 MT',load:'Santos',disch:'Alexandria',laycan:'10-12 May 2025',rate:'$22.00/MT',tce:12500,status:'On Subjects',broker:'Simpson Spence Young',date:'2025-05-05'},
-  {id:'F005',vessel:'MV CASPIAN STAR',imo:'9789012',type:'Supramax',dwt:57000,charterer:'ADM',owner:'Ultramar SA',cargo:'Corn',qty:'55,000 MT',load:'Paranaguá',disch:'Casablanca',laycan:'08-10 May 2025',rate:'$31.50/MT',tce:8400,status:'Fixed',broker:'Fearnleys',date:'2025-05-03'},
-  {id:'F006',vessel:'LNG ARCTIC SPIRIT',imo:'9678901',type:'LNG',dwt:95000,charterer:'Tokyo Gas',owner:'TotalEnergies',cargo:'LNG',qty:'135,000 CBM',load:'Ras Laffan',disch:'Negishi',laycan:'05-07 May 2025',rate:'$85,000/day TC',tce:71000,status:'Fixed',broker:'Poten & Partners',date:'2025-05-01'},
-  {id:'F007',vessel:'MT CASPIAN QUEEN',imo:'9876543',type:'Aframax',dwt:115000,charterer:'BP',owner:'Dynagas',cargo:'Naphtha',qty:'80,000 MT',load:'Rotterdam',disch:'Houston',laycan:'14-16 May 2025',rate:'WS 125',tce:22100,status:'Rumoured',broker:'E.A. Gibson',date:'2025-05-05'},
-  {id:'F008',vessel:'MV PACIFIC BRIDGE',imo:'9567890',type:'Container',dwt:65000,charterer:'MSC',owner:'Pacific International',cargo:'General Cargo',qty:'4,200 TEU',load:'Yokohama',disch:'Long Beach',laycan:'01-03 May 2025',rate:'$3,200/TEU',tce:58000,status:'Fixed',broker:'—',date:'2025-04-28'},
-  {id:'F009',vessel:'MV SOUTHERN CROSS',imo:'9334455',type:'Panamax',dwt:82000,charterer:'Cargill',owner:'Borealis Maritime',cargo:'Soybeans',qty:'78,000 MT',load:'Tubarão',disch:'Tianjin',laycan:'15-18 May 2025',rate:'$25.50/MT',tce:13200,status:'On Subjects',broker:'Arrow Shipbroking',date:'2025-05-04'},
-  {id:'F010',vessel:'MT VOLGA PRIDE',imo:'9332211',type:'Aframax',dwt:115000,charterer:'Glencore',owner:'Tsakos Group',cargo:'Crude Oil',qty:'90,000 MT',load:'Ust-Luga',disch:'Rotterdam',laycan:'09-11 May 2025',rate:'WS 103',tce:18900,status:'Fixed',broker:'Braemar Shipping',date:'2025-05-04'},
-];
-
-const INDICES = [
-  {name:'BDI',full:'Baltic Dry Index',val:1284,prev:1237,w52lo:892,w52hi:1893,col:'var(--blue)',desc:'Overall dry bulk freight index',bars:[45,52,38,61,55,48,67,58,71,63,68,72,75,70,68]},
-  {name:'BCI',full:'Capesize Index',val:1842,prev:1756,w52lo:580,w52hi:3120,col:'var(--purple)',desc:'Capesize vessel freight rates',bars:[55,48,62,70,58,65,72,68,80,74,78,82,85,79,77]},
-  {name:'BPI',full:'Baltic Panamax Index',val:1156,prev:1142,w52lo:780,w52hi:1650,col:'var(--teal)',desc:'Panamax vessel freight rates',bars:[50,55,48,60,52,58,65,62,70,66,68,72,74,70,68]},
-  {name:'BDTI',full:'Dirty Tanker Index',val:781,prev:798,w52lo:542,w52hi:1124,col:'var(--orange)',desc:'Dirty petroleum products tankers',bars:[60,58,65,70,55,62,68,60,72,65,70,68,65,63,60]},
-  {name:'BCTI',full:'Clean Tanker Index',val:643,prev:631,w52lo:410,w52hi:980,col:'var(--green)',desc:'Clean petroleum products tankers',bars:[45,50,55,60,52,58,65,62,68,64,66,70,72,68,66]},
-  {name:'BLNG',full:'Baltic LNG Index',val:54200,prev:52100,w52lo:38000,w52hi:78000,col:'var(--teal)',desc:'LNG carrier freight rates ($/day)',bars:[40,45,55,60,52,48,58,65,70,62,68,72,75,70,68]},
-];
-
-const ROUTES = [
-  {route:'TD3C — AG/China (VLCC)',ws:82,tceDollar:19200,prev:80,lo:60,hi:120,seg:'VLCC'},
-  {route:'TD20 — AG/Japan (VLCC)',ws:78,tceDollar:17400,prev:79,lo:58,hi:115,seg:'VLCC'},
-  {route:'TD6 — BLS/Med (Suezmax)',ws:110,tceDollar:14800,prev:108,lo:75,hi:145,seg:'Suezmax'},
-  {route:'TD7 — NS/Cont (Aframax)',ws:103,tceDollar:18900,prev:100,lo:70,hi:140,seg:'Aframax'},
-  {route:'TD17 — BALT/UKC (Aframax)',ws:125,tceDollar:22100,prev:120,lo:80,hi:160,seg:'Aframax'},
-  {route:'TC1 — AG/Japan (LR2)',ws:88,tceDollar:11200,prev:90,lo:60,hi:130,seg:'Product'},
-  {route:'TC2 — Cont/USAC (MR)',ws:145,tceDollar:14500,prev:138,lo:90,hi:200,seg:'Product'},
-  {route:'5TC — Capesize Avg',ws:null,tceDollar:31500,prev:32300,lo:8000,hi:55000,seg:'Capesize'},
-  {route:'4TC — Panamax Avg',ws:null,tceDollar:12500,prev:12200,lo:7000,hi:22000,seg:'Panamax'},
-  {route:'10TC — Supramax Avg',ws:null,tceDollar:8400,prev:8450,lo:5500,hi:17000,seg:'Supramax'},
-];
-
-const TC_CONTRACTS = [
-  {vessel:'MT NORDIC STAR',type:'Time Charter',term:'12 months',start:'2025-01-01',end:'2025-12-31',rate:24500,charterer:'Trafigura',redelivery:'Worldwide',options:'2×6M at $23,000/day'},
-  {vessel:'MV OCEAN PIONEER',type:'Time Charter',term:'3 years',start:'2024-07-01',end:'2027-06-30',rate:18000,charterer:'Rio Tinto',redelivery:'Pacific',options:'1×1Y at $17,500/day'},
-  {vessel:'LNG ARCTIC SPIRIT',type:'Time Charter',term:'15 years',start:'2022-03-01',end:'2037-02-28',rate:85000,charterer:'Tokyo Gas',redelivery:'Japan',options:'—'},
-  {vessel:'MV PACIFIC BRIDGE',type:'Bareboat Charter',term:'5 years',start:'2023-06-01',end:'2028-05-31',rate:12000,charterer:'MSC',redelivery:'DWWD',options:'Purchase option at $45M'},
-  {vessel:'MV CASPIAN STAR',type:'Time Charter',term:'6 months',start:'2025-02-01',end:'2025-07-31',rate:11200,charterer:'ADM',redelivery:'Atlantic',options:'1×3M at $10,500/day'},
-];
+import { FIXTURES, INDICES, ROUTES, TC_CONTRACTS } from '../data/fixturesData';
 
 const STATUS_CLS = {Fixed:'tG','On Subjects':'tA',Rumoured:'tN',Failed:'tR'};
 
